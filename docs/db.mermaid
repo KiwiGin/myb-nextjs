@@ -1,0 +1,131 @@
+Cliente {
+    int id_cliente pk
+    string nombre
+    string ruc
+    string direccion
+    string telefono
+    string correo
+    string documento_de_identidad
+    string tipo_de_documento_de_identidad
+}
+
+Empleado {
+    int id_empleado pk
+    string usuario
+    string password
+    string nombre
+    string apellido
+    string correo
+    string telefono
+    string direccion
+    string tipo_documento
+    string documento_identidad
+    string rol
+}
+
+Proyecto {
+    int id_proyecto pk
+    int id_cliente fk
+    int id_empleado_atencion fk
+    int id_jefe fk
+    int id_etapa_actual fk
+    int id_costo fk
+    string titulo
+    string descripcion
+    date fecha_inicio
+    date fecha_fin
+}
+
+Etapa {
+    int id_etapa pk
+    string nombre
+}
+
+Costos {
+    int id_costo pk
+    float costo_mano_obra
+    float costo_repuestos
+    float costo_total
+}
+
+TipoPrueba {
+    int id_tipo_prueba pk
+    string nombre
+}
+
+Parametro {
+    int id_parametro pk
+    int id_tipo_prueba fk, pk
+    string unidades
+    string nombre
+}
+
+Valor {
+    int id_valor pk
+    int id_tipo_prueba fk
+    int id_parametro fk
+    float valor
+}
+
+ResultadoPrueba {
+    int id_resultado_prueba pk
+    int id_proyecto fk
+    int id_tipo_prueba fk
+    int id_empleado fk
+    date fecha
+}
+
+Feedback {
+    int id_feedback pk
+    int id_resultado_prueba_tecnico fk
+    int id_resultado_prueba_jefe fk
+    boolean aprobado
+    string comentario
+}
+
+Repuesto {
+    int id_repuesto pk
+    string nombre
+    string descripcion
+    float precio
+    string link_img
+    int stock_actual
+    int stock_solicitado
+}
+
+ProyectoObservaciones {
+    int id_proyecto pk, fk
+    string observaciones pk
+}
+
+ProyectoRepuestosCantidad {
+    int id_proyecto pk, fk
+    int id_repuesto pk, fk
+    int cantidad
+}
+
+ProyectoEtapaEmpleado {
+    int id_proyecto pk, fk
+    int id_etapa pk, fk
+    int id_tecnico pk, fk
+}
+
+ProyectoEtapasCambio {
+    int id_proyecto pk, fk
+    int id_etapa pk, fk
+    date fecha_inicio
+    date fecha_fin
+}
+
+ProyectoEspecificacionesPrueba {
+    int id_proyecto pk, fk
+    int id_tipo_prueba pk, fk
+    int id_parametro pk, fk
+    float valor_maximo
+    float valor_minimo
+}
+
+PruebaResultadoValores {
+    int id_prueba_resultado pk, fk
+    int id_valor pk, fk
+}
