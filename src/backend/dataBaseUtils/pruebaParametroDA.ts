@@ -6,8 +6,6 @@ export async function registrarTipoPrueba(tipoPrueba: TipoPrueba): Promise<{ idT
     try {
         // Llamar a la función y capturar el ID devuelto
         const result = await pool.query('SELECT paCrearTipoPrueba($1) AS idtipoprueba', [tipoPrueba.nombre]);
-        console.log(result)
-        console.log('ID del tipo de prueba:', result.rows[0].idTipoPrueba);
         return { idTipoPrueba: result.rows[0].idtipoprueba };
     } catch (err) {
         if (err instanceof Error) {
@@ -38,7 +36,7 @@ export async function obtenerPruebaConParametros(): Promise<TipoPrueba[]> {
         SELECT id_tipo_prueba, nombre_prueba, id_parametro, nombre_parametro, unidades
         FROM paObtenerPruebaConParametros();
     `;
-
+    
     try {
         const { rows } = await pool.query(query);
         

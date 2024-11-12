@@ -12,8 +12,8 @@ import { z } from "zod";
 // Esquema de validación con Zod
 const repuestoSchema = z.object({
   nombre: z.string().min(1, { message: "El nombre es obligatorio" }),
-  precio: z.number().min(0, { message: "El precio debe ser positivo" }),
-  descripcion: z.string().optional(),
+  precio: z.number().min(0.01, { message: "El precio debe ser mayor que cero" }),
+  descripcion: z.string().min(1, { message: "La descripción es obligatoria" }),
   img_base64: z.string().optional(),
   stock_actual: z.number().min(0, { message: "El stock debe ser positivo" }).optional(),
 });

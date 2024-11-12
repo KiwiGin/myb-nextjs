@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { SelectorRepuestos } from "@/components/SelectorRepuestos";
 import { Cliente } from "@/models/cliente";
 import { Empleado } from "@/models/empleado";
-import { Proyecto } from "@/models/proyecto"; // Asegúrate de importar correctamente el tipo Proyecto
+import { Proyecto } from "@/models/proyecto";
 import { SelectorPruebas } from "@/components/SelectorPruebas";
 
 export function InterfazRegistroProyecto() {
