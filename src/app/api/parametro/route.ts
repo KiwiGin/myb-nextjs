@@ -1,4 +1,4 @@
-// app/api/hello/route.ts
+// app/api/parametro/route.ts
 import { registrarParametro } from '@/backend/dataBaseUtils/pruebaParametroDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { Parametro } from '@/models/parametro';

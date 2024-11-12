@@ -1,4 +1,4 @@
-// app/api/hello/route.ts
+// app/api/repuesto/route.ts
 import { actualizarStockRepuesto, obtenerRepuestos, registrarRepuesto } from '@/backend/dataBaseUtils/repuestoDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { Repuesto } from '@/models/repuesto';

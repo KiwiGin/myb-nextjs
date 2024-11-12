@@ -1,4 +1,4 @@
-// app/api/hello/route.ts
+// app/api/proyecto/route.ts
 import { insertarProyecto, obtenerProyectos } from '@/backend/dataBaseUtils/proyectoDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { Proyecto } from '@/models/proyecto';
