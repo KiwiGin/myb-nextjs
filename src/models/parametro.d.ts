@@ -1,6 +1,6 @@
 export interface Parametro {
-    idParametro: number,
-    idTipoPrueba: number,
-    unidades: string,
+    idParametro?: number,
     nombre: string
+    unidades: string,
+    idTipoPrueba: number,
 }

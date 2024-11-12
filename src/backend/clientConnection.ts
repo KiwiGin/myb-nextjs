@@ -1,8 +1,8 @@
-import { Client } from 'pg';
+import { Pool } from 'pg';
 
 const connectionString = process.env.CONNECTION_STRING;
 
-export const client = new Client({
+export const pool = new Pool({
   connectionString: connectionString,
   ssl: {
     rejectUnauthorized: false, 

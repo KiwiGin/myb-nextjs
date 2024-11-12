@@ -1,11 +1,26 @@
-import { client } from '../clientConnection';
+import { pool } from '../clientConnection';
 import { Proyecto } from '@/models/proyecto';
 
+export async function obtenerProyectos() {
+
+    try {
+      const res = await pool.query('SELECT * FROM paObtenerProyectos()');
+      return res.rows;
+    }
+    catch (err) {
+      if (err instanceof Error) {
+        console.error('Error executing query', err.stack);
+      } else {
+        console.error('Error executing query', err);
+      }
+      throw err;
+    }
+  }
+
 export async function insertarProyecto(proyecto: Proyecto) {
-    await client.connect();
     try {
         // Iniciar la transacción
-        await client.query('BEGIN');
+        await pool.query('BEGIN');
 
         // Llamar al procedimiento almacenado
         const query = `
@@ -15,7 +30,7 @@ export async function insertarProyecto(proyecto: Proyecto) {
         `;
 
         // Pasar los parámetros directamente, incluyendo los arreglos
-        await client.query(query, [
+        await pool.query(query, [
             proyecto.titulo,
             proyecto.descripcion,
             proyecto.fechaInicio,
@@ -32,7 +47,7 @@ export async function insertarProyecto(proyecto: Proyecto) {
         ]);
 
         // Confirmar la transacción
-        await client.query('COMMIT');
+        await pool.query('COMMIT');
     } catch (err) {
         if (err instanceof Error) {
             console.error('Error al insertar cliente:', err.stack);
@@ -40,8 +55,7 @@ export async function insertarProyecto(proyecto: Proyecto) {
             console.error('Error al insertar cliente:', err);
         }
         // Revertir en caso de error
-        await client.query('ROLLBACK');
-    } finally {
-        await client.end();
+        await pool.query('ROLLBACK');
     }
 }
+
