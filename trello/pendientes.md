@@ -5,7 +5,16 @@
 - Si evaluan que es facil de corregir antes de aplicar lo demás, corrijanlo, sino dejenlo así y lo corregimos la sgte semana.
 
 ## Para todos los da:
-Los da no te devuelven un json de lo que tire el pa de la base de datos. Estos manejan el tipado **asi que deben devolver obejtos tipados**. Para manejar la desnormalización simplemente se le agregan parametros extra al tipo. Por ejemplo:
+Los da no te devuelven un json de lo que tire el pa de la base de datos. Estos manejan el tipado **asi que deben devolver obejtos tipados**. Por ejemplo:
+
+```ts
+export async function GET(req: NextRequest): Promise<NextResponse<Cliente[]>> {
+    const clientes: Cliente[] = await obtenerClientes();
+    return NextResponse.json(clientes);
+}
+```
+
+Para manejar la desnormalización simplemente se le agregan parametros extra al tipo. Por ejemplo:
 
 ```ts
 export interface TipoPrueba {
