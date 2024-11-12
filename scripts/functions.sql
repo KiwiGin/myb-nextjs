@@ -244,17 +244,17 @@ END;
 $$;
 
 -- pa: paCrearTipoPrueba -> Crea un tipo de prueba
-CREATE OR REPLACE PROCEDURE paCrearTipoPrueba(
-    p_nombre_prueba VARCHAR
-)
-    LANGUAGE plpgsql
-AS
-$$
+CREATE OR REPLACE FUNCTION paCrearTipoPrueba(p_nombre_prueba VARCHAR)
+RETURNS INT AS $$
+DECLARE
+    new_id INT;
 BEGIN
-    INSERT INTO tipo_prueba (nombre)
-    VALUES (p_nombre_prueba);
+    INSERT INTO tipo_prueba (nombre) VALUES (p_nombre_prueba)
+    RETURNING idTipoPrueba INTO new_id;
+
+    RETURN new_id;
 END;
-$$;
+$$ LANGUAGE plpgsql;
 
 -- pa: paCrearParametro -> Crea un parametro
 CREATE OR REPLACE PROCEDURE paCrearParametro(

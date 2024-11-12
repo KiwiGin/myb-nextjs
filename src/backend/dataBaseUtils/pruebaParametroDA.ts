@@ -2,10 +2,12 @@ import { pool } from '../clientConnection';
 import { TipoPrueba } from '@/models/tipoprueba';
 import { Parametro } from '@/models/parametro';
 
-export async function registrarTipoPrueba(tipoPrueba: TipoPrueba) {
+export async function registrarTipoPrueba(tipoPrueba: TipoPrueba): Promise<{ idTipoPrueba: number }> {
     try {
-        await pool.query('CALL paCrearTipoPrueba($1)', [tipoPrueba.nombre]);
+        // Llamar a la función y capturar el ID devuelto
+        const result = await pool.query('SELECT paCrearTipoPrueba($1) AS idTipoPrueba', [tipoPrueba.nombre]);
         console.log('Tipo de prueba insertado exitosamente');
+        return { idTipoPrueba: result.rows[0].idTipoPrueba };
     } catch (err) {
         if (err instanceof Error) {
             console.error('Error al insertar tipo de prueba:', err.stack);
@@ -15,6 +17,7 @@ export async function registrarTipoPrueba(tipoPrueba: TipoPrueba) {
         throw err;
     }
 }
+
 
 export async function registrarParametro(parametro: Parametro) {
     try {
