@@ -1,49 +1,120 @@
-import { useEffect, useState } from "react";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { TipoPrueba } from "@/types";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Proyecto } from "@/models/proyecto";
+import { TipoPruebaCard } from "@/components/TipoPruebaCard";
+import { TipoPrueba } from "@/models/tipoprueba";
 import { z } from "zod";
 
-const parametrosSchema = z.array(z.number());
+// Define la estructura de una prueba usando Zod
+const tipoPruebaSchema = z.object({
+  idTipoPrueba: z.number(),
+  nombre: z.string(),
+  parametros: z.array(
+    z.object({
+      idParametro: z.number(),
+      nombre: z.string(),
+      unidades: z.string(),
+    })
+  ),
+});
 
-export function SelectorPruebas({ setProyecto, proyecto }) {
-  const [pruebas, setPruebas] = useState<TipoPrueba[]>([]);
+type Prueba = z.infer<typeof tipoPruebaSchema>;
+
+interface SelectorPruebasProps {
+  proyecto: Proyecto;
+  setProyecto: Dispatch<SetStateAction<Proyecto>>;
+}
+
+export function SelectorPruebas({
+  proyecto,
+  setProyecto,
+}: SelectorPruebasProps) {
+  const [pruebas, setPruebas] = useState<Prueba[]>([]);
 
   const fetchPruebas = async () => {
     const res = await fetch("/api/pruebaconparametro");
     const data = await res.json();
-    setPruebas(data);
+    const parsedData = z.array(tipoPruebaSchema).safeParse(data);
+    if (parsedData.success) {
+      setPruebas(parsedData.data);
+    } else {
+      console.error("Error en la validación de los datos de pruebas");
+    }
   };
 
   useEffect(() => {
     fetchPruebas();
   }, []);
 
-  const handleParametroChange = (e: React.ChangeEvent<HTMLInputElement>, field: string) => {
-    try {
-      const values = parametrosSchema.parse(e.target.value.split(",").map((val) => parseFloat(val.trim())));
-      setProyecto((prev) => ({ ...prev, [field]: values }));
-    } catch (error) {
-      console.error("Error en la validación de parámetros:", error);
-    }
+  const togglePrueba = (pruebaId: number) => {
+    setProyecto((prev) => {
+      const prueba = pruebas.find((p) => p.idTipoPrueba === pruebaId);
+      if (!prueba) return prev;
+
+      const parametroIds = prueba.parametros.map((parametro) => parametro.idParametro);
+      const isSelected = parametroIds.every((id) => prev.idParametros.includes(id));
+
+      const newIdParametros = isSelected
+        ? prev.idParametros.filter((id) => !parametroIds.includes(id))
+        : [...prev.idParametros, ...parametroIds];
+
+      const newValoresMaximos = isSelected
+        ? prev.valoresMaximos.filter((_, index) => !parametroIds.includes(prev.idParametros[index]))
+        : [...prev.valoresMaximos, ...Array(parametroIds.length).fill(0)];
+
+      const newValoresMinimos = isSelected
+        ? prev.valoresMinimos.filter((_, index) => !parametroIds.includes(prev.idParametros[index]))
+        : [...prev.valoresMinimos, ...Array(parametroIds.length).fill(0)];
+
+      return {
+        ...prev,
+        idParametros: newIdParametros,
+        valoresMaximos: newValoresMaximos,
+        valoresMinimos: newValoresMinimos,
+      };
+    });
+  };
+
+  const handleValorChange = (
+    parametroId: number,
+    valor: number,
+    tipo: "max" | "min"
+  ) => {
+    setProyecto((prev) => {
+      const index = prev.idParametros.indexOf(parametroId);
+      if (index !== -1) {
+        const newValores = tipo === "max" ? [...prev.valoresMaximos] : [...prev.valoresMinimos];
+        newValores[index] = valor;
+        return tipo === "max"
+          ? { ...prev, valoresMaximos: newValores }
+          : { ...prev, valoresMinimos: newValores };
+      }
+      return prev;
+    });
   };
 
   return (
-    <>
-      <div className="mb-4">
-        <Label htmlFor="idParametros">ID Parámetros (separados por comas)</Label>
-        <Input id="idParametros" name="idParametros" type="text" onChange={(e) => handleParametroChange(e, "idParametros")} placeholder="Ejemplo: 4, 5, 6" />
+    <div className="mb-4">
+      <h3 className="font-semibold">Seleccionar Pruebas</h3>
+      <div className="flex flex-col space-y-2">
+        {pruebas.map((prueba) => {
+          const isSelected = prueba.parametros.every((parametro) =>
+            proyecto.idParametros.includes(parametro.idParametro)
+          );
+          return (
+            <TipoPruebaCard
+              key={prueba.idTipoPrueba}
+              prueba={prueba}
+              isSelected={isSelected}
+              onToggle={() => togglePrueba(prueba.idTipoPrueba)}
+              valoresMaximos={isSelected ? proyecto.valoresMaximos.slice(proyecto.idParametros.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
+              valoresMinimos={isSelected ? proyecto.valoresMinimos.slice(proyecto.idParametros.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
+              onValorChange={(parametroId, valor, tipo) =>
+                handleValorChange(parametroId, valor, tipo)
+              }
+            />
+          );
+        })}
       </div>
-      
-      <div className="mb-4">
-        <Label htmlFor="valoresMaximos">Valores Máximos (separados por comas)</Label>
-        <Input id="valoresMaximos" name="valoresMaximos" type="text" onChange={(e) => handleParametroChange(e, "valoresMaximos")} placeholder="Ejemplo: 100.5, 200.3, 150.0" />
-      </div>
-
-      <div className="mb-4">
-        <Label htmlFor="valoresMinimos">Valores Mínimos (separados por comas)</Label>
-        <Input id="valoresMinimos" name="valoresMinimos" type="text" onChange={(e) => handleParametroChange(e, "valoresMinimos")} placeholder="Ejemplo: 50.0, 100.0, 75.0" />
-      </div>
-    </>
+    </div>
   );
 }

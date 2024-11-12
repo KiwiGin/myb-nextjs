@@ -1,6 +1,6 @@
 import { InterfazRegistroProyecto } from "./InterfazRegistroProyecto";
 
-export default function InterfazRegistroProyectoage() {
+export default function InterfazRegistroProyectoPage() {
   return (
     <InterfazRegistroProyecto />
   )

@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: 'Proyecto insertado exitosamente' });
 }
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     const repuestos = await obtenerProyectos();
     return NextResponse.json(repuestos);
 }

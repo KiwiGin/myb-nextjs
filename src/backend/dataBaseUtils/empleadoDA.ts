@@ -4,7 +4,6 @@ import { Empleado } from '@/models/empleado';
 export async function paObtenerEmpleadosPorRol(p_rol: string): Promise<Empleado[]> {
   try {
     const res = await pool.query('SELECT * FROM paObtenerEmpleadosPorRol($1)', [p_rol]);
-    console.log('Empleados por rol:', res.rows);
 
     const empleados = res.rows.map((empleado: {
       id_empleado: number,
