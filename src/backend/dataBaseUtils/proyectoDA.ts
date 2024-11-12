@@ -1,7 +1,7 @@
 import { pool } from '../clientConnection';
 import { Proyecto } from '@/models/proyecto';
 
-export async function obtenerProyectos() {
+export async function obtenerProyectos(): Promise<Proyecto[]> {
 
     try {
       const res = await pool.query('SELECT * FROM paObtenerProyectos()');

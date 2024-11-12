@@ -33,17 +33,41 @@ export async function registrarParametro(parametro: Parametro) {
     }
 }
 
-export async function obtenerPruebaConParametros() {
+export async function obtenerPruebaConParametros(): Promise<TipoPrueba[]> {
+    const query = `
+        SELECT id_tipo_prueba, nombre_prueba, id_parametro, nombre_parametro, unidades
+        FROM paObtenerPruebaConParametros();
+    `;
+
     try {
-        const res = await pool.query('SELECT * FROM paObtenerPruebaConParametros()');
-        return res.rows;
-    }
-    catch (err) {
-        if (err instanceof Error) {
-            console.error('Error executing query', err.stack);
-        } else {
-            console.error('Error executing query', err);
-        }
-        throw err;
+        const { rows } = await pool.query(query);
+        
+        // Transforming the data into the desired structure
+        const pruebaMap: { [key: number]: TipoPrueba } = {};
+        
+        rows.forEach(row => {
+            const { id_tipo_prueba, nombre_prueba, id_parametro, nombre_parametro, unidades } = row;
+
+            if (!pruebaMap[id_tipo_prueba]) {
+                pruebaMap[id_tipo_prueba] = {
+                    idTipoPrueba: id_tipo_prueba,
+                    nombre: nombre_prueba,
+                    parametros: []
+                };
+            }
+
+            pruebaMap[id_tipo_prueba].parametros!.push({
+                idParametro: id_parametro,
+                nombre: nombre_parametro,
+                unidades: unidades
+            });
+        });
+
+        // Convert the map to an array
+        return Object.values(pruebaMap);
+
+    } catch (error) {
+        console.error("Error retrieving tests with parameters:", error);
+        throw error;
     }
 }

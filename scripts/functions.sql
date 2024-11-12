@@ -301,7 +301,6 @@ BEGIN
 END;
 $$;
 
-
 --pa: paObtenerEmpleadosPorRol -> Obtiene los empleados por rol
 CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorRol(p_rol VARCHAR)
     RETURNS TABLE
@@ -322,7 +321,21 @@ CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorRol(p_rol VARCHAR)
 AS
 $$
 BEGIN
-    RETURN QUERY SELECT * FROM empleado WHERE rol = p_rol;
+    RETURN QUERY 
+    SELECT 
+        e.id_empleado,
+        e.usuario,
+        e.password,
+        e.nombre,
+        e.apellido,
+        e.correo,
+        e.telefono,
+        e.direccion,
+        e.tipo_documento,
+        e.documento_identidad,
+        e.rol
+    FROM empleado e
+    WHERE e.rol = p_rol;
 END;
 $$;
 
