@@ -15,8 +15,10 @@ export async function POST(req: NextRequest) {
         // Leer los datos del cuerpo de la solicitud
         const { nombreTipoPrueba, parametros }: { nombreTipoPrueba: string; parametros: Parametro[] } = await req.json();
 
-        console.log('nombreTipoPrueba:', nombreTipoPrueba);
-        console.log('parametros:', parametros);
+        console.log('nombreTipoPrueba', nombreTipoPrueba);
+        console.log('parametros', parametros);
+
+        // TODO: Uncoment the following code when paCrearTipoPrueba is updated on the data base
 
         // // Crear el tipo de prueba y obtener el idTipoPrueba generado
         // const tipoPrueba: TipoPrueba = { nombre: nombreTipoPrueba };

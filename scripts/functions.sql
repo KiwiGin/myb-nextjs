@@ -174,16 +174,19 @@ $$;
 CREATE OR REPLACE PROCEDURE paRegistrarRepuesto(
     p_nombre_repuesto VARCHAR,
     p_precio_repuesto DECIMAL(10, 2),
-    p_descripcion_repuesto TEXT
+    p_descripcion_repuesto TEXT,
+    p_link_img VARCHAR,
+    p_stock_actual INTEGER
 )
     LANGUAGE plpgsql
 AS
 $$
 BEGIN
-    INSERT INTO repuesto (nombre, precio, descripcion)
-    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto);
+    INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_actual)
+    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto, p_link_img, p_stock_actual);
 END;
 $$;
+
 
 --pa: paObtenerRepuestos -> Obtiene todos los repuestos
 CREATE OR REPLACE FUNCTION paObtenerRepuestos()

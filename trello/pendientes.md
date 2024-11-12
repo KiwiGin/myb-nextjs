@@ -31,7 +31,8 @@ Entonces la función del da `obtenerPruebaConParametros` debería devolver `Tipo
 
 ### CUS: Registro de Proyecto
 
-- Agregar pa para obtener los empleados filtrados por rol. (El rol debe ser un parametro string)
+- [ ] Agregar pa `paObtenerEmpleadosPorRol` para obtener los empleados filtrados por rol. (El rol debe ser un parametro string)
+- [ ] Correr el pa `paObtenerEmpleadosPorRol` en la database
 
 ### CUS: Registro de Cliente
 
@@ -43,13 +44,14 @@ Entonces la función del da `obtenerPruebaConParametros` debería devolver `Tipo
 
 ### CUS: Registro de Pruebas
 
-- Agregar pa que permita pasar el nombre del tipo de prueba y una lista de parametros {nombre, unidad}
+- [X] Agregar pa que permita pasar el nombre del tipo de prueba y una lista de parametros {nombre, unidad}
+- [ ] Correr el pa paCrearTipoPrueba en la database
 
 ## Data Access y api endpoints
 
 ### CUS: Registro de Proyecto
 
-- Agregar da para obtener los empleados filtrados por rol. (El rol debe ser un parametro string)
+- [ ] Agregar da para obtener los empleados filtrados por rol. (El rol debe ser un parametro string)
 
 ### CUS: Registro de Cliente
 

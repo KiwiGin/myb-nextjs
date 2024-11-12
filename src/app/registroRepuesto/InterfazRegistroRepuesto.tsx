@@ -6,13 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Repuesto } from "@/models/repuesto";
+import { ImageLoader } from "@/components/ImageComponents/ImageLoader";
 
 export function InterfazRegistroRepuesto() {
   const [repuesto, setRepuesto] = useState<Partial<Repuesto>>({
     nombre: "",
     precio: 0,
     descripcion: "",
-    link_img: "",
+    img_base64: "",
     stock_actual: 0,
     stock_solicitado: 0,
   });
@@ -20,6 +21,11 @@ export function InterfazRegistroRepuesto() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setRepuesto({ ...repuesto, [name]: value });
+  };
+
+  const handleImageUpload = (base64: string | null) => {
+    if (!base64) return
+    setRepuesto({ ...repuesto, img_base64: base64 ? base64 : "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,14 +79,9 @@ export function InterfazRegistroRepuesto() {
         </div>
 
         <div className="mb-4">
-          <Label htmlFor="link_img">URL de Imagen</Label>
-          <Input
-            id="link_img"
-            name="link_img"
-            type="url"
-            placeholder="Enlace a la imagen del repuesto"
-            value={repuesto.link_img}
-            onChange={handleChange}
+          <Label>Imagen del Repuesto</Label>
+          <ImageLoader
+            setBase64={(base64: string | null) => handleImageUpload(base64)}
           />
         </div>
 

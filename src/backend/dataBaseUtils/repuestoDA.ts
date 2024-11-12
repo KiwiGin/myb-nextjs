@@ -18,10 +18,12 @@ export async function obtenerRepuestos() {
 }
 
 //insertar repuesto
-
 export async function registrarRepuesto(repuesto: Repuesto) {
   try {
-    await pool.query('CALL paRegistrarRepuesto($1, $2, $3)', [repuesto.nombre, repuesto.precio, repuesto.descripcion]);
+    await pool.query(
+      'CALL paRegistrarRepuesto($1, $2, $3, $4, $5)', 
+      [repuesto.nombre, repuesto.precio, repuesto.descripcion, repuesto.link_img || null, repuesto.stock_actual || 0]
+    );
     console.log('Repuesto insertado exitosamente');
   } catch (err) {
     if (err instanceof Error) {
