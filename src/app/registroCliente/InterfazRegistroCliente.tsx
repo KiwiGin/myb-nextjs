@@ -46,7 +46,7 @@ export function InterfazRegistroCliente() {
       } else {
         setStatusMessage("Error al registrar el cliente");
       }
-    } catch (error) {
+    } catch {
       setStatusMessage("Error de conexión con el servidor");
     }
   };
