@@ -1,25 +1,45 @@
 import {pool} from '../clientConnection';
 import { Cliente } from '@/models/cliente';
 
-export async function obtenerClientes() {
-
+export async function obtenerClientes(): Promise<Cliente[]> {
   try {
-    const res = await pool.query('SELECT * FROM paObtenerClientes()');
-    return res.rows;
-  }
-  catch (err) {
+    const result = await pool.query('SELECT * FROM paObtenerClientes()');
+    // Cambiar los nombres de las columnas a camelCase
+    const clientes = result.rows.map((cliente: {
+      id_cliente: number,
+      nombre: string,
+      ruc: string,
+      direccion: string,
+      telefono: string,
+      correo: string,
+      documento_de_identidad: string,
+      tipo_de_documento_de_identidad: string
+    }) => {
+      return {
+        idCliente: cliente.id_cliente,
+        nombre: cliente.nombre,
+        ruc: cliente.ruc,
+        direccion: cliente.direccion,
+        telefono: cliente.telefono,
+        correo: cliente.correo,
+        documentoDeIdentidad: cliente.documento_de_identidad,
+        tipoDeDocumento: cliente.tipo_de_documento_de_identidad
+      };
+    });
+    return clientes;
+  } catch (err) {
     if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
+      console.error('Error al obtener clientes:', err.stack);
     } else {
-      console.error('Error executing query', err);
+      console.error('Error al obtener clientes:', err);
     }
-    throw err;
+    return [];
   }
 }
 
 export async function insertarCliente(cliente: Cliente) {
   try {
-    await pool.query('CALL paInsertarCliente($1, $2, $3, $4, $5, $6, $7)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo, cliente.documentoDeIdentidad, cliente.tipoDeDocumento]);
+    await pool.query('CALL paCrearCliente($1, $2, $3, $4, $5, $6, $7)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo, cliente.documentoDeIdentidad, cliente.tipoDeDocumento]);
     console.log('Cliente insertado exitosamente');
   } catch (err) {
     if (err instanceof Error) {

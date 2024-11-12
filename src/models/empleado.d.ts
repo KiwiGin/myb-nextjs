@@ -7,6 +7,7 @@ export interface Empleado {
     correo: string,
     telefono: string,
     direccion: string,
+    documentoIdentidad: string,
     tipoDocumento: string,
     rol: string
 }

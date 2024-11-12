@@ -104,7 +104,12 @@ DECLARE
     v_id_proyecto       INT;
     v_id_tipo_prueba    INT;
 BEGIN
-    -- calcular el costo de repuestos:
+    v_cost_repuestos := 0;
+
+    IF array_length(p_ids_repuestos, 1) <> array_length(p_cantidades_repuestos, 1) THEN
+        RAISE EXCEPTION 'Los arreglos de repuestos y cantidades deben tener la misma longitud';
+    END IF;
+
     FOR i IN 1..array_length(p_ids_repuestos, 1)
         LOOP
             v_id_repuesto := p_ids_repuestos[i];
@@ -115,8 +120,17 @@ BEGIN
             FROM repuesto
             WHERE repuesto.id_repuesto = v_id_repuesto;
 
-            v_cost_repuestos := v_cost_repuestos + v_costo_unitario;
+            IF FOUND THEN
+                IF v_costo_unitario IS NOT NULL THEN
+                    v_cost_repuestos := v_cost_repuestos + v_costo_unitario;
+                ELSE
+                    RAISE EXCEPTION 'El repuesto % no tiene precio asignado', v_id_repuesto;
+                END IF;
+            ELSE
+                RAISE EXCEPTION 'Repuesto con id % no encontrado', v_id_repuesto;
+            END IF;
         END LOOP;
+
 -- Insertar el costo:
     INSERT INTO costos (costo_mano_obra, costo_repuestos, costo_total)
     VALUES (p_costo_mano_obra, v_cost_repuestos, p_costo_mano_obra + v_cost_repuestos)
@@ -160,28 +174,36 @@ $$;
 CREATE OR REPLACE PROCEDURE paRegistrarRepuesto(
     p_nombre_repuesto VARCHAR,
     p_precio_repuesto DECIMAL(10, 2),
-    p_descripcion_repuesto TEXT
+    p_descripcion_repuesto TEXT,
+    p_link_img VARCHAR,
+    p_stock_actual INTEGER
 )
     LANGUAGE plpgsql
 AS
 $$
 BEGIN
-    INSERT INTO repuesto (nombre, precio, descripcion)
-    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto);
+    IF  p_stock_actual < 0 THEN
+        RAISE EXCEPTION 'El stock actual no puede ser negativo';
+    END IF;
+    INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_actual)
+    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto, p_link_img, p_stock_actual);
 END;
 $$;
 
 --pa: paObtenerRepuestos -> Obtiene todos los repuestos
 CREATE OR REPLACE FUNCTION paObtenerRepuestos()
-    RETURNS TABLE
+    returns TABLE
             (
-                id_repuesto INT,
-                nombre      VARCHAR,
-                precio      DECIMAL(10, 2),
-                descripcion TEXT
+                id_repuesto      integer,
+                nombre           character varying,
+                descripcion      text,
+                precio           numeric,
+                link_img         character varying,
+                stock_actual     integer,
+                stock_solicitado integer
             )
-    LANGUAGE plpgsql
-AS
+    language plpgsql
+as
 $$
 BEGIN
     RETURN QUERY SELECT * FROM repuesto;
@@ -227,17 +249,19 @@ END;
 $$;
 
 -- pa: paCrearTipoPrueba -> Crea un tipo de prueba
-CREATE OR REPLACE PROCEDURE paCrearTipoPrueba(
-    p_nombre_prueba VARCHAR
-)
-    LANGUAGE plpgsql
-AS
+CREATE OR REPLACE FUNCTION paCrearTipoPrueba(p_nombre_prueba VARCHAR)
+    RETURNS INT AS
 $$
+DECLARE
+    new_id INT;
 BEGIN
     INSERT INTO tipo_prueba (nombre)
-    VALUES (p_nombre_prueba);
+    VALUES (p_nombre_prueba)
+    RETURNING id_tipo_prueba INTO new_id;
+
+    RETURN new_id;
 END;
-$$;
+$$ LANGUAGE plpgsql;
 
 -- pa: paCrearParametro -> Crea un parametro
 CREATE OR REPLACE PROCEDURE paCrearParametro(
@@ -251,6 +275,67 @@ $$
 BEGIN
     INSERT INTO parametro (nombre, unidades, id_tipo_prueba)
     VALUES (p_nombre_parametro, p_unidades, p_id_tipo_prueba);
+END;
+$$;
+
+-- pa: paCrearPruebaParametros -> Crea una prueba con parametros y retorna la IS
+CREATE OR REPLACE FUNCTION paCrearPruebaParametros(
+    p_nombre_prueba VARCHAR,
+    p_nombres_parametros VARCHAR[],
+    p_unidades_parametros VARCHAR[]
+)
+    RETURNS INT
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    id_tipo_prueba INT;
+BEGIN
+    id_tipo_prueba := paCrearTipoPrueba(p_nombre_prueba);
+
+    FOR i IN 1..array_length(p_nombres_parametros, 1)
+        LOOP
+            PERFORM paCrearParametro(p_nombres_parametros[i], p_unidades_parametros[i], id_tipo_prueba);
+        END LOOP;
+    RETURN id_tipo_prueba;
+END;
+$$;
+
+--pa: paObtenerEmpleadosPorRol -> Obtiene los empleados por rol
+CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorRol(p_rol VARCHAR)
+    RETURNS TABLE
+            (
+                id_empleado         INT,
+                usuario             VARCHAR,
+                password            VARCHAR,
+                nombre              VARCHAR,
+                apellido            VARCHAR,
+                correo              VARCHAR,
+                telefono            VARCHAR,
+                direccion           VARCHAR,
+                tipo_documento      VARCHAR,
+                documento_identidad VARCHAR,
+                rol                 VARCHAR
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        e.id_empleado,
+        e.usuario,
+        e.password,
+        e.nombre,
+        e.apellido,
+        e.correo,
+        e.telefono,
+        e.direccion,
+        e.tipo_documento,
+        e.documento_identidad,
+        e.rol
+    FROM empleado e
+    WHERE e.rol = p_rol;
 END;
 $$;
 

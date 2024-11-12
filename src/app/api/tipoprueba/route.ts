@@ -1,4 +1,4 @@
-// app/api/hello/route.ts
+// app/api/tipoPrueba/route.ts
 import { registrarTipoPrueba } from '@/backend/dataBaseUtils/pruebaParametroDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { TipoPrueba } from '@/models/tipoprueba';
