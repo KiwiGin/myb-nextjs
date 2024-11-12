@@ -1,4 +1,4 @@
 export interface TipoPrueba {
-    idTipoPrueba: number,
+    idTipoPrueba?: number,
     nombre: string,
 }
