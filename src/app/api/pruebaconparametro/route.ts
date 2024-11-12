@@ -15,19 +15,14 @@ export async function POST(req: NextRequest) {
         // Leer los datos del cuerpo de la solicitud
         const { nombreTipoPrueba, parametros }: { nombreTipoPrueba: string; parametros: Parametro[] } = await req.json();
 
-        console.log('nombreTipoPrueba', nombreTipoPrueba);
-        console.log('parametros', parametros);
+        // Crear el tipo de prueba y obtener el idTipoPrueba generado
+        const tipoPrueba: TipoPrueba = { nombre: nombreTipoPrueba };
+        const { idTipoPrueba } = await registrarTipoPrueba(tipoPrueba);
 
-        // TODO: Uncoment the following code when paCrearTipoPrueba is updated on the data base
-
-        // // Crear el tipo de prueba y obtener el idTipoPrueba generado
-        // const tipoPrueba: TipoPrueba = { nombre: nombreTipoPrueba };
-        // const { idTipoPrueba } = await registrarTipoPrueba(tipoPrueba);
-
-        // // Registrar cada parámetro usando el idTipoPrueba
-        // for (const parametro of parametros) {
-        //     await registrarParametro({ ...parametro, idTipoPrueba });
-        // }
+        // Registrar cada parámetro usando el idTipoPrueba
+        for (const parametro of parametros) {
+            await registrarParametro({ ...parametro, idTipoPrueba });
+        }
 
         // Responder con un mensaje de éxito
         return NextResponse.json({ message: 'Tipo de prueba y parámetros registrados exitosamente' });

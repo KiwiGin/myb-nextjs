@@ -44,8 +44,8 @@ Entonces la función del da `obtenerPruebaConParametros` debería devolver `Tipo
 
 ### CUS: Registro de Pruebas
 
-- [X] Agregar pa que permita pasar el nombre del tipo de prueba y una lista de parametros {nombre, unidad}
-- [ ] Correr el pa paCrearTipoPrueba en la database
+- [X] Correr el pa paCrearTipoPrueba en la database
+- [ ] Agregar pa que permita pasar el nombre del tipo de prueba y una lista de parametros {nombre, unidad}
 
 ## Data Access y api endpoints
 
