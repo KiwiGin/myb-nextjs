@@ -187,7 +187,6 @@ BEGIN
 END;
 $$;
 
-
 --pa: paObtenerRepuestos -> Obtiene todos los repuestos
 CREATE OR REPLACE FUNCTION paObtenerRepuestos()
     returns TABLE
@@ -248,12 +247,14 @@ $$;
 
 -- pa: paCrearTipoPrueba -> Crea un tipo de prueba
 CREATE OR REPLACE FUNCTION paCrearTipoPrueba(p_nombre_prueba VARCHAR)
-RETURNS INT AS $$
+    RETURNS INT AS
+$$
 DECLARE
     new_id INT;
 BEGIN
-    INSERT INTO tipo_prueba (nombre) VALUES (p_nombre_prueba)
-    RETURNING idTipoPrueba INTO new_id;
+    INSERT INTO tipo_prueba (nombre)
+    VALUES (p_nombre_prueba)
+    RETURNING id_tipo_prueba INTO new_id;
 
     RETURN new_id;
 END;
@@ -271,6 +272,30 @@ $$
 BEGIN
     INSERT INTO parametro (nombre, unidades, id_tipo_prueba)
     VALUES (p_nombre_parametro, p_unidades, p_id_tipo_prueba);
+END;
+$$;
+
+--pa: paObtenerEmpleadosPorRol -> Obtiene los empleados por rol
+CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorRol(p_rol VARCHAR)
+    RETURNS TABLE
+            (
+                id_empleado         INT,
+                usuario             VARCHAR,
+                password            VARCHAR,
+                nombre              VARCHAR,
+                apellido            VARCHAR,
+                correo              VARCHAR,
+                telefono            VARCHAR,
+                direccion           VARCHAR,
+                tipo_documento      VARCHAR,
+                documento_identidad VARCHAR,
+                rol                 VARCHAR
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY SELECT * FROM empleado WHERE rol = p_rol;
 END;
 $$;
 
