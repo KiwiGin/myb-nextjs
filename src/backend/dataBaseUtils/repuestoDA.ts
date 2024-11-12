@@ -36,7 +36,6 @@ export async function registrarRepuesto(repuesto: Repuesto) {
 }
 
 //actualizar stock de un repuesto
-
 export async function actualizarStockRepuesto(repuesto: Repuesto) {
   try {
     await pool.query('CALL paActualizarStockRepuesto($1, $2)', [repuesto.idRepuesto, repuesto.cantidad]);
