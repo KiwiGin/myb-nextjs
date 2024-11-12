@@ -1,7 +1,7 @@
 // app/api/hello/route.ts
 import { insertarCliente, obtenerClientes } from '@/backend/dataBaseUtils/clienteDA';
 import { NextRequest, NextResponse } from 'next/server';
-import { Cliente } from '@/models/types';
+import { Cliente } from '@/models/cliente';
 
 export async function GET(req: NextRequest) {
     const clientes = await obtenerClientes();

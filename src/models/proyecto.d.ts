@@ -1,0 +1,15 @@
+export interface Proyecto {
+    titulo: string,
+    descripcion: string,
+    fechaInicio: Date,
+    fechaFin: Date,
+    idCliente: number,
+    idSupervisor: number,
+    idJefe: number,
+    costoManoObra: number,
+    idRepuestos: number[],
+    cantidadesRepuestos: number[],
+    idParametros: number[],
+    valoresMaximos: number[],
+    valoresMinimos: number[],
+}

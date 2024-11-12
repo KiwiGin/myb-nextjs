@@ -1,14 +1,5 @@
-import { Client } from 'pg';
-import { Cliente } from '@/models/types';
-
-const connectionString = 'postgresql://jose_sernaque:k7axICU4LNHt0mpRbyrfHRRAADrUZLOb@dpg-csomughu0jms738mha50-a.virginia-postgres.render.com/myb_database';
-
-const client = new Client({
-  connectionString: connectionString,
-  ssl: {
-    rejectUnauthorized: false, 
-  },
-});
+import {client} from '../clientConnection';
+import { Cliente } from '@/models/cliente';
 
 export async function obtenerClientes() {
   await client.connect();
