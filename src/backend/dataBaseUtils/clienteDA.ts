@@ -19,7 +19,7 @@ export async function obtenerClientes() {
 
 export async function insertarCliente(cliente: Cliente) {
   try {
-    await pool.query('CALL paInsertarCliente($1, $2, $3, $4, $5, $6, $7)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo, cliente.documentoDeIdentidad, cliente.tipoDeDocumento]);
+    await pool.query('CALL paCrearCliente($1, $2, $3, $4, $5, $6, $7)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo, cliente.documentoDeIdentidad, cliente.tipoDeDocumento]);
     console.log('Cliente insertado exitosamente');
   } catch (err) {
     if (err instanceof Error) {
