@@ -182,6 +182,9 @@ CREATE OR REPLACE PROCEDURE paRegistrarRepuesto(
 AS
 $$
 BEGIN
+    IF  p_stock_actual < 0 THEN
+        RAISE EXCEPTION 'El stock actual no puede ser negativo';
+    END IF;
     INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_actual)
     VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto, p_link_img, p_stock_actual);
 END;
@@ -274,6 +277,30 @@ BEGIN
     VALUES (p_nombre_parametro, p_unidades, p_id_tipo_prueba);
 END;
 $$;
+
+-- pa: paCrearPruebaParametros -> Crea una prueba con parametros y retorna la IS
+CREATE OR REPLACE FUNCTION paCrearPruebaParametros(
+    p_nombre_prueba VARCHAR,
+    p_nombres_parametros VARCHAR[],
+    p_unidades_parametros VARCHAR[]
+)
+    RETURNS INT
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    id_tipo_prueba INT;
+BEGIN
+    id_tipo_prueba := paCrearTipoPrueba(p_nombre_prueba);
+
+    FOR i IN 1..array_length(p_nombres_parametros, 1)
+        LOOP
+            PERFORM paCrearParametro(p_nombres_parametros[i], p_unidades_parametros[i], id_tipo_prueba);
+        END LOOP;
+    RETURN id_tipo_prueba;
+END;
+$$;
+
 
 --pa: paObtenerEmpleadosPorRol -> Obtiene los empleados por rol
 CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorRol(p_rol VARCHAR)
