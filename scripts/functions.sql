@@ -182,6 +182,9 @@ CREATE OR REPLACE PROCEDURE paRegistrarRepuesto(
 AS
 $$
 BEGIN
+    IF  p_stock_actual < 0 THEN
+        RAISE EXCEPTION 'El stock actual no puede ser negativo';
+    END IF;
     INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_actual)
     VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto, p_link_img, p_stock_actual);
 END;
