@@ -1,5 +1,5 @@
 -- pa: paInsertarCliente -> Inserta un cliente
-CREATE OR REPLACE PROCEDURE paInsertarCliente(
+CREATE OR REPLACE PROCEDURE paCrearCliente(
     p_Nombre VARCHAR,
     p_RUC VARCHAR,
     p_Direccion VARCHAR,
@@ -154,4 +154,103 @@ BEGIN
     INSERT INTO proyecto_etapas_cambio (id_proyecto, id_etapa, fecha_inicio, fecha_fin)
     VALUES (v_id_proyecto, v_id_etapa, p_fecha_inicio_proyecto, null);
 END;
+$$;
+
+-- pa: paRegistrarRepuesto -> Registra un repuesto
+CREATE OR REPLACE PROCEDURE paRegistrarRepuesto(
+    p_nombre_repuesto VARCHAR,
+    p_precio_repuesto DECIMAL(10, 2),
+    p_descripcion_repuesto TEXT
+)
+    LANGUAGE plpgsql
+AS
 $$
+BEGIN
+    INSERT INTO repuesto (nombre, precio, descripcion)
+    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto);
+END;
+$$;
+
+--pa: paObtenerRepuestos -> Obtiene todos los repuestos
+CREATE OR REPLACE FUNCTION paObtenerRepuestos()
+    RETURNS TABLE
+            (
+                id_repuesto INT,
+                nombre      VARCHAR,
+                precio      DECIMAL(10, 2),
+                descripcion TEXT
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY SELECT * FROM repuesto;
+END;
+$$;
+
+-- pa: paObtenerProyectos -> Obtiene todos los proyectos
+CREATE OR REPLACE FUNCTION paObtenerProyectos()
+    RETURNS TABLE
+            (
+                id_proyecto     INT,
+                id_cliente      INT,
+                id_supervisor   INT,
+                id_jefe         INT,
+                id_etapa_actual INT,
+                id_costo        INT,
+                titulo          VARCHAR,
+                descripcion     TEXT,
+                fechaInicio     DATE,
+                fechaFin        DATE
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY SELECT * FROM proyecto;
+END;
+$$;
+
+-- pa: paActualizarStockRepuesto -> Actualiza el stock de un repuesto
+CREATE OR REPLACE PROCEDURE paActualizarStockRepuesto(
+    p_id_repuesto INT,
+    p_cantidad INT
+)
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    UPDATE repuesto
+    SET stock_actual = stock_actual + p_cantidad
+    WHERE id_repuesto = p_id_repuesto;
+END;
+$$;
+
+-- pa: paCrearTipoPrueba -> Crea un tipo de prueba
+CREATE OR REPLACE PROCEDURE paCrearTipoPrueba(
+    p_nombre_prueba VARCHAR
+)
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    INSERT INTO tipo_prueba (nombre)
+    VALUES (p_nombre_prueba);
+END;
+$$;
+
+-- pa: paCrearParametro -> Crea un parametro
+CREATE OR REPLACE PROCEDURE paCrearParametro(
+    p_nombre_parametro VARCHAR,
+    p_unidades VARCHAR,
+    p_id_tipo_prueba INT
+)
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    INSERT INTO parametro (nombre, unidades, id_tipo_prueba)
+    VALUES (p_nombre_parametro, p_unidades, p_id_tipo_prueba);
+END;
+$$;
+
