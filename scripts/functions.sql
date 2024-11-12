@@ -104,7 +104,12 @@ DECLARE
     v_id_proyecto       INT;
     v_id_tipo_prueba    INT;
 BEGIN
-    -- calcular el costo de repuestos:
+    v_cost_repuestos := 0;
+
+    IF array_length(p_ids_repuestos, 1) <> array_length(p_cantidades_repuestos, 1) THEN
+        RAISE EXCEPTION 'Los arreglos de repuestos y cantidades deben tener la misma longitud';
+    END IF;
+
     FOR i IN 1..array_length(p_ids_repuestos, 1)
         LOOP
             v_id_repuesto := p_ids_repuestos[i];
@@ -115,8 +120,17 @@ BEGIN
             FROM repuesto
             WHERE repuesto.id_repuesto = v_id_repuesto;
 
-            v_cost_repuestos := v_cost_repuestos + v_costo_unitario;
+            IF FOUND THEN
+                IF v_costo_unitario IS NOT NULL THEN
+                    v_cost_repuestos := v_cost_repuestos + v_costo_unitario;
+                ELSE
+                    RAISE EXCEPTION 'El repuesto % no tiene precio asignado', v_id_repuesto;
+                END IF;
+            ELSE
+                RAISE EXCEPTION 'Repuesto con id % no encontrado', v_id_repuesto;
+            END IF;
         END LOOP;
+
 -- Insertar el costo:
     INSERT INTO costos (costo_mano_obra, costo_repuestos, costo_total)
     VALUES (p_costo_mano_obra, v_cost_repuestos, p_costo_mano_obra + v_cost_repuestos)
@@ -173,15 +187,18 @@ $$;
 
 --pa: paObtenerRepuestos -> Obtiene todos los repuestos
 CREATE OR REPLACE FUNCTION paObtenerRepuestos()
-    RETURNS TABLE
+    returns TABLE
             (
-                id_repuesto INT,
-                nombre      VARCHAR,
-                precio      DECIMAL(10, 2),
-                descripcion TEXT
+                id_repuesto      integer,
+                nombre           character varying,
+                descripcion      text,
+                precio           numeric,
+                link_img         character varying,
+                stock_actual     integer,
+                stock_solicitado integer
             )
-    LANGUAGE plpgsql
-AS
+    language plpgsql
+as
 $$
 BEGIN
     RETURN QUERY SELECT * FROM repuesto;
