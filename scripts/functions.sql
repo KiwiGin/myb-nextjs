@@ -182,7 +182,7 @@ CREATE OR REPLACE PROCEDURE paRegistrarRepuesto(
 AS
 $$
 BEGIN
-    IF  p_stock_actual < 0 THEN
+    IF p_stock_actual < 0 THEN
         RAISE EXCEPTION 'El stock actual no puede ser negativo';
     END IF;
     INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_actual)
@@ -212,26 +212,86 @@ $$;
 
 -- pa: paObtenerProyectos -> Obtiene todos los proyectos
 CREATE OR REPLACE FUNCTION paObtenerProyectos()
-    RETURNS TABLE
-            (
-                id_proyecto     INT,
-                id_cliente      INT,
-                id_supervisor   INT,
-                id_jefe         INT,
-                id_etapa_actual INT,
-                id_costo        INT,
-                titulo          VARCHAR,
-                descripcion     TEXT,
-                fechaInicio     DATE,
-                fechaFin        DATE
-            )
-    LANGUAGE plpgsql
+    RETURNS TABLE (
+        id_proyecto     INT,
+        id_cliente      INT,
+        id_supervisor   INT,
+        id_jefe         INT,
+        id_etapa_actual INT,
+        costo_total     DECIMAL,
+        costo_mano_obra DECIMAL,
+        costo_repuestos DECIMAL,
+        titulo          VARCHAR,
+        descripcion     TEXT,
+        fecha_inicio    DATE,
+        fecha_fin       DATE,
+        info_parametros info_parametro_proyecto,
+        info_repuestos  info_repuesto_proyecto
+    )
+LANGUAGE plpgsql
 AS
 $$
+DECLARE
+    v_ids_proyectos  INT[];
+    v_record        RECORD;
+    v_info_parametro info_parametro_proyecto;
+    v_info_repuesto  info_repuesto_proyecto;
 BEGIN
-    RETURN QUERY SELECT * FROM proyecto;
+    -- Obtener IDs de todos los proyectos
+    SELECT ARRAY(SELECT p.id_proyecto FROM proyecto p) INTO v_ids_proyectos;
+
+    FOR i IN 1 .. array_length(v_ids_proyectos, 1) LOOP
+        -- Rellenar v_info_repuesto para el proyecto actual
+         SELECT
+            ARRAY_AGG(r.id_repuesto) AS ids_repuesto,
+            ARRAY_AGG(r.nombre) AS nombres,
+            ARRAY_AGG(r.descripcion) AS descripciones,
+            ARRAY_AGG(r.precio) AS precios,
+            ARRAY_AGG(r.link_img) AS links_img,
+            ARRAY_AGG(prc.cantidad) AS cantidades
+        INTO v_record
+        FROM repuesto r
+        JOIN proyecto_repuestos_cantidad prc ON r.id_repuesto = prc.id_repuesto
+        WHERE prc.id_proyecto = v_ids_proyectos[i];
+
+        raise notice 'v_record: %', v_record;
+
+        -- Rellenar v_info_parametro para el proyecto actual
+        SELECT
+            ARRAY_AGG(pep.id_parametro),
+            ARRAY_AGG(p.nombre),
+            ARRAY_AGG(p.unidades),
+            ARRAY_AGG(pep.valor_maximo),
+            ARRAY_AGG(pep.valor_minimo)
+        INTO v_info_parametro
+        FROM parametro p
+        JOIN proyecto_especificaciones_pruebas pep ON p.id_parametro = pep.id_parametro
+        WHERE pep.id_proyecto = v_ids_proyectos[i];
+
+        -- Asignar valores a los campos de salida y usar RETURN QUERY
+        RETURN QUERY
+            SELECT
+                p.id_proyecto,
+                p.id_cliente,
+                p.id_supervisor,
+                p.id_jefe,
+                p.id_etapa_actual,
+                c.costo_total,
+                c.costo_mano_obra,
+                c.costo_repuestos,
+                p.titulo,
+                p.descripcion,
+                p.fechaInicio,
+                p.fechaFin,
+                v_info_parametro,
+                v_info_repuesto
+            FROM proyecto p
+            JOIN costos c ON p.id_costo = c.id_costo
+            WHERE p.id_proyecto = v_ids_proyectos[i];
+    END LOOP;
 END;
 $$;
+
 
 -- pa: paActualizarStockRepuesto -> Actualiza el stock de un repuesto
 CREATE OR REPLACE PROCEDURE paActualizarStockRepuesto(
@@ -321,21 +381,20 @@ CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorRol(p_rol VARCHAR)
 AS
 $$
 BEGIN
-    RETURN QUERY 
-    SELECT 
-        e.id_empleado,
-        e.usuario,
-        e.password,
-        e.nombre,
-        e.apellido,
-        e.correo,
-        e.telefono,
-        e.direccion,
-        e.tipo_documento,
-        e.documento_identidad,
-        e.rol
-    FROM empleado e
-    WHERE e.rol = p_rol;
+    RETURN QUERY
+        SELECT e.id_empleado,
+               e.usuario,
+               e.password,
+               e.nombre,
+               e.apellido,
+               e.correo,
+               e.telefono,
+               e.direccion,
+               e.tipo_documento,
+               e.documento_identidad,
+               e.rol
+        FROM empleado e
+        WHERE e.rol = p_rol;
 END;
 $$;
 
