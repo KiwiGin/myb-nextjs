@@ -21,7 +21,7 @@ CREATE TABLE repuesto
     precio           DECIMAL(10, 2) NOT NULL,
     link_img         VARCHAR(255),
     stock_actual     INT DEFAULT 0,
-    stock_solicitado INT DEFAULT 0
+    stock_requerido INT DEFAULT 0
 );
 
 -- table: tipo_prueba -> tabla de tipos de pruebas
