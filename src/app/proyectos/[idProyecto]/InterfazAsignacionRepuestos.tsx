@@ -8,66 +8,62 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { RepuestoCard } from "@/components/RepuestoCard";
 import { useState } from "react";
 import { Combobox } from "@/components/Combobox";
 import { PictureCard } from "@/components/PictureCard";
+import { Repuesto } from "@/models/repuesto";
 
-interface RepuestoDataType {
-  idRepuesto: string;
-  nombre: string;
-  descripcion: string;
-  imgPic: string;
-  currentAmount: number;
-  totalAmount: number;
-  amountNeeded: number;
-}
-
-const REPUESTOS: RepuestoDataType[] = [
+export const REPUESTOS: Repuesto[] = [
   {
-    idRepuesto: "R001",
+    idRepuesto: 1,
     nombre: "Filtro de Aceite",
-    descripcion: "Filtro de aceite de alta eficiencia para motores diésel.",
-    imgPic: "https://example.com/images/filtro_aceite.jpg",
-    currentAmount: 25,
-    totalAmount: 50,
-    amountNeeded: 10,
+    precio: 35.5,
+    descripcion: "Filtro de aceite de alta calidad para vehículos ligeros.",
+    link_img: "https://example.com/images/filtro_aceite.jpg",
+    stock_actual: 50,
+    stock_solicitado: 10,
+    cantidad: 5,
   },
   {
-    idRepuesto: "R002",
-    nombre: "Bomba Hidráulica",
-    descripcion: "Bomba hidráulica para sistemas de maquinaria pesada.",
-    imgPic: "https://example.com/images/bomba_hidraulica.jpg",
-    currentAmount: 10,
-    totalAmount: 30,
-    amountNeeded: 15,
+    idRepuesto: 2,
+    nombre: "Bujía de Encendido",
+    precio: 12.75,
+    descripcion: "Bujía estándar para motores de gasolina.",
+    link_img: null,
+    img_base64: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAU=",
+    stock_actual: 200,
+    stock_solicitado: 15,
+    cantidad: 20,
   },
   {
-    idRepuesto: "R003",
-    nombre: "Válvula de Control",
-    descripcion: "Válvula de control para sistemas neumáticos.",
-    imgPic: "https://example.com/images/valvula_control.jpg",
-    currentAmount: 40,
-    totalAmount: 100,
-    amountNeeded: 20,
+    idRepuesto: 3,
+    nombre: "Filtro de Aire",
+    precio: 25.0,
+    descripcion: "Filtro de aire compatible con la mayoría de los automóviles.",
+    link_img: "https://example.com/images/filtro_aire.jpg",
+    stock_actual: 75,
+    stock_solicitado: 25,
+    cantidad: 10,
   },
   {
-    idRepuesto: "R004",
-    nombre: "Tubo Conector",
-    descripcion: "Tubo de conexión para circuitos hidráulicos.",
-    imgPic: "https://example.com/images/tubo_conector.jpg",
-    currentAmount: 70,
-    totalAmount: 150,
-    amountNeeded: 30,
+    idRepuesto: 4,
+    nombre: "Pastillas de Freno",
+    precio: 80.0,
+    descripcion: "Pastillas de freno para vehículos medianos.",
+    link_img: null,
+    stock_actual: 100,
+    stock_solicitado: 50,
+    cantidad: 15,
   },
   {
-    idRepuesto: "R005",
-    nombre: "Manómetro Digital",
-    descripcion: "Manómetro digital de alta precisión.",
-    imgPic: "https://example.com/images/manometro_digital.jpg",
-    currentAmount: 5,
-    totalAmount: 20,
-    amountNeeded: 10,
+    idRepuesto: 5,
+    nombre: "Aceite de Motor 5W-30",
+    precio: 45.99,
+    descripcion: "Aceite sintético de alta durabilidad.",
+    link_img: "https://example.com/images/aceite_motor.jpg",
+    stock_actual: 30,
+    stock_solicitado: 20,
+    cantidad: 8,
   },
 ];
 
@@ -76,7 +72,7 @@ export function InterfazAsignacionRepuestos({
 }: {
   idProyecto: string;
 }) {
-  const [repuestos, setRepuestos] = useState<RepuestoDataType[]>(REPUESTOS);
+  const [repuestos, setRepuestos] = useState<Repuesto[]>(REPUESTOS);
   const [available, setAvaible] = useState<string>("Disponibles");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -121,7 +117,10 @@ export function InterfazAsignacionRepuestos({
                 >
                   <div className="h-full w-full flex flex-row gap-2 py-4 items-center">
                     <PictureCard
-                      imageSrc={repuesto.imgPic}
+                      imageSrc={
+                        repuesto.link_img ||
+                        "https://avatar.iran.liara.run/public/6"
+                      }
                       name={repuesto.nombre}
                       className="w-1/4"
                     />
@@ -132,8 +131,9 @@ export function InterfazAsignacionRepuestos({
                   </div>
                   <div className="flex flex-col justify-self-end gap-2 px-3">
                     <p className="text-4xl font-extralight">
-                      {repuesto.currentAmount}
-                      {repuesto.totalAmount && `/${repuesto.totalAmount}`}
+                      {repuesto.stock_actual}
+                      {repuesto.stock_solicitado &&
+                        `/${repuesto.stock_solicitado}`}
                     </p>
                   </div>
                 </div>

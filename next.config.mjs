@@ -5,7 +5,11 @@ const nextConfig = {
     appDir: true,
   },
   images: {
-    domains: ["firebasestorage.googleapis.com", "avatar.iran.liara.run"],
+    domains: [
+      "firebasestorage.googleapis.com",
+      "avatar.iran.liara.run",
+      "placehold.co",
+    ],
   },
 };
 
