@@ -1,20 +1,31 @@
 "use client";
 import { type ProyeccionData } from "@/app/proyeccionRepuestos/InterfazProyeccionRepuestos";
-import { Controller, UseFormReturn } from "react-hook-form";
+import {
+  Controller,
+  UseFormReturn,
+  UseFieldArrayReturn,
+} from "react-hook-form";
 import { GenericCard } from "./GenericCard";
 import { Counter } from "./Counter";
 import { Switch } from "./ui/switch";
+import { Button } from "./ui/button";
 
 export default function RepuestosList({
   messageNothingAdded,
   repuestos,
   fr,
   className,
+  counter = true,
+  removeAction,
+  selector = true,
 }: {
   messageNothingAdded: string;
   repuestos: ProyeccionData["repuestos"];
   fr: UseFormReturn<ProyeccionData>;
   className?: string;
+  counter?: boolean;
+  removeAction?: (index: number) => void;
+  selector?: boolean;
 }) {
   return (
     <div
@@ -25,48 +36,65 @@ export default function RepuestosList({
         <p>{messageNothingAdded}</p>
       ) : (
         repuestos.map((item, index) => (
-          <div key={item.idRepuesto} className="pt-2 w-full">
+          <div
+            key={item.idRepuesto}
+            className={`pt-2 w-full ${removeAction && "relative"}`}
+          >
             <GenericCard
               title={item.nombre}
               subtitle={item.descripcion}
               image={item.link_img}
               imageAlt={item.nombre}
             >
-              <div className="flex flex-row items-center w-1/4 gap-4">
-                <Controller
-                  name={`repuestos.${index}.cantidadProyectada`}
-                  control={fr.control}
-                  render={({ field }) => (
-                    <Counter
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                      }}
-                      className={`w-1/2 ${
-                        fr.formState.errors.repuestos?.[index]
-                          ?.cantidadProyectada
-                          ? "border-red-500"
-                          : ""
-                      }`}
-                      max={item.cantidadProyectada}
-                      min={1}
-                      disabled={!fr.watch(`repuestos.${index}.checked`)}
-                    />
-                  )}
-                />
-                <Controller
-                  name={`repuestos.${index}.checked`}
-                  control={fr.control}
-                  render={({ field }) => (
-                    <Switch
-                      id={item.idRepuesto.toString()}
-                      checked={field.value}
-                      onClick={() => {
-                        field.onChange(!field.value);
-                      }}
-                    />
-                  )}
-                />
+              <div className="flex flex-row mx-auto items-center min-w-32 gap-4">
+                {counter && (
+                  <Controller
+                    name={`repuestos.${index}.quantity`}
+                    control={fr.control}
+                    render={({ field }) => (
+                      <Counter
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                        }}
+                        className={`w-1/2 ${
+                          fr.formState.errors.repuestos?.[index]?.quantity
+                            ? "border-red-500"
+                            : ""
+                        }`}
+                        max={item.quantity}
+                        min={1}
+                        disabled={!fr.watch(`repuestos.${index}.checked`)}
+                      />
+                    )}
+                  />
+                )}
+                {selector && (
+                  <Controller
+                    name={`repuestos.${index}.checked`}
+                    control={fr.control}
+                    render={({ field }) => (
+                      <Switch
+                        id={item.idRepuesto.toString()}
+                        checked={field.value}
+                        onClick={() => {
+                          field.onChange(!field.value);
+                        }}
+                      />
+                    )}
+                  />
+                )}
+                {removeAction && (
+                  <Button
+                    className="absolute right-0 top-0 z-50"
+                    onClick={() => {
+                      removeAction(index);
+                    }}
+                    type="button"
+                  >
+                    &times;
+                  </Button>
+                )}
               </div>
             </GenericCard>
           </div>

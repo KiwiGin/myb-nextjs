@@ -17,14 +17,11 @@ const repuestoSchema = z
     link_img: z.string().optional(),
     checked: z.boolean(),
     stock_solicitado: z.number().optional(),
-    quantity: z
-      .union([z.number(), z.undefined(), z.string()])
-      .optional(),
+    quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
   })
   .refine(
     (val) =>
-      !val.checked ||
-      (val.quantity !== "" && val.quantity !== undefined),
+      !val.checked || (val.quantity !== "" && val.quantity !== undefined),
     {
       message: "Debe ingresar un valor si está marcado.",
       path: ["cantidadProyectada"],
@@ -37,7 +34,7 @@ const proyeccionSchema = z.object({
 
 export type ProyeccionData = z.infer<typeof proyeccionSchema>;
 
-export function InterfazProyeccionRepuestos() {
+export function InterfazVisualizacionRepuestos() {
   const form = useForm<z.infer<typeof proyeccionSchema>>({
     resolver: zodResolver(proyeccionSchema),
     defaultValues: {
@@ -88,7 +85,7 @@ export function InterfazProyeccionRepuestos() {
       className="p-4 flex-1 justify-center"
     >
       <h1 className="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
-        Proyeccion de Repuestos
+        Visualización de repuestos requeridos
       </h1>
       <RepuestosList
         className="grid lg:grid-cols-2 gap-4"
