@@ -185,28 +185,26 @@ BEGIN
     IF p_stock_actual < 0 THEN
         RAISE EXCEPTION 'El stock actual no puede ser negativo';
     END IF;
-    INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_actual)
-    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto, p_link_img, p_stock_actual);
+    INSERT INTO repuesto (nombre, precio, descripcion, link_img, stock_asignado, stock_disponible, stock_requerido)
+    VALUES (p_nombre_repuesto, p_precio_repuesto, p_descripcion_repuesto, p_link_img, 0, p_stock_actual, 0);
 END;
 $$;
 
 --pa: paObtenerRepuestos -> Obtiene todos los repuestos
-CREATE OR REPLACE FUNCTION paObtenerRepuestos()
-    returns TABLE
-            (
-                id_repuesto      integer,
-                nombre           character varying,
-                descripcion      text,
-                precio           numeric,
-                link_img         character varying,
-                stock_actual     integer,
-                stock_solicitado integer
-            )
+create function paObtenerRepuestos()
+    returns TABLE(id_repuesto integer, nombre character varying, descripcion text, precio numeric, link_img character varying, stock_actual integer, stock_requerido integer)
     language plpgsql
 as
 $$
 BEGIN
-    RETURN QUERY SELECT * FROM repuesto;
+    RETURN QUERY SELECT r.id_repuesto,
+                        r.nombre,
+                        r.descripcion,
+                        r.precio,
+                        r.link_img,
+                        (r.stock_disponible + r.stock_asignado) AS stock_actual,
+                        r.stock_requerido
+                 FROM repuesto r;
 END;
 $$;
 
@@ -384,13 +382,14 @@ $$;
 CREATE OR REPLACE FUNCTION paObtenerRepuestosRequeridos()
     RETURNS TABLE
             (
-                id_repuesto     INT,
-                nombre          VARCHAR,
-                descripcion     TEXT,
-                precio          DECIMAL,
-                link_img        VARCHAR,
-                stock_actual    INT,
-                stock_requerido INT
+                id_repuesto      INT,
+                nombre           VARCHAR,
+                descripcion      TEXT,
+                precio           DECIMAL,
+                link_img         VARCHAR,
+                stock_disponible INT,
+                stock_asignado   INT,
+                stock_requerido  INT
             )
     LANGUAGE plpgsql
 AS
@@ -402,7 +401,8 @@ BEGIN
                r.descripcion,
                r.precio,
                r.link_img,
-               r.stock_actual,
+               r.stock_disponible,
+               r.stock_asignado,
                r.stock_requerido
         FROM repuesto r
         WHERE r.stock_requerido > 0;
@@ -419,8 +419,8 @@ AS
 $$
 BEGIN
     UPDATE repuesto
-    SET stock_actual    = stock_actual + p_stock_adquirido,
-        stock_requerido = stock_requerido - p_stock_adquirido
+    SET stock_disponible = stock_disponible + p_stock_adquirido,
+        stock_requerido  = stock_requerido - p_stock_adquirido
     WHERE id_repuesto = p_id_repuesto;
 END;
 $$;
@@ -516,5 +516,164 @@ BEGIN
     RETURN QUERY SELECT *
                  FROM empleado
                  WHERE id_empleado = ANY (p_ids_empleado);
+END;
+$$;
+
+-- pa: paObtenerRepuestosPorProyecto -> Obtiene los repuestos por proyecto
+CREATE OR REPLACE FUNCTION paObtenerRepuestosPorProyecto(p_id_proyecto INT)
+    RETURNS TABLE
+            (
+                id_repuesto      INT,
+                nombre           VARCHAR,
+                descripcion      TEXT,
+                precio           DECIMAL,
+                link_img         VARCHAR,
+                stock_disponible INT,
+                stock_asignado   INT,
+                stock_requerido  INT,
+                cantidad         INT
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY
+        SELECT r.id_repuesto,
+               r.nombre,
+               r.descripcion,
+               r.precio,
+               r.link_img,
+               r.stock_disponible,
+               r.stock_asignado,
+               r.stock_requerido,
+               prc.cantidad
+        FROM repuesto r
+                 JOIN proyecto_repuestos_cantidad prc ON r.id_repuesto = prc.id_repuesto
+        WHERE prc.id_proyecto = p_id_proyecto;
+END;
+$$;
+
+-- pa: paCambiarEtapaProyecto -> Cambia la etapa de un proyecto
+CREATE OR REPLACE PROCEDURE paCambiarEtapaProyecto(
+    p_id_proyecto INT,
+    p_id_etapa INT,
+    p_fecha_inicio DATE
+)
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    INSERT INTO proyecto_etapas_cambio (id_proyecto, id_etapa, fecha_inicio)
+    VALUES (p_id_proyecto, p_id_etapa, p_fecha_inicio);
+    UPDATE proyecto
+    SET id_etapa_actual = p_id_etapa
+    WHERE id_proyecto = p_id_proyecto;
+END;
+$$;
+
+-- pa: paObtenerProyectosAsignacion -> Obtiene los proyectos en asignacion
+CREATE OR REPLACE FUNCTION paObtenerProyectosAsignacion()
+    RETURNS TABLE
+            (
+                id_proyecto     INT,
+                id_cliente      INT,
+                id_supervisor   INT,
+                id_jefe         INT,
+                id_etapa_actual INT,
+                costo_total     DECIMAL,
+                costo_mano_obra DECIMAL,
+                costo_repuestos DECIMAL,
+                titulo          VARCHAR,
+                descripcion     TEXT,
+                fecha_inicio    DATE,
+                fecha_fin       DATE,
+                ids_empleados   INT[]
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY
+        SELECT p.id_proyecto,
+               p.id_cliente,
+               p.id_supervisor,
+               p.id_jefe,
+               p.id_etapa_actual,
+               c.costo_total,
+               c.costo_mano_obra,
+               c.costo_repuestos,
+               p.titulo,
+               p.descripcion,
+               p.fechaInicio,
+               p.fechaFin,
+               ARRAY(SELECT pe.id_tecnico
+                     FROM proyecto_etapa_empleado pe
+                     WHERE pe.id_proyecto = p.id_proyecto
+                       AND pe.id_etapa = p.id_etapa_actual)
+        FROM proyecto p
+                 JOIN costos c ON p.id_costo = c.id_costo
+        WHERE p.id_etapa_actual = 1;
+END;
+$$;
+
+-- pa: paObtenerRepuestosPorProyecto -> Obtiene los repuestos por proyecto
+CREATE OR REPLACE FUNCTION paObtenerRepuestosPorProyecto(p_id_proyecto INT)
+    RETURNS TABLE
+            (
+                id_repuesto      INT,
+                nombre           VARCHAR,
+                descripcion      TEXT,
+                precio           DECIMAL,
+                link_img         VARCHAR,
+                stock_disponible INT,
+                stock_asignado   INT,
+                stock_requerido  INT,
+                cantidad         INT
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY
+        SELECT r.id_repuesto,
+               r.nombre,
+               r.descripcion,
+               r.precio,
+               r.link_img,
+               r.stock_disponible,
+               r.stock_asignado,
+               r.stock_requerido,
+               prc.cantidad
+        FROM repuesto r
+                 JOIN proyecto_repuestos_cantidad prc ON r.id_repuesto = prc.id_repuesto
+        WHERE prc.id_proyecto = p_id_proyecto;
+END;
+$$;
+
+--pa: paAgregarRepuestosSolicitados -> Agrega repuestos solicitados
+CREATE OR REPLACE PROCEDURE paAgregarRepuestosSolicitados(
+    p_ids_repuestos INT[],
+    p_cantidades INT[]
+)
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    v_id_repuesto INT;
+    v_cantidad    INT;
+BEGIN
+    IF array_length(p_ids_repuestos, 1) <> array_length(p_cantidades, 1) THEN
+        RAISE EXCEPTION 'Los arreglos de repuestos y cantidades deben tener la misma longitud';
+    END IF;
+
+    FOR i IN 1..array_length(p_ids_repuestos, 1)
+        LOOP
+            v_id_repuesto := p_ids_repuestos[i];
+            v_cantidad := p_cantidades[i];
+
+            UPDATE repuesto
+            SET stock_requerido = stock_requerido + v_cantidad
+            WHERE id_repuesto = v_id_repuesto;
+        END LOOP;
 END;
 $$;

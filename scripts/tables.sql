@@ -1,8 +1,7 @@
--- table: cliente -> tabla de clientes
-CREATE TABLE cliente
+-- tabla: cliente -> tabla de clientes
+create table cliente
 (
-    id_cliente                     serial
-        primary key,
+    id_cliente                     serial primary key,
     nombre                         varchar(255) not null,
     ruc                            varchar(20)  not null,
     direccion                      varchar(255),
@@ -12,146 +11,153 @@ CREATE TABLE cliente
     tipo_de_documento_de_identidad varchar(50)
 );
 
--- table: repuesto -> tabla de repuestos
-CREATE TABLE repuesto
+-- tabla: repuesto -> tabla de repuestos
+create table repuesto
 (
-    id_repuesto      SERIAL PRIMARY KEY,
-    nombre           VARCHAR(255)   NOT NULL,
-    descripcion      TEXT,
-    precio           DECIMAL(10, 2) NOT NULL,
-    link_img         VARCHAR(255),
-    stock_actual     INT DEFAULT 0,
-    stock_requerido INT DEFAULT 0
+    id_repuesto      serial primary key,
+    nombre           varchar(255)   not null,
+    descripcion      text,
+    precio           decimal(10, 2) not null,
+    link_img         varchar(255),
+    stock_disponible int default 0,
+    stock_asignado   int default 0,
+    stock_requerido  int default 0
 );
 
--- table: tipo_prueba -> tabla de tipos de pruebas
-CREATE TABLE tipo_prueba
+-- tabla: tipo_prueba -> tabla de tipos de pruebas
+create table tipo_prueba
 (
-    id_tipo_prueba SERIAL PRIMARY KEY,
-    nombre         VARCHAR(255) NOT NULL
+    id_tipo_prueba serial primary key,
+    nombre         varchar(255) not null
 );
 
--- table: parametro -> tabla de parametros
-CREATE TABLE parametro
+-- tabla: parametro -> tabla de parametros
+create table parametro
 (
-    id_parametro   SERIAL,
-    id_tipo_prueba INT,
-    unidades       VARCHAR(50),
-    nombre         VARCHAR(255) NOT NULL,
-    PRIMARY KEY (id_parametro, id_tipo_prueba),
-    FOREIGN KEY (id_tipo_prueba) REFERENCES tipo_prueba (id_tipo_prueba) ON DELETE CASCADE
+    id_parametro   serial,
+    id_tipo_prueba int,
+    unidades       varchar(50),
+    nombre         varchar(255) not null,
+    primary key (id_parametro, id_tipo_prueba),
+    foreign key (id_tipo_prueba) references tipo_prueba (id_tipo_prueba) on delete cascade
 );
 
--- table: prueba -> tabla de pruebas
-CREATE TABLE empleado
+-- tabla: empleado -> tabla de empleados
+create table empleado
 (
-    id_empleado         SERIAL PRIMARY KEY,
-    usuario             VARCHAR(50) UNIQUE  NOT NULL,
-    password            VARCHAR(255)        NOT NULL,
-    nombre              VARCHAR(255)        NOT NULL,
-    apellido            VARCHAR(255)        NOT NULL,
-    correo              VARCHAR(255) UNIQUE NOT NULL,
-    telefono            VARCHAR(20),
-    direccion           VARCHAR(255),
-    tipo_documento      VARCHAR(20),
-    documento_identidad VARCHAR(50) UNIQUE,
-    rol                 VARCHAR(50)         NOT NULL
+    id_empleado         serial primary key,
+    usuario             varchar(50) unique  not null,
+    password            varchar(255)        not null,
+    nombre              varchar(255)        not null,
+    apellido            varchar(255)        not null,
+    correo              varchar(255) unique not null,
+    telefono            varchar(20),
+    direccion           varchar(255),
+    tipo_documento      varchar(20),
+    documento_identidad varchar(50) unique,
+    rol                 varchar(50)         not null
 );
 
--- table: etapa -> tabla de etapas
-CREATE TABLE etapa
+-- tabla: etapa -> tabla de etapas
+create table etapa
 (
-    id_etapa SERIAL PRIMARY KEY,
-    nombre   VARCHAR(255) NOT NULL
+    id_etapa serial primary key,
+    nombre   varchar(255) not null
 );
 
-CREATE TABLE costos
+-- tabla: costos -> tabla de costos
+create table costos
 (
-    id_costo        SERIAL PRIMARY KEY,
-    costo_mano_obra DECIMAL(10, 2) NOT NULL,
-    costo_repuestos DECIMAL(10, 2) NOT NULL,
-    costo_total     DECIMAL(10, 2) NOT NULL
+    id_costo        serial primary key,
+    costo_mano_obra decimal(10, 2) not null,
+    costo_repuestos decimal(10, 2) not null,
+    costo_total     decimal(10, 2) not null
 );
 
-CREATE TABLE proyecto
+-- tabla: proyecto -> tabla de proyectos
+create table proyecto
 (
-    id_proyecto     SERIAL PRIMARY KEY,
-    id_cliente      INT          NOT NULL,
-    id_supervisor   INT          NOT NULL,
-    id_jefe         INT          NOT NULL,
-    id_etapa_actual INT          REFERENCES Etapa (id_etapa) ON DELETE SET NULL,
-    id_costo        INT          REFERENCES Costos (id_costo) ON DELETE SET NULL,
-    titulo          VARCHAR(255) NOT NULL,
-    descripcion     TEXT,
-    fechaInicio     DATE         NOT NULL,
-    fechaFin        DATE,
-    FOREIGN KEY (id_cliente) REFERENCES Cliente (id_cliente) ON DELETE SET NULL,
-    FOREIGN KEY (id_jefe) REFERENCES Empleado (id_empleado) ON DELETE SET NULL,
-    FOREIGN KEY (id_supervisor) REFERENCES Empleado (id_empleado) ON DELETE SET NULL
+    id_proyecto     serial primary key,
+    id_cliente      int          not null,
+    id_supervisor   int          not null,
+    id_jefe         int          not null,
+    id_etapa_actual int          references etapa (id_etapa) on delete set null,
+    id_costo        int          references costos (id_costo) on delete set null,
+    titulo          varchar(255) not null,
+    descripcion     text,
+    fechainicio     date         not null,
+    fechafin        date,
+    foreign key (id_cliente) references cliente (id_cliente) on delete set null,
+    foreign key (id_jefe) references empleado (id_empleado) on delete set null,
+    foreign key (id_supervisor) references empleado (id_empleado) on delete set null
 );
 
-CREATE TABLE proyecto_especificaciones_pruebas
+-- tabla: proyecto_especificaciones_pruebas
+create table proyecto_especificaciones_pruebas
 (
-    id_proyecto    INT,
-    id_tipo_prueba INT,
-    id_parametro   INT,
-    valor_maximo   DECIMAL(10, 2),
-    valor_minimo   DECIMAL(10, 2),
-    PRIMARY KEY (id_proyecto, id_tipo_prueba, id_parametro),
-    FOREIGN KEY (id_proyecto) REFERENCES proyecto (id_proyecto) ON DELETE CASCADE,
-    FOREIGN KEY (id_tipo_prueba) REFERENCES tipo_prueba (id_tipo_prueba) ON DELETE CASCADE,
-    FOREIGN KEY (id_parametro, id_tipo_prueba) REFERENCES parametro (id_parametro, id_tipo_prueba) ON DELETE CASCADE
+    id_proyecto    int,
+    id_tipo_prueba int,
+    id_parametro   int,
+    valor_maximo   decimal(10, 2),
+    valor_minimo   decimal(10, 2),
+    primary key (id_proyecto, id_tipo_prueba, id_parametro),
+    foreign key (id_proyecto) references proyecto (id_proyecto) on delete cascade,
+    foreign key (id_tipo_prueba) references tipo_prueba (id_tipo_prueba) on delete cascade,
+    foreign key (id_parametro, id_tipo_prueba) references parametro (id_parametro, id_tipo_prueba) on delete cascade
 );
 
-CREATE TABLE proyecto_repuestos_cantidad
+-- tabla: proyecto_repuestos_cantidad
+create table proyecto_repuestos_cantidad
 (
-    id_proyecto INT,
-    id_repuesto INT,
-    cantidad    INT NOT NULL,
-    PRIMARY KEY (id_proyecto, id_repuesto),
-    FOREIGN KEY (id_proyecto) REFERENCES proyecto (id_proyecto) ON DELETE CASCADE,
-    FOREIGN KEY (id_repuesto) REFERENCES repuesto (id_repuesto) ON DELETE CASCADE
+    id_proyecto int,
+    id_repuesto int,
+    cantidad    int not null,
+    primary key (id_proyecto, id_repuesto),
+    foreign key (id_proyecto) references proyecto (id_proyecto) on delete cascade,
+    foreign key (id_repuesto) references repuesto (id_repuesto) on delete cascade
 );
 
-CREATE TABLE proyecto_etapa_empleado
+-- tabla: proyecto_etapa_empleado
+create table proyecto_etapa_empleado
 (
-    id_proyecto INT,
-    id_etapa    INT,
-    id_tecnico  INT,
-    PRIMARY KEY (id_proyecto, id_etapa, id_tecnico),
-    FOREIGN KEY (id_proyecto) REFERENCES proyecto (id_proyecto),
-    FOREIGN KEY (id_etapa) REFERENCES etapa (id_etapa),
-    FOREIGN KEY (id_tecnico) REFERENCES empleado (id_empleado)
+    id_proyecto int,
+    id_etapa    int,
+    id_tecnico  int,
+    primary key (id_proyecto, id_etapa, id_tecnico),
+    foreign key (id_proyecto) references proyecto (id_proyecto),
+    foreign key (id_etapa) references etapa (id_etapa),
+    foreign key (id_tecnico) references empleado (id_empleado)
 );
 
-CREATE TABLE proyecto_etapas_cambio
+-- tabla: proyecto_etapas_cambio
+create table proyecto_etapas_cambio
 (
-    id_proyecto  INT,
-    id_etapa     INT,
-    fecha_inicio DATE,
-    fecha_fin    DATE,
-    PRIMARY KEY (id_proyecto, id_etapa),
-    FOREIGN KEY (id_proyecto) REFERENCES proyecto (id_proyecto),
-    FOREIGN KEY (id_etapa) REFERENCES etapa (id_etapa)
+    id_proyecto  int,
+    id_etapa     int,
+    fecha_inicio date,
+    fecha_fin    date,
+    primary key (id_proyecto, id_etapa),
+    foreign key (id_proyecto) references proyecto (id_proyecto),
+    foreign key (id_etapa) references etapa (id_etapa)
 );
 
--- Tipo compuesto: info_parametro_proyecto
-CREATE TYPE info_parametro_proyecto AS
+-- tipo compuesto: info_parametro_proyecto
+create type info_parametro_proyecto as
 (
-    ids_parametro INT[],
-    nombres       VARCHAR(255)[],
-    unidades      VARCHAR(50)[],
-    valores_maximo DECIMAL(10, 2)[],
-    valores_minimo DECIMAL(10, 2)[]
+    ids_parametro  int[],
+    nombres        varchar(255)[],
+    unidades       varchar(50)[],
+    valores_maximo decimal(10, 2)[],
+    valores_minimo decimal(10, 2)[]
 );
 
--- Tipo compuesto: info_repuesto_proyecto
-CREATE TYPE info_repuesto_proyecto AS
+-- tipo compuesto: info_repuesto_proyecto
+create type info_repuesto_proyecto as
 (
-    ids_repuesto INT[],
-    nombres      VARCHAR(255)[],
-    descripciones TEXT[],
-    precios      DECIMAL(10, 2)[],
-    links_img    VARCHAR(255)[],
-    cantidades   INT[]
+    ids_repuesto  int[],
+    nombres       varchar(255)[],
+    descripciones text[],
+    precios       decimal(10, 2)[],
+    links_img     varchar(255)[],
+    cantidades    int[]
 );
