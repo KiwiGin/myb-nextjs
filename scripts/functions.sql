@@ -571,7 +571,7 @@ BEGIN
 END;
 $$;
 
--- pa: paObtenerProyectosAsignacion -> Obtiene los proyectos en asignacion
+-- pa: paObtenerProyectosAsignacion -> Obtiene los proyectos en asignacion 
 CREATE OR REPLACE FUNCTION paObtenerProyectosAsignacion()
     RETURNS TABLE
             (
