@@ -55,9 +55,9 @@ export async function registrarRepuesto(repuesto: Repuesto) {
 }
 
 //actualizar stock de un repuesto
-export async function actualizarStockRepuesto(repuesto: Repuesto) {
+export async function actualizarStockRepuesto(cantidadObtenida: number, idRepuesto: number) {
   try {
-    await pool.query('CALL paActualizarStockRepuesto($1, $2)', [repuesto.idRepuesto, repuesto.cantidad]);
+    await pool.query('CALL paActualizarStock($1, $2)', [idRepuesto, cantidadObtenida]);
     console.log('Repuesto actualizado exitosamente');
   } catch (err) {
     if (err instanceof Error) {
@@ -67,6 +67,24 @@ export async function actualizarStockRepuesto(repuesto: Repuesto) {
     }
     throw err;
   } 
+}
+
+//actualizar stock de respuestos
+export async function actualizarStockRepuestos(repuestos: { idRepuesto: number, cantidadObtenida: number }[]) {
+  try {
+    //llama a paActualizarStock por cada repuesto
+    for (const repuesto of repuestos) {
+      await pool.query('CALL paActualizarStock($1, $2)', [repuesto.idRepuesto, repuesto.cantidadObtenida]);
+    }
+    console.log('Repuestos actualizados exitosamente');
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al actualizar repuestos:', err.stack);
+    } else {
+      console.error('Error al actualizar repuestos:', err);
+    }
+    throw err;
+  }
 }
 
 //obtener respuestos requeridos
@@ -106,3 +124,19 @@ export async function obtenerRepuestosRequeridos() {
   }
 }
 
+//agregar repuestos solicitados
+export async function agregarRepuestosSolicitados(repuestos: { idRepuesto: number, cantidadSolicitada: number }[]) {
+  try {
+    const idsRepuestos = repuestos.map(repuesto => repuesto.idRepuesto);
+    const cantidades = repuestos.map(repuesto => repuesto.cantidadSolicitada);
+    await pool.query('CALL paAgregarRepuestosSolicitados($1, $2)', [idsRepuestos, cantidades]);
+    console.log('Repuestos solicitados agregados exitosamente');
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al agregar repuestos solicitados:', err.stack);
+    } else {
+      console.error('Error al agregar repuestos solicitados:', err);
+    }
+    throw err;
+  }
+}

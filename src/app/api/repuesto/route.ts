@@ -1,5 +1,5 @@
 // app/api/repuesto/route.ts
-import { actualizarStockRepuesto, obtenerRepuestos, registrarRepuesto } from '@/backend/dataBaseUtils/repuestoDA';
+import { actualizarStockRepuestos, obtenerRepuestos, registrarRepuesto } from '@/backend/dataBaseUtils/repuestoDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { Repuesto } from '@/models/repuesto';
 import { base64ToBlob, uploadImage } from '@/backend/firebaseUtils/firebaseStorage';
@@ -31,7 +31,7 @@ export async function GET() {
 
 //put
 export async function PUT(req: NextRequest) {
-    const repuesto: Repuesto = await req.json();
-    await actualizarStockRepuesto(repuesto);
+    const repuesto: {idRepuesto:number, cantidadObtenida:number}[] = await req.json();
+    await actualizarStockRepuestos(repuesto);
     return NextResponse.json({ message: 'Repuesto actualizado exitosamente' });
 }
