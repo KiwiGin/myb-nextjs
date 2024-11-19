@@ -12,7 +12,7 @@ export function FlowStage({
   labelPosition?: "top" | "bottom";
 }) {
   const [labelHeight, setLabelHeight] = useState(0);
-  const labelRef = useRef(null);
+  const labelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (labelRef.current) {

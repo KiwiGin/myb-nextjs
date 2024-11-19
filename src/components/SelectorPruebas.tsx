@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Proyecto } from "@/models/proyecto";
 import { TipoPruebaCard } from "@/components/TipoPruebaCard";
-import { TipoPrueba } from "@/models/tipoprueba";
 import { z } from "zod";
 
 // Define la estructura de una prueba usando Zod
@@ -51,19 +50,19 @@ export function SelectorPruebas({
       if (!prueba) return prev;
 
       const parametroIds = prueba.parametros.map((parametro) => parametro.idParametro);
-      const isSelected = parametroIds.every((id) => prev.idParametros.includes(id));
+      const isSelected = parametroIds.every((id) => prev.idParametros!.includes(id));
 
       const newIdParametros = isSelected
-        ? prev.idParametros.filter((id) => !parametroIds.includes(id))
-        : [...prev.idParametros, ...parametroIds];
+        ? prev.idParametros!.filter((id) => !parametroIds.includes(id))
+        : [...prev.idParametros!, ...parametroIds];
 
       const newValoresMaximos = isSelected
-        ? prev.valoresMaximos.filter((_, index) => !parametroIds.includes(prev.idParametros[index]))
-        : [...prev.valoresMaximos, ...Array(parametroIds.length).fill(0)];
+        ? prev.valoresMaximos!.filter((_, index) => !parametroIds.includes(prev.idParametros![index]))
+        : [...prev.valoresMaximos!, ...Array(parametroIds.length).fill(0)];
 
       const newValoresMinimos = isSelected
-        ? prev.valoresMinimos.filter((_, index) => !parametroIds.includes(prev.idParametros[index]))
-        : [...prev.valoresMinimos, ...Array(parametroIds.length).fill(0)];
+        ? prev.valoresMinimos!.filter((_, index) => !parametroIds.includes(prev.idParametros![index]))
+        : [...prev.valoresMinimos!, ...Array(parametroIds.length).fill(0)];
 
       return {
         ...prev,
@@ -80,9 +79,9 @@ export function SelectorPruebas({
     tipo: "max" | "min"
   ) => {
     setProyecto((prev) => {
-      const index = prev.idParametros.indexOf(parametroId);
+      const index = prev.idParametros!.indexOf(parametroId);
       if (index !== -1) {
-        const newValores = tipo === "max" ? [...prev.valoresMaximos] : [...prev.valoresMinimos];
+        const newValores = tipo === "max" ? [...prev.valoresMaximos!] : [...prev.valoresMinimos!];
         newValores[index] = valor;
         return tipo === "max"
           ? { ...prev, valoresMaximos: newValores }
@@ -98,7 +97,7 @@ export function SelectorPruebas({
       <div className="flex flex-col space-y-2">
         {pruebas.map((prueba) => {
           const isSelected = prueba.parametros.every((parametro) =>
-            proyecto.idParametros.includes(parametro.idParametro)
+            proyecto.idParametros!.includes(parametro.idParametro)
           );
           return (
             <TipoPruebaCard
@@ -106,8 +105,8 @@ export function SelectorPruebas({
               prueba={prueba}
               isSelected={isSelected}
               onToggle={() => togglePrueba(prueba.idTipoPrueba)}
-              valoresMaximos={isSelected ? proyecto.valoresMaximos.slice(proyecto.idParametros.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
-              valoresMinimos={isSelected ? proyecto.valoresMinimos.slice(proyecto.idParametros.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
+              valoresMaximos={isSelected ? proyecto.valoresMaximos!.slice(proyecto.idParametros!.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros!.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
+              valoresMinimos={isSelected ? proyecto.valoresMinimos!.slice(proyecto.idParametros!.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros!.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
               onValorChange={(parametroId, valor, tipo) =>
                 handleValorChange(parametroId, valor, tipo)
               }
