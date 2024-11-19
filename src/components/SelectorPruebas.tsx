@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Proyecto } from "@/models/proyecto";
 import { TipoPruebaCard } from "@/components/TipoPruebaCard";
 import { TipoPrueba } from "@/models/tipoprueba";
+import { TIPOS_DE_PRUEBA } from "@/models/MOCKUPS";
 import { z } from "zod";
 
 // Define la estructura de una prueba usando Zod
@@ -31,9 +32,10 @@ export function SelectorPruebas({
   const [pruebas, setPruebas] = useState<Prueba[]>([]);
 
   const fetchPruebas = async () => {
-    const res = await fetch("/api/pruebaconparametro");
+    /* const res = await fetch("/api/pruebaconparametro");
     const data = await res.json();
-    const parsedData = z.array(tipoPruebaSchema).safeParse(data);
+    const parsedData = z.array(tipoPruebaSchema).safeParse(data); */
+    const parsedData = z.array(tipoPruebaSchema).safeParse(TIPOS_DE_PRUEBA);
     if (parsedData.success) {
       setPruebas(parsedData.data);
     } else {
@@ -50,19 +52,27 @@ export function SelectorPruebas({
       const prueba = pruebas.find((p) => p.idTipoPrueba === pruebaId);
       if (!prueba) return prev;
 
-      const parametroIds = prueba.parametros.map((parametro) => parametro.idParametro);
-      const isSelected = parametroIds.every((id) => prev.idParametros.includes(id));
+      const parametroIds = prueba.parametros.map(
+        (parametro) => parametro.idParametro
+      );
+      const isSelected = parametroIds.every((id) =>
+        prev.idParametros.includes(id)
+      );
 
       const newIdParametros = isSelected
         ? prev.idParametros.filter((id) => !parametroIds.includes(id))
         : [...prev.idParametros, ...parametroIds];
 
       const newValoresMaximos = isSelected
-        ? prev.valoresMaximos.filter((_, index) => !parametroIds.includes(prev.idParametros[index]))
+        ? prev.valoresMaximos.filter(
+            (_, index) => !parametroIds.includes(prev.idParametros[index])
+          )
         : [...prev.valoresMaximos, ...Array(parametroIds.length).fill(0)];
 
       const newValoresMinimos = isSelected
-        ? prev.valoresMinimos.filter((_, index) => !parametroIds.includes(prev.idParametros[index]))
+        ? prev.valoresMinimos.filter(
+            (_, index) => !parametroIds.includes(prev.idParametros[index])
+          )
         : [...prev.valoresMinimos, ...Array(parametroIds.length).fill(0)];
 
       return {
@@ -82,7 +92,8 @@ export function SelectorPruebas({
     setProyecto((prev) => {
       const index = prev.idParametros.indexOf(parametroId);
       if (index !== -1) {
-        const newValores = tipo === "max" ? [...prev.valoresMaximos] : [...prev.valoresMinimos];
+        const newValores =
+          tipo === "max" ? [...prev.valoresMaximos] : [...prev.valoresMinimos];
         newValores[index] = valor;
         return tipo === "max"
           ? { ...prev, valoresMaximos: newValores }
@@ -106,8 +117,30 @@ export function SelectorPruebas({
               prueba={prueba}
               isSelected={isSelected}
               onToggle={() => togglePrueba(prueba.idTipoPrueba)}
-              valoresMaximos={isSelected ? proyecto.valoresMaximos.slice(proyecto.idParametros.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
-              valoresMinimos={isSelected ? proyecto.valoresMinimos.slice(proyecto.idParametros.indexOf(prueba.parametros[0].idParametro), proyecto.idParametros.indexOf(prueba.parametros[0].idParametro) + prueba.parametros.length) : []}
+              valoresMaximos={
+                isSelected
+                  ? proyecto.valoresMaximos.slice(
+                      proyecto.idParametros.indexOf(
+                        prueba.parametros[0].idParametro
+                      ),
+                      proyecto.idParametros.indexOf(
+                        prueba.parametros[0].idParametro
+                      ) + prueba.parametros.length
+                    )
+                  : []
+              }
+              valoresMinimos={
+                isSelected
+                  ? proyecto.valoresMinimos.slice(
+                      proyecto.idParametros.indexOf(
+                        prueba.parametros[0].idParametro
+                      ),
+                      proyecto.idParametros.indexOf(
+                        prueba.parametros[0].idParametro
+                      ) + prueba.parametros.length
+                    )
+                  : []
+              }
               onValorChange={(parametroId, valor, tipo) =>
                 handleValorChange(parametroId, valor, tipo)
               }

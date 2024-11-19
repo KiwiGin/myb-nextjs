@@ -4,15 +4,17 @@ import { Proyecto } from "@/models/proyecto";
 import { RepuestoCard } from "@/components/RepuestoCard";
 import { z } from "zod";
 
+import { REPUESTOS } from "@/models/MOCKUPS";
+
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z.object({
   idRepuesto: z.number(),
   nombre: z.string(),
   precio: z.number(),
   descripcion: z.string(),
-  link_img: z.string().url().nullable().optional(),
-  stock_actual: z.number().min(0),
-  stock_solicitado: z.number().min(0),
+  linkImg: z.string().url().nullable().optional(),
+  stockActual: z.number().min(0),
+  stockSolicitado: z.number().min(0),
 });
 
 type Repuesto = z.infer<typeof repuestoSchema>;
@@ -29,16 +31,17 @@ export function SelectorRepuestos({
   const [repuestos, setRepuestos] = useState<Repuesto[]>([]);
 
   const fetchRepuestos = async () => {
-    const res = await fetch("/api/repuesto");
+    /* const res = await fetch("/api/repuesto");
     const data = await res.json();
-    
+
     // Convertir el campo `precio` a número en cada repuesto antes de la validación
     const formattedData = data.map((repuesto: Repuesto) => ({
       ...repuesto,
       precio: Number(repuesto.precio),
     }));
-  
-    const parsedData = z.array(repuestoSchema).safeParse(formattedData);
+
+    const parsedData = z.array(repuestoSchema).safeParse(formattedData); */
+    const parsedData = z.array(repuestoSchema).safeParse(REPUESTOS);
     if (parsedData.success) {
       setRepuestos(parsedData.data);
     } else {
@@ -57,7 +60,9 @@ export function SelectorRepuestos({
         ? prev.idRepuestos.filter((id) => id !== repuestoId)
         : [...prev.idRepuestos, repuestoId];
       const newCantidadesRepuestos = isSelected
-        ? prev.cantidadesRepuestos.filter((_, index) => prev.idRepuestos[index] !== repuestoId)
+        ? prev.cantidadesRepuestos.filter(
+            (_, index) => prev.idRepuestos[index] !== repuestoId
+          )
         : [...prev.cantidadesRepuestos, 1];
       return {
         ...prev,

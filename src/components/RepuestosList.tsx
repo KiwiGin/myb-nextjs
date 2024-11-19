@@ -1,31 +1,22 @@
 "use client";
-import { type ProyeccionData } from "@/app/proyeccionRepuestos/InterfazProyeccionRepuestos";
-import {
-  Controller,
-  UseFormReturn,
-  UseFieldArrayReturn,
-} from "react-hook-form";
 import { GenericCard } from "./GenericCard";
-import { Counter } from "./Counter";
-import { Switch } from "./ui/switch";
-import { Button } from "./ui/button";
+import React from "react";
+import { RepuestoForm } from "@/models/repuesto";
 
-export default function RepuestosList({
+export default function RepuestosList<T extends RepuestoForm>({
   messageNothingAdded,
   repuestos,
-  fr,
   className,
-  counter = true,
-  removeAction,
-  selector = true,
+  counter,
+  remover,
+  selector,
 }: {
   messageNothingAdded: string;
-  repuestos: ProyeccionData["repuestos"];
-  fr: UseFormReturn<ProyeccionData>;
+  repuestos: T[];
   className?: string;
-  counter?: boolean;
-  removeAction?: (index: number) => void;
-  selector?: boolean;
+  counter?: (index: number, item: T) => React.ReactNode;
+  remover?: (index: number, item: T) => React.ReactNode;
+  selector?: (index: number, item: T) => React.ReactNode;
 }) {
   return (
     <div
@@ -38,65 +29,24 @@ export default function RepuestosList({
         repuestos.map((item, index) => (
           <div
             key={item.idRepuesto}
-            className={`pt-2 w-full ${removeAction && "relative"}`}
+            className={`pt-2 w-full ${remover && "relative"}`}
           >
             <GenericCard
               title={item.nombre}
               subtitle={item.descripcion}
-              image={item.link_img}
+              image={item.linkImg || ""}
               imageAlt={item.nombre}
             >
-              <div className="flex flex-row mx-auto items-center min-w-32 gap-4">
-                {counter && (
-                  <Controller
-                    name={`repuestos.${index}.quantity`}
-                    control={fr.control}
-                    render={({ field }) => (
-                      <Counter
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                        }}
-                        className={`w-1/2 ${
-                          fr.formState.errors.repuestos?.[index]?.quantity
-                            ? "border-red-500"
-                            : ""
-                        }`}
-                        max={item.quantity}
-                        min={1}
-                        disabled={!fr.watch(`repuestos.${index}.checked`)}
-                      />
-                    )}
-                  />
-                )}
-                {selector && (
-                  <Controller
-                    name={`repuestos.${index}.checked`}
-                    control={fr.control}
-                    render={({ field }) => (
-                      <Switch
-                        id={item.idRepuesto.toString()}
-                        checked={field.value}
-                        onClick={() => {
-                          field.onChange(!field.value);
-                        }}
-                      />
-                    )}
-                  />
-                )}
-                {removeAction && (
-                  <Button
-                    className="absolute right-0 top-0 z-50"
-                    onClick={() => {
-                      removeAction(index);
-                    }}
-                    type="button"
-                  >
-                    &times;
-                  </Button>
-                )}
+              <div
+                className={`"flex flex-row mx-auto items-center gap-4 ${
+                  counter && selector && "min-w-32"
+                }"`}
+              >
+                {counter && counter(index, item as T)}
+                {selector && selector(index, item as T)}
               </div>
             </GenericCard>
+            {remover && remover(index, item as T)}
           </div>
         ))
       )}

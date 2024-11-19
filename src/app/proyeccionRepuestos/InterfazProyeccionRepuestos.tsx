@@ -1,11 +1,13 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { REPUESTOS } from "../proyectos/[idProyecto]/InterfazAsignacionRepuestos";
+import { REPUESTOS } from "@/models/MOCKUPS";
 import { useEffect } from "react";
 import RepuestosList from "@/components/RepuestosList";
 import { Button } from "@/components/ui/button";
+import { Counter } from "@/components/Counter";
+import { Switch } from "@/components/ui/switch";
 
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z
@@ -14,17 +16,15 @@ const repuestoSchema = z
     nombre: z.string(),
     precio: z.number(),
     descripcion: z.string(),
-    link_img: z.string().optional(),
+    linkImg: z.string().optional(),
     checked: z.boolean(),
-    stock_solicitado: z.number().optional(),
-    quantity: z
-      .union([z.number(), z.undefined(), z.string()])
-      .optional(),
+    stockActual: z.number(),
+    stocKSolicitado: z.number().nullable().optional(),
+    quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
   })
   .refine(
     (val) =>
-      !val.checked ||
-      (val.quantity !== "" && val.quantity !== undefined),
+      !val.checked || (val.quantity !== "" && val.quantity !== undefined),
     {
       message: "Debe ingresar un valor si está marcado.",
       path: ["cantidadProyectada"],
@@ -61,10 +61,11 @@ export function InterfazProyeccionRepuestos() {
         nombre: repuesto.nombre,
         precio: repuesto.precio,
         descripcion: repuesto.descripcion,
-        link_img: repuesto.link_img || "",
+        linkImg: repuesto.linkImg || "",
         checked: false,
-        stock_solicitado: repuesto.stock_solicitado,
-        quantity: repuesto.stock_solicitado,
+        stockActual: repuesto.stockActual || 0,
+        stocKSolicitado: repuesto.stockSolicitado,
+        quantity: repuesto.stockSolicitado,
       }))
     );
   }, []);
@@ -79,7 +80,7 @@ export function InterfazProyeccionRepuestos() {
 
   useEffect(() => {
     console.log("Errors");
-    console.log(form.formState.errors.repuestos);
+    console.log(form.formState.errors.repuestos?.[0]?.quantity);
   }, [form.formState.errors]);
 
   return (
@@ -94,7 +95,43 @@ export function InterfazProyeccionRepuestos() {
         className="grid lg:grid-cols-2 gap-4"
         messageNothingAdded="No hay repuestos por asignados a sus proyectos"
         repuestos={repuestosField.fields}
-        fr={form}
+        counter={(index, item) => (
+          <Controller
+            name={`repuestos.${index}.quantity`}
+            control={form.control}
+            render={({ field }) => (
+              <Counter
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
+                className={`w-1/2 ${
+                  form.formState.errors.repuestos?.[index]?.quantity
+                    ? "border-red-500"
+                    : ""
+                }`}
+                max={item.quantity}
+                min={1}
+                disabled={!form.watch(`repuestos.${index}.checked`)}
+              />
+            )}
+          />
+        )}
+        selector={(index, item) => (
+          <Controller
+            name={`repuestos.${index}.checked`}
+            control={form.control}
+            render={({ field }) => (
+              <Switch
+                id={item.idRepuesto.toString()}
+                checked={field.value}
+                onClick={() => {
+                  field.onChange(!field.value);
+                }}
+              />
+            )}
+          />
+        )}
       />
       <div className="w-full flex justify-center">
         <Button type="submit">Guardar</Button>

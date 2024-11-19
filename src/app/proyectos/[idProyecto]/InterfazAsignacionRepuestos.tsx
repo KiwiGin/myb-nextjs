@@ -12,60 +12,7 @@ import { useState } from "react";
 import { Combobox } from "@/components/Combobox";
 import { PictureCard } from "@/components/PictureCard";
 import { Repuesto } from "@/models/repuesto";
-
-export const REPUESTOS: Repuesto[] = [
-  {
-    idRepuesto: 1,
-    nombre: "Filtro de Aceite",
-    precio: 35.5,
-    descripcion: "Filtro de aceite de alta calidad para vehículos ligeros.",
-    link_img: "https://example.com/images/filtro_aceite.jpg",
-    stock_actual: 50,
-    stock_solicitado: 10,
-    cantidad: 5,
-  },
-  {
-    idRepuesto: 2,
-    nombre: "Bujía de Encendido",
-    precio: 12.75,
-    descripcion: "Bujía estándar para motores de gasolina.",
-    link_img: null,
-    img_base64: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAU=",
-    stock_actual: 200,
-    stock_solicitado: 15,
-    cantidad: 20,
-  },
-  {
-    idRepuesto: 3,
-    nombre: "Filtro de Aire",
-    precio: 25.0,
-    descripcion: "Filtro de aire compatible con la mayoría de los automóviles.",
-    link_img: "https://example.com/images/filtro_aire.jpg",
-    stock_actual: 75,
-    stock_solicitado: 25,
-    cantidad: 10,
-  },
-  {
-    idRepuesto: 4,
-    nombre: "Pastillas de Freno",
-    precio: 80.0,
-    descripcion: "Pastillas de freno para vehículos medianos.",
-    link_img: null,
-    stock_actual: 100,
-    stock_solicitado: 50,
-    cantidad: 15,
-  },
-  {
-    idRepuesto: 5,
-    nombre: "Aceite de Motor 5W-30",
-    precio: 45.99,
-    descripcion: "Aceite sintético de alta durabilidad.",
-    link_img: "https://example.com/images/aceite_motor.jpg",
-    stock_actual: 30,
-    stock_solicitado: 20,
-    cantidad: 8,
-  },
-];
+import { REPUESTOS } from "@/models/MOCKUPS";
 
 export function InterfazAsignacionRepuestos({
   idProyecto,
