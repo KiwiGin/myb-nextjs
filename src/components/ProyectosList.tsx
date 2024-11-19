@@ -1,13 +1,13 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { Card, CardDescription } from "@components/ui/card";
-import { ProyectoDataType } from "@/app/proyectos/InterfazListaProyectos";
 import { ProyectoHeader } from "@components/ProyectoHeader";
+import { Proyecto } from "@/models/proyecto";
 
 export function ProyectosList({
   proyectos,
 }: {
-  proyectos: ProyectoDataType[];
+  proyectos: Proyecto[];
 }) {
   const router = useRouter();
 

@@ -139,3 +139,73 @@ export async function agregarRepuestosSolicitados(repuestos: { idRepuesto: numbe
     throw err;
   }
 }
+
+export async function obtenerRepuestosPorIds(idsRepuestos: number[]) : Promise<Repuesto[]> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerRepuestosPorIds($1)', [idsRepuestos]);
+    const repuestos: Repuesto[] = res.rows.map((repuesto: {
+      id_repuesto: number,
+      nombre: string,
+      precio: number,
+      descripcion: string,
+      link_img: string,
+      stock_disponible: number,
+      stock_asignado: number,
+      stock_requerido: number
+    }) => {
+      return {
+        idRepuesto: repuesto.id_repuesto,
+        nombre: repuesto.nombre,
+        precio: repuesto.precio,
+        descripcion: repuesto.descripcion,
+        linkImg: repuesto.link_img,
+        stockDisponible: repuesto.stock_disponible,
+        stockAsignado: repuesto.stock_asignado,
+        stockRequerido: repuesto.stock_requerido
+      } as Repuesto;
+    });
+    return repuestos as Repuesto[];
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al obtener repuestos por ids:', err.stack);
+    } else {
+      console.error('Error al obtener repuestos por ids:', err);
+    }
+    throw err;
+  }
+}
+
+export async function obtenerRepuestosFaltantesPorJefe(jefeId: number) {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerRepuestosFaltantes($1)', [jefeId]);
+    
+    const repuestosFaltantes = res.rows.map((repuesto: {
+      ids_repuestos: number[],
+      cantidades: number[]
+    }) => {
+      return repuesto.ids_repuestos.map((idRepuesto, index) => {
+        return {
+          idRepuesto: idRepuesto,
+          cantidad: repuesto.cantidades[index]
+        };
+      });
+    })[0];
+    
+    const repuestos = await obtenerRepuestosPorIds(repuestosFaltantes.map(repuesto => repuesto.idRepuesto));
+
+    return repuestos.map((repuesto, index) => {
+      return {
+        repuesto: repuesto,
+        cantidadFaltante: repuestosFaltantes[index].cantidad
+      };
+    }
+    );
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al obtener repuestos faltantes por jefe:', err.stack);
+    } else {
+      console.error('Error al obtener repuestos faltantes por jefe:', err);
+    }
+    throw err;
+  }
+}

@@ -312,6 +312,22 @@ export async function obtenerEtapaPorId(idEtapa: number): Promise<string> {
   }
 }
 
+const parseParametros = (parametrosString: string) => {
+  const trimmedString = parametrosString.slice(1, -1);
+
+  const regex = /\{([^}]*)\}|"([^"]*)"/g;
+  const matches = [];
+  let match;
+
+  while ((match = regex.exec(trimmedString)) !== null) {
+    matches.push(match[1] || match[2]);
+  }
+
+  const parametros = matches.map((group) => group.split(",").map((item) => item.trim()));
+
+  return parametros;
+};
+
 export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Proyecto> {
   try {
     const res = await pool.query('SELECT * FROM paObtenerDatosProyectoPorId($1)', [idProyecto]);
@@ -324,13 +340,10 @@ export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Pro
 
     const parametrosString = proyecto.info_parametros;
 
-    const parametros = parametrosString
-      .slice(1, -1)
-      .split('","')
-
-      .map((param: string) =>
-        param.replace(/[{}"]/g, "").split(",")
-      );
+    const parametros = parseParametros(parametrosString);
+    
+    console.log("parametros")
+    console.log(parametros)
 
     const idParametros = parametros[0].map(Number);
     const nombresParametros = parametros[1];
@@ -347,6 +360,9 @@ export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Pro
         valorMinimo: valoresMinimos[i],
       });
     }
+
+    console.log("especificaciones")
+    console.log(especificaciones)
 
     const res_1 = await pool.query('SELECT * FROM paObtenerRepuestosPorProyecto($1)', [idProyecto]);
     res_1.rows.forEach((repuesto: {

@@ -3,7 +3,6 @@ import { type ProyeccionData } from "@/app/proyeccionRepuestos/InterfazProyeccio
 import {
   Controller,
   UseFormReturn,
-  UseFieldArrayReturn,
 } from "react-hook-form";
 import { GenericCard } from "./GenericCard";
 import { Counter } from "./Counter";
@@ -43,7 +42,7 @@ export default function RepuestosList({
             <GenericCard
               title={item.nombre}
               subtitle={item.descripcion}
-              image={item.link_img}
+              image={item.linkImg}
               imageAlt={item.nombre}
             >
               <div className="flex flex-row mx-auto items-center min-w-32 gap-4">

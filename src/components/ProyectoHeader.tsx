@@ -1,12 +1,12 @@
 "use client";
-import { ProyectoDataType } from "@/app/proyectos/InterfazListaProyectos";
+import { Proyecto } from "@/models/proyecto";
 import { PictureCard } from "@components/PictureCard";
 
 export function ProyectoHeader({
   proyecto,
-  showSeeMore = true,
+  // showSeeMore = true,
 }: {
-  proyecto: ProyectoDataType;
+  proyecto: Proyecto;
   showSeeMore?: boolean;
 }) {
   return (
@@ -14,12 +14,12 @@ export function ProyectoHeader({
       <div className="flex flex-col gap-4 items-start w-3/4">
         <h1 className="font-bold text-3xl">{proyecto.titulo}</h1>
         <div>
-          <h4 className="text-xl">{proyecto.cliente}</h4>
+          <h4 className="text-xl">{proyecto.cliente?.nombre}</h4>
           {/*{ showSeeMore && <ProjectSeeMoreModal project={project} /> } */}
         </div>
       </div>
       <div className="flex gap-2 h-20 self-start">
-        {proyecto.empleados.map((empleado) => (
+        {proyecto.empleados?.map((empleado) => (
           <PictureCard
             key={empleado.nombre}
             name={empleado.nombre}

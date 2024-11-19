@@ -495,6 +495,38 @@ BEGIN
 END;
 $$;
 
+-- pa: paObtenerRepuestosPorIds -> Obtiene los repuestos por ids
+CREATE OR REPLACE FUNCTION paObtenerRepuestosPorIds(p_ids_repuesto INT[])
+    RETURNS TABLE
+            (
+                id_repuesto      INT,
+                nombre           VARCHAR,
+                descripcion      TEXT,
+                precio           DECIMAL,
+                link_img         VARCHAR,
+                stock_disponible INT,
+                stock_asignado   INT,
+                stock_requerido  INT
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY 
+    SELECT 
+        r.id_repuesto,
+        r.nombre,
+        r.descripcion,
+        r.precio,
+        r.link_img,
+        r.stock_disponible,
+        r.stock_asignado,
+        r.stock_requerido
+    FROM repuesto r
+    WHERE r.id_repuesto = ANY (p_ids_repuesto);
+END;
+$$;
+
 
 -- pa: paObtenerRepuestosPorProyecto -> Obtiene los repuestos por proyecto
 CREATE OR REPLACE FUNCTION paObtenerRepuestosPorProyecto(p_id_proyecto INT)
@@ -736,3 +768,64 @@ BEGIN
         WHERE e.id_etapa = p_id_etapa;
 END;
 $$;
+
+-- pa: paObtenerProyectosPorCliente -> Obtiene los proyectos de un cliente
+create or replace function paObtenerRepuestosFaltantes(p_id_jefe int)
+    returns table
+            (
+                ids_repuestos int[],
+                cantidades    int[]
+            )
+as
+$$
+declare
+    v_ids_proyectos           int[];
+    v_ids_repuestos           int[];
+    v_ids_repuestos_faltantes int[];
+    v_cantidades_faltantes    int[];
+    v_cantidades              int[];
+    v_cantidad                int;
+    v_stock_disponible        int;
+begin
+    select array_agg(p.id_proyecto)
+    into v_ids_proyectos
+    from proyecto p
+    where p.id_jefe = p_id_jefe
+      and p.id_etapa_actual = 1;
+
+    for i in 1..array_length(v_ids_proyectos, 1)
+        loop
+            select array_agg(distinct prc.id_repuesto), array_agg(prc.cantidad)
+            into v_ids_repuestos, v_cantidades
+            from proyecto_repuestos_cantidad prc
+            where prc.id_proyecto = v_ids_proyectos[i];
+            v_ids_repuestos_faltantes := v_ids_repuestos_faltantes || v_ids_repuestos;
+        end loop;
+
+    v_ids_repuestos_faltantes := ARRAY(
+        SELECT DISTINCT unnest(v_ids_repuestos_faltantes)
+    );
+
+    for i in 1..array_length(v_ids_repuestos_faltantes, 1)
+        loop
+            select sum(prc.cantidad)
+            into v_cantidad
+            from proyecto_repuestos_cantidad prc
+            where prc.id_repuesto = v_ids_repuestos_faltantes[i];
+
+            select r.stock_disponible
+            into v_stock_disponible
+            from repuesto r
+            where r.id_repuesto = v_ids_repuestos_faltantes[i];
+
+            v_cantidades_faltantes[i] := v_cantidad - v_stock_disponible;
+        end loop;
+
+    return query
+        select
+            array_agg(v_ids_repuestos_faltantes[i]),
+            array_agg(v_cantidades_faltantes[i])
+        from generate_series(1, array_length(v_ids_repuestos_faltantes, 1)) as i
+        where v_cantidades_faltantes[i] > 0;
+end;
+$$ language plpgsql;

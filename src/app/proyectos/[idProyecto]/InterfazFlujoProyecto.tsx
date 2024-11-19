@@ -1,50 +1,51 @@
 "use client";
 import { ProjectFlow } from "@/components/ProjectFlow/ProjectFlow";
 import { useEffect, useState } from "react";
-import { PROYECTOS } from "../InterfazListaProyectos";
-import { ProyectoDataType } from "../InterfazListaProyectos";
 import { ProyectoHeader } from "@/components/ProyectoHeader";
 import { InterfazAsignacionRepuestos } from "./InterfazAsignacionRepuestos";
+import { Proyecto } from "@/models/proyecto";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
-  const [proyecto, setProyecto] = useState<ProyectoDataType>();
+  const [proyecto, setProyecto] = useState<Proyecto>();
 
   useEffect(() => {
-    /*
-      Fetch para obtener información del proyecto con el id proporcionado
-      y asignarla a la variable proyecto.
-    */
-    setProyecto(
-      PROYECTOS.find((proyecto) => proyecto.idProyecto === idProyecto)
-    );
+    // fetch from GET /api/proyecto/por-id/:idProyecto
+    const fetchProyecto = async () => {
+      const response = await fetch(`/api/proyecto/por-id/${idProyecto}`);
+      if (!response.ok) throw new Error("Error al cargar proyectos");
+      const data: Proyecto = await response.json();
+      setProyecto(data);
+    };
+
+    fetchProyecto();
   }, [idProyecto]);
 
   if (!proyecto) return <div>Proyecto no encontrado</div>;
   return (
     <div className="flex flex-col items-center pt-10 px-20 gap-3">
       <ProyectoHeader proyecto={proyecto} />
-      <ProjectFlow etapa={proyecto.etapa} />
-      {proyecto.etapa == 0 ? (
+      <ProjectFlow etapa={proyecto.idEtapaActual} />
+      {proyecto.idEtapaActual == 1 ? (
         <div className="w-full">
-          <InterfazAsignacionRepuestos idProyecto={proyecto.idProyecto}/>
+          <InterfazAsignacionRepuestos proyecto={proyecto}/>
         </div>
-      ) : proyecto.etapa == 1 ? (
+      ) : proyecto.idEtapaActual == 2 ? (
         <div>
           <h1>Segunda etapa como Jefe</h1>
         </div>
-      ) : proyecto.etapa == 3 ? (
+      ) : proyecto.idEtapaActual == 4 ? (
         <>
           <h1>Cuarta etapa como Jefe</h1>
         </>
-      ) : proyecto.etapa == 4 ? (
+      ) : proyecto.idEtapaActual == 5 ? (
         <div>
           <h1>Quinta etapa como Jefe</h1>
         </div>
-      ) : proyecto.etapa == 5 ? (
+      ) : proyecto.idEtapaActual == 6 ? (
         <div>
           <h1>Sexta etapa como Jefe</h1>
         </div>
-      ) : proyecto.etapa == 7 ? (
+      ) : proyecto.idEtapaActual == 8 ? (
         <div>
           <h1>Octava etapa como Jefe</h1>
         </div>

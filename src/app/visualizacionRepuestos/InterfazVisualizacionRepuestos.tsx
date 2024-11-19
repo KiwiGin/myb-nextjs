@@ -2,10 +2,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { REPUESTOS } from "../proyectos/[idProyecto]/InterfazAsignacionRepuestos";
 import { useEffect } from "react";
 import RepuestosList from "@/components/RepuestosList";
 import { Button } from "@/components/ui/button";
+import { Repuesto } from "@/models/repuesto";
 
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z
@@ -14,9 +14,9 @@ const repuestoSchema = z
     nombre: z.string(),
     precio: z.number(),
     descripcion: z.string(),
-    link_img: z.string().optional(),
+    linkImg: z.string().optional(),
     checked: z.boolean(),
-    stock_solicitado: z.number().optional(),
+    stockRequerido: z.number().optional(),
     quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
   })
   .refine(
@@ -48,30 +48,58 @@ export function InterfazVisualizacionRepuestos() {
   });
 
   useEffect(() => {
-    /*
-    fetch a la api
-    */
-    form.setValue(
-      "repuestos",
-      REPUESTOS.map((repuesto) => ({
-        idRepuesto: repuesto.idRepuesto || 0,
-        nombre: repuesto.nombre,
-        precio: repuesto.precio,
-        descripcion: repuesto.descripcion,
-        link_img: repuesto.link_img || "",
-        checked: false,
-        stock_solicitado: repuesto.stock_solicitado,
-        quantity: repuesto.stock_solicitado,
-      }))
-    );
-  }, []);
+    async function fetchRepuestos() {
+      try {
+        const response = await fetch('/api/repuesto/requeridos', {
+          method: 'GET',
+        });
+        if (!response.ok) {
+          throw new Error('Error al obtener los repuestos requeridos');
+        }
+        const data: Repuesto[] = await response.json();
+        form.setValue(
+          'repuestos',
+          data.map((repuesto) => ({
+            idRepuesto: repuesto.idRepuesto || 0,
+            nombre: repuesto.nombre,
+            precio: Number(repuesto.precio),
+            descripcion: repuesto.descripcion,
+            linkImg: repuesto.linkImg || '',
+            checked: false,
+            stockRequerido: repuesto.stockRequerido,
+            quantity: repuesto.stockRequerido,
+          }))
+        );
+      } catch (error) {
+        console.error('Error fetching repuestos:', error);
+      }
+    }
+    fetchRepuestos();
+  }, [form]);
 
-  const onSubmit = (data: ProyeccionData) => {
-    const selectedRepuestos = data.repuestos.filter(
-      (repuesto) => repuesto.checked
-    );
-    console.log("ON SUBMIT");
-    console.log(selectedRepuestos);
+  const onSubmit = async (data: ProyeccionData) => {
+    const selectedRepuestos = data.repuestos
+      .filter((repuesto) => repuesto.checked)
+      .map((repuesto) => ({
+        idRepuesto: repuesto.idRepuesto,
+        cantidadObtenida: Number(repuesto.quantity),
+      }));
+  
+    try {
+      const response = await fetch('/api/repuesto', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedRepuestos),
+      });
+      if (!response.ok) {
+        throw new Error('Error al actualizar los repuestos');
+      }
+      console.log('Repuestos actualizados correctamente');
+    } catch (error) {
+      console.error('Error en el envío de datos:', error);
+    }
   };
 
   useEffect(() => {
