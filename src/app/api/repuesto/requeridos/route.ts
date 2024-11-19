@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Repuesto } from '@/models/repuesto';
 import { obtenerRepuestosRequeridos } from '@/backend/dataBaseUtils/repuestoDA';
 

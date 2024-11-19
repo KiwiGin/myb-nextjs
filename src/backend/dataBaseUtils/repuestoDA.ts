@@ -23,9 +23,9 @@ export async function obtenerRepuestos() {
         linkImg: repuesto.link_img,
         stockActual: repuesto.stock_actual,
         stockRequerido: repuesto.stock_requerido
-      };
+      } as Repuesto;
     });
-    return repuestos;
+    return repuestos as Repuesto[];
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al obtener repuestos:', err.stack);
@@ -91,7 +91,6 @@ export async function actualizarStockRepuestos(repuestos: { idRepuesto: number, 
 export async function obtenerRepuestosRequeridos() {
   try {
     const res = await pool.query('SELECT * FROM paObtenerRepuestosRequeridos()');
-    // CAmbiar el nombre de las columnas para que coincidan con el modelo
     const repuestos: Repuesto[] = res.rows.map((repuesto: {
       id_repuesto: number,
       nombre: string,
@@ -111,9 +110,9 @@ export async function obtenerRepuestosRequeridos() {
         stockAsignado: repuesto.stock_asignado,
         stockDisponible: repuesto.stock_disponible,
         stockRequerido: repuesto.stock_requerido
-      };
+      } as Repuesto;
     });
-    return repuestos;
+    return repuestos as Repuesto[];
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al obtener repuestos requeridos:', err.stack);

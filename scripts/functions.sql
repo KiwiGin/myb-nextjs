@@ -425,51 +425,6 @@ BEGIN
 END;
 $$;
 
--- pa: paObtenerProyectoPorJefe -> Obtiene los proyectos de un jefe
-CREATE OR REPLACE FUNCTION paObtenerProyectoPorJefe(p_id_jefe INT)
-    RETURNS TABLE
-            (
-                id_proyecto     INT,
-                id_cliente      INT,
-                id_supervisor   INT,
-                id_jefe         INT,
-                id_etapa_actual INT,
-                costo_total     DECIMAL,
-                costo_mano_obra DECIMAL,
-                costo_repuestos DECIMAL,
-                titulo          VARCHAR,
-                descripcion     TEXT,
-                fecha_inicio    DATE,
-                fecha_fin       DATE,
-                ids_empleados   INT[]
-            )
-    LANGUAGE plpgsql
-AS
-$$
-BEGIN
-    RETURN QUERY
-        SELECT p.id_proyecto,
-               p.id_cliente,
-               p.id_supervisor,
-               p.id_jefe,
-               p.id_etapa_actual,
-               c.costo_total,
-               c.costo_mano_obra,
-               c.costo_repuestos,
-               p.titulo,
-               p.descripcion,
-               p.fechaInicio,
-               p.fechaFin,
-               ARRAY(SELECT pe.id_tecnico
-                     FROM proyecto_etapa_empleado pe
-                     WHERE pe.id_proyecto = p.id_proyecto
-                       AND pe.id_etapa = p.id_etapa_actual)
-        FROM proyecto p
-                 JOIN costos c ON p.id_costo = c.id_costo
-        WHERE p.id_jefe = p_id_jefe;
-END;
-$$;
-
 -- pa: paObtenerClientesPorIds -> Obtiene los clientes por ids
 CREATE OR REPLACE FUNCTION paObtenerClientesPorIds(p_ids_cliente INT[])
     RETURNS TABLE
@@ -487,9 +442,18 @@ CREATE OR REPLACE FUNCTION paObtenerClientesPorIds(p_ids_cliente INT[])
 AS
 $$
 BEGIN
-    RETURN QUERY SELECT *
-                 FROM cliente
-                 WHERE id_cliente = ANY (p_ids_cliente);
+    RETURN QUERY 
+    SELECT 
+        c.id_cliente,
+        c.nombre,
+        c.ruc,
+        c.direccion,
+        c.telefono,
+        c.correo,
+        c.documento_de_identidad,
+        c.tipo_de_documento_de_identidad
+    FROM cliente c
+    WHERE c.id_cliente = ANY (p_ids_cliente);
 END;
 $$;
 
@@ -513,11 +477,24 @@ CREATE OR REPLACE FUNCTION paObtenerEmpleadosPorIds(p_ids_empleado INT[])
 AS
 $$
 BEGIN
-    RETURN QUERY SELECT *
-                 FROM empleado
-                 WHERE id_empleado = ANY (p_ids_empleado);
+    RETURN QUERY 
+    SELECT 
+        e.id_empleado,
+        e.usuario,
+        e.password,
+        e.nombre,
+        e.apellido,
+        e.correo,
+        e.telefono,
+        e.direccion,
+        e.tipo_documento,
+        e.documento_identidad,
+        e.rol
+    FROM empleado e
+    WHERE e.id_empleado = ANY (p_ids_empleado);
 END;
 $$;
+
 
 -- pa: paObtenerRepuestosPorProyecto -> Obtiene los repuestos por proyecto
 CREATE OR REPLACE FUNCTION paObtenerRepuestosPorProyecto(p_id_proyecto INT)
@@ -571,85 +548,6 @@ BEGIN
 END;
 $$;
 
--- pa: paObtenerProyectosAsignacion -> Obtiene los proyectos en asignacion 
-CREATE OR REPLACE FUNCTION paObtenerProyectosAsignacion()
-    RETURNS TABLE
-            (
-                id_proyecto     INT,
-                id_cliente      INT,
-                id_supervisor   INT,
-                id_jefe         INT,
-                id_etapa_actual INT,
-                costo_total     DECIMAL,
-                costo_mano_obra DECIMAL,
-                costo_repuestos DECIMAL,
-                titulo          VARCHAR,
-                descripcion     TEXT,
-                fecha_inicio    DATE,
-                fecha_fin       DATE,
-                ids_empleados   INT[]
-            )
-    LANGUAGE plpgsql
-AS
-$$
-BEGIN
-    RETURN QUERY
-        SELECT p.id_proyecto,
-               p.id_cliente,
-               p.id_supervisor,
-               p.id_jefe,
-               p.id_etapa_actual,
-               c.costo_total,
-               c.costo_mano_obra,
-               c.costo_repuestos,
-               p.titulo,
-               p.descripcion,
-               p.fechaInicio,
-               p.fechaFin,
-               ARRAY(SELECT pe.id_tecnico
-                     FROM proyecto_etapa_empleado pe
-                     WHERE pe.id_proyecto = p.id_proyecto
-                       AND pe.id_etapa = p.id_etapa_actual)
-        FROM proyecto p
-                 JOIN costos c ON p.id_costo = c.id_costo
-        WHERE p.id_etapa_actual = 1;
-END;
-$$;
-
--- pa: paObtenerRepuestosPorProyecto -> Obtiene los repuestos por proyecto
-CREATE OR REPLACE FUNCTION paObtenerRepuestosPorProyecto(p_id_proyecto INT)
-    RETURNS TABLE
-            (
-                id_repuesto      INT,
-                nombre           VARCHAR,
-                descripcion      TEXT,
-                precio           DECIMAL,
-                link_img         VARCHAR,
-                stock_disponible INT,
-                stock_asignado   INT,
-                stock_requerido  INT,
-                cantidad         INT
-            )
-    LANGUAGE plpgsql
-AS
-$$
-BEGIN
-    RETURN QUERY
-        SELECT r.id_repuesto,
-               r.nombre,
-               r.descripcion,
-               r.precio,
-               r.link_img,
-               r.stock_disponible,
-               r.stock_asignado,
-               r.stock_requerido,
-               prc.cantidad
-        FROM repuesto r
-                 JOIN proyecto_repuestos_cantidad prc ON r.id_repuesto = prc.id_repuesto
-        WHERE prc.id_proyecto = p_id_proyecto;
-END;
-$$;
-
 --pa: paAgregarRepuestosSolicitados -> Agrega repuestos solicitados
 CREATE OR REPLACE PROCEDURE paAgregarRepuestosSolicitados(
     p_ids_repuestos INT[],
@@ -675,5 +573,166 @@ BEGIN
             SET stock_requerido = stock_requerido + v_cantidad
             WHERE id_repuesto = v_id_repuesto;
         END LOOP;
+END;
+$$;
+
+-- paAsignarRepuestosAProyecto(proyectoId)
+CREATE OR REPLACE PROCEDURE paAsignarRepuestosAProyecto(
+    p_id_proyecto INT
+)
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    v_id_repuesto INT;
+    v_cantidad    INT;
+BEGIN
+    FOR v_id_repuesto, v_cantidad IN
+        SELECT prc.id_repuesto, prc.cantidad
+        FROM proyecto_repuestos_cantidad prc
+        WHERE prc.id_proyecto = p_id_proyecto
+        LOOP
+            UPDATE repuesto
+            SET stock_asignado = stock_asignado + v_cantidad,
+                stock_disponible = stock_disponible - v_cantidad
+            WHERE id_repuesto = v_id_repuesto;
+        END LOOP;
+END;
+$$;
+
+-- pa: paObtenerProyectoPorJefe -> Obtiene los proyectos de un jefe
+CREATE OR REPLACE FUNCTION paObtenerProyectoPorJefe(p_id_jefe INT)
+    RETURNS TABLE
+            (
+                id_proyecto             INT,
+                titulo                  VARCHAR,
+                descripcion             TEXT,
+                fecha_inicio            DATE,
+                fecha_fin               DATE,
+                id_cliente              INT,
+                id_supervisor           INT,
+                id_jefe                 INT,
+                id_etapa_actual         INT,
+                ids_empleados_actuales  INT[]
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY
+        SELECT p.id_proyecto,
+               p.titulo,
+               p.descripcion,
+               p.fechaInicio,
+               p.fechaFin,
+               p.id_cliente,
+               p.id_supervisor,
+               p.id_jefe,
+               p.id_etapa_actual,
+               ARRAY(SELECT pe.id_tecnico
+                     FROM proyecto_etapa_empleado pe
+                     WHERE pe.id_proyecto = p.id_proyecto
+                       AND pe.id_etapa = p.id_etapa_actual)
+        FROM proyecto p
+        WHERE p.id_jefe = p_id_jefe;
+END;
+$$;
+
+-- paObtenerDatosProyectoPorId
+CREATE OR REPLACE FUNCTION paObtenerDatosProyectoPorId(p_id_proyecto INT)
+    RETURNS TABLE
+            (
+                id_proyecto             INT,
+                titulo                  VARCHAR,
+                descripcion             TEXT,
+                fecha_inicio            DATE,
+                fecha_fin               DATE,
+
+                costo_mano_obra         DECIMAL,
+                costo_repuestos         DECIMAL,
+                costo_total             DECIMAL,
+
+                id_cliente              INT,
+                id_supervisor           INT,
+                id_jefe                 INT,
+                id_etapa_actual         INT,
+
+                info_repuestos          info_repuesto_proyecto,
+                info_parametros         info_parametro_proyecto,
+
+                ids_empleados_actuales  INT[]
+            )
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    v_info_parametro info_parametro_proyecto;
+    v_info_repuesto  info_repuesto_proyecto;
+BEGIN
+    -- Rellenar v_info_repuesto para el proyecto actual
+    SELECT ARRAY_AGG(r.id_repuesto) AS ids_repuesto,
+           ARRAY_AGG(r.nombre)      AS nombres,
+           ARRAY_AGG(r.descripcion) AS descripciones,
+           ARRAY_AGG(r.precio)      AS precios,
+           ARRAY_AGG(r.link_img)    AS links_img,
+           ARRAY_AGG(prc.cantidad)  AS cantidades
+    INTO v_info_repuesto
+    FROM repuesto r
+             JOIN proyecto_repuestos_cantidad prc ON r.id_repuesto = prc.id_repuesto
+    WHERE prc.id_proyecto = p_id_proyecto;
+
+    -- Rellenar v_info_parametro para el proyecto actual
+    SELECT ARRAY_AGG(pep.id_parametro) AS ids_parametro,
+           ARRAY_AGG(p.nombre)         AS nombres,
+           ARRAY_AGG(p.unidades)       AS unidades,
+           ARRAY_AGG(pep.valor_maximo) AS valores_maximo,
+           ARRAY_AGG(pep.valor_minimo) AS valores_minimo
+    INTO v_info_parametro
+    FROM parametro p
+             JOIN proyecto_especificaciones_pruebas pep ON p.id_parametro = pep.id_parametro
+    WHERE pep.id_proyecto = p_id_proyecto;
+
+    -- Asignar valores a los campos de salida y usar RETURN QUERY
+    RETURN QUERY
+        SELECT p.id_proyecto,
+               p.titulo,
+               p.descripcion,
+               p.fechaInicio,
+               p.fechaFin,
+               c.costo_mano_obra,
+               c.costo_repuestos,
+               c.costo_total,
+               p.id_cliente,
+               p.id_supervisor,
+               p.id_jefe,
+               p.id_etapa_actual,
+               v_info_repuesto,
+               v_info_parametro,
+               ARRAY(SELECT pe.id_tecnico
+                     FROM proyecto_etapa_empleado pe
+                     WHERE pe.id_proyecto = p.id_proyecto
+                       AND pe.id_etapa = p.id_etapa_actual)
+        FROM proyecto p
+                 JOIN costos c ON p.id_costo = c.id_costo
+        WHERE p.id_proyecto = p_id_proyecto;
+END;
+$$;
+
+-- pa: paobteneretapaporid -> Obtiene la etapa por id
+CREATE OR REPLACE FUNCTION paobteneretapaporid(p_id_etapa INT)
+    RETURNS TABLE
+            (
+                id_etapa          INT,
+                nombre_etapa      VARCHAR
+            )
+    LANGUAGE plpgsql
+AS
+$$
+BEGIN
+    RETURN QUERY
+        SELECT e.id_etapa,
+               e.nombre
+        FROM etapa e
+        WHERE e.id_etapa = p_id_etapa;
 END;
 $$;

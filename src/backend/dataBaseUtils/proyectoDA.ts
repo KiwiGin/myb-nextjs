@@ -2,6 +2,8 @@ import { pool } from '../clientConnection';
 import { Proyecto } from '@/models/proyecto';
 import { Especificacion } from '@/models/especificacion';
 import { Repuesto } from '@/models/repuesto';
+import { Cliente } from '@/models/cliente';
+import { Empleado } from '@/models/empleado';
 
 export async function obtenerProyectos(): Promise<Proyecto[]> {
 
@@ -150,26 +152,8 @@ export async function insertarProyecto(proyecto: Proyecto) {
   }
 }
 
-//obtener proyectos por jefe [FALTA CORREGIR PA - NO DEVUELVE TODO EL PROYECTO]
-export async function obtenerProyectosPorJefe(idJefe: number): Promise<Proyecto[]> {
-
-  try {
-    const res = await pool.query('SELECT * FROM paObtenerProyectosPorJefe($1)', [idJefe]);
-    return res.rows;
-  }
-  catch (err) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-    } else {
-      console.error('Error executing query', err);
-    }
-    throw err;
-  }
-}
-
 //obtener respuestos por proyecto
 export async function obtenerRepuestosPorProyecto(idProyecto: number): Promise<Repuesto[]> {
-
   try {
     const res = await pool.query('SELECT * FROM paObtenerRepuestosPorProyecto($1)', [idProyecto]);
 
@@ -223,44 +207,261 @@ export async function cambiarEtapaProyecto(idProyecto: number, idEtapa: number, 
   }
 }
 
-
-//obtener proyectos en asignacion
-export async function obtenerProyectosAsignacion(): Promise<Proyecto[]> {
-
+export async function asignarRepuestosAProyecto(proyectoId: number) {
   try {
-    const res = await pool.query('SELECT * FROM paObtenerProyectosAsignacion()');
+    await pool.query('CALL paAsignarRepuestosAProyecto($1)', [proyectoId]);
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al asignar repuestos a proyecto:', err.stack);
+    } else {
+      console.error('Error al asignar repuestos a proyecto:', err);
+    }
+    throw err;
+  }
+}
 
-    const proyectos = res.rows.map((proyecto: {
-      id_proyecto: number,
+export async function obtenerEmpleadosPorIds(idsEmpleados: number[]): Promise<Empleado[]> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerEmpleadosPorIds($1)', [idsEmpleados]);
+
+    return res.rows.map((empleado: {
+      id_empleado: number,
+      usuario: string,
+      password: string,
+      nombre: string,
+      apellido: string,
+      correo: string,
+      telefono: string,
+      direccion: string,
+      tipo_documento: string,
+      documento_identidad: string,
+      rol: string
+    }) => {
+      return {
+        idEmpleado: empleado.id_empleado,
+        usuario: empleado.usuario,
+        password: empleado.password,
+        nombre: empleado.nombre,
+        apellido: empleado.apellido,
+        correo: empleado.correo,
+        telefono: empleado.telefono,
+        direccion: empleado.direccion,
+        tipoDocumento: empleado.tipo_documento,
+        documentoIdentidad: empleado.documento_identidad,
+        rol: empleado.rol
+      } as Empleado;
+    });
+  }
+  catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('Error executing query', err);
+    }
+    throw err;
+  }
+}
+
+export async function obtenerClientesPorIds(idsClientes: number[]): Promise<Cliente[]> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerClientesPorIds($1)', [idsClientes]);
+
+    return res.rows.map((cliente: {
       id_cliente: number,
-      id_supervisor: number,
-      id_jefe: number,
-      id_etapa_actual: number,
-      costo_total: number,
-      costo_mano_obra: number,
-      costo_repuestos: number,
+      nombre: string,
+      ruc: string,
+      direccion: string,
+      telefono: string,
+      correo: string,
+      documento_de_identidad: string,
+      tipo_de_documento_de_identidad: string
+    }) => {
+      return {
+        idCliente: cliente.id_cliente,
+        nombre: cliente.nombre,
+        ruc: cliente.ruc,
+        direccion: cliente.direccion,
+        telefono: cliente.telefono,
+        correo: cliente.correo,
+        documentoDeIdentidad: cliente.documento_de_identidad,
+        tipoDeDocumento: cliente.tipo_de_documento_de_identidad
+      } as Cliente;
+    });
+  }
+  catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('Error executing query', err);
+    }
+    throw err;
+  }
+}
+
+export async function obtenerEtapaPorId(idEtapa: number): Promise<string> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerEtapaPorId($1)', [idEtapa]);
+    return res.rows[0].nombre;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al obtener etapa por id:', err.stack);
+    } else {
+      console.error('Error al obtener etapa por id:', err);
+    }
+    throw err;
+  }
+}
+
+export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Proyecto> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerDatosProyectoPorId($1)', [idProyecto]);
+
+    const proyecto = res.rows[0];
+    console.log(proyecto);
+
+    const especificaciones: Especificacion[] = [];
+    const repuestos: Repuesto[] = [];
+
+    const parametrosString = proyecto.info_parametros;
+
+    const parametros = parametrosString
+      .slice(1, -1)
+      .split('","')
+
+      .map((param: string) =>
+        param.replace(/[{}"]/g, "").split(",")
+      );
+
+    const idParametros = parametros[0].map(Number);
+    const nombresParametros = parametros[1];
+    const unidades = parametros[2];
+    const valoresMaximos = parametros[3].map(Number);
+    const valoresMinimos = parametros[4].map(Number);
+
+    for (let i = 0; i < idParametros.length; i++) {
+      especificaciones.push({
+        idParametro: idParametros[i],
+        nombre: nombresParametros[i],
+        unidad: unidades[i],
+        valorMaximo: valoresMaximos[i],
+        valorMinimo: valoresMinimos[i],
+      });
+    }
+
+    const res_1 = await pool.query('SELECT * FROM paObtenerRepuestosPorProyecto($1)', [idProyecto]);
+    res_1.rows.forEach((repuesto: {
+      id_repuesto: number,
+      nombre: string,
+      descripcion: string,
+      precio: number,
+      link_img: string,
+      stock_disponible: number,
+      stock_asignado: number,
+      stock_requerido: number,
+      cantidad: number
+    }) => {
+      repuestos.push({
+        idRepuesto: repuesto.id_repuesto,
+        nombre: repuesto.nombre,
+        descripcion: repuesto.descripcion,
+        precio: repuesto.precio,
+        linkImg: repuesto.link_img,
+        stockDisponible: repuesto.stock_disponible,
+        stockAsignado: repuesto.stock_asignado,
+        stockRequerido: repuesto.stock_requerido,
+        cantidad: repuesto.cantidad
+      });
+    });
+
+    const cliente = await obtenerClientesPorIds([proyecto.id_cliente]);
+    const supervisor = await obtenerEmpleadosPorIds([proyecto.id_supervisor]);
+    const jefe = await obtenerEmpleadosPorIds([proyecto.id_jefe]);
+    const empleadosActuales = await obtenerEmpleadosPorIds(proyecto.ids_empleados_actuales);
+    const etapaActual = await obtenerEtapaPorId(proyecto.id_etapa_actual);
+
+    return {
+      idProyecto: proyecto.id_proyecto,
+      titulo: proyecto.titulo,
+      descripcion: proyecto.descripcion,
+      fechaInicio: proyecto.fecha_inicio,
+      fechaFin: proyecto.fecha_fin,
+      costoManoObra: proyecto.costo_mano_obra,
+      costoRepuestos: proyecto.costo_repuestos,
+      costoTotal: proyecto.costo_total,
+
+      idCliente: proyecto.id_cliente,
+      idSupervisor: proyecto.id_supervisor,
+      idJefe: proyecto.id_jefe,
+      idEtapaActual: proyecto.id_etapa_actual,
+
+      cliente: cliente[0] as Cliente,
+      supervisor: supervisor[0] as Empleado,
+      jefe: jefe[0] as Empleado,
+      etapaActual: etapaActual,
+
+      repuestos: repuestos as Repuesto[],
+      especificaciones: especificaciones as Especificacion[],
+
+      empleadosActuales: empleadosActuales as Empleado[]
+    } as Proyecto;
+  }
+  catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('Error executing query', err);
+    }
+    throw err;
+  }
+}
+
+export async function obtenerProyectosPorJefe(idJefe: number): Promise<Proyecto[]> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerProyectoPorJefe($1)', [idJefe]);
+
+    const proyectos = await Promise.all(res.rows.map(async (proyecto: {
+      id_proyecto: number,
       titulo: string,
       descripcion: string,
       fecha_inicio: Date,
       fecha_fin: Date,
-      ids_empleados: number[]
+      id_cliente: number,
+      id_supervisor: number,
+      id_jefe: number,
+      id_etapa_actual: number,
+      ids_empleados_actuales: number[],
+      info_parametros: string
     }) => {
+      // Obtener cliente, supervisor, jefe, empleados actuales y etapa actual
+      const [cliente, supervisor, jefe, empleadosActuales, etapaActual] = await Promise.all([
+        obtenerClientesPorIds([proyecto.id_cliente]),
+        obtenerEmpleadosPorIds([proyecto.id_supervisor]),
+        obtenerEmpleadosPorIds([proyecto.id_jefe]),
+        obtenerEmpleadosPorIds(proyecto.ids_empleados_actuales),
+        obtenerEtapaPorId(proyecto.id_etapa_actual)
+      ]);
+
       return {
         idProyecto: proyecto.id_proyecto,
-        idCliente: proyecto.id_cliente,
-        idSupervisor: proyecto.id_supervisor,
-        idJefe: proyecto.id_jefe,
-        idEtapaActual: proyecto.id_etapa_actual,
-        costoTotal: proyecto.costo_total,
-        costoManoObra: proyecto.costo_mano_obra,
-        costoRepuestos: proyecto.costo_repuestos,
         titulo: proyecto.titulo,
         descripcion: proyecto.descripcion,
         fechaInicio: proyecto.fecha_inicio,
         fechaFin: proyecto.fecha_fin,
-        idsEmpleados: proyecto.ids_empleados
+
+        idCliente: proyecto.id_cliente,
+        idSupervisor: proyecto.id_supervisor,
+        idJefe: proyecto.id_jefe,
+        idEtapaActual: proyecto.id_etapa_actual,
+
+        cliente: cliente[0] as Cliente,
+        supervisor: supervisor[0] as Empleado,
+        jefe: jefe[0] as Empleado,
+        etapaActual: etapaActual,
+
+        idEmpleadosActuales: proyecto.ids_empleados_actuales,
+        empleadosActuales: empleadosActuales as Empleado[]
       } as Proyecto;
-    });
+    }));
 
     return proyectos;
   }
@@ -273,4 +474,3 @@ export async function obtenerProyectosAsignacion(): Promise<Proyecto[]> {
     throw err;
   }
 }
-

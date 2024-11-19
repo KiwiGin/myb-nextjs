@@ -10,9 +10,9 @@ const repuestoSchema = z.object({
   nombre: z.string(),
   precio: z.number(),
   descripcion: z.string(),
-  link_img: z.string().url().nullable().optional(),
-  stock_actual: z.number().min(0),
-  stock_solicitado: z.number().min(0),
+  linkImg: z.string().url().nullable().optional(),
+  stockActual: z.number().min(0),
+  stockRequerido: z.number().min(0),
 });
 
 type Repuesto = z.infer<typeof repuestoSchema>;
@@ -52,13 +52,13 @@ export function SelectorRepuestos({
 
   const toggleRepuesto = (repuestoId: number) => {
     setProyecto((prev) => {
-      const isSelected = prev.idRepuestos.includes(repuestoId);
+      const isSelected = prev.idRepuestos!.includes(repuestoId);
       const newIdRepuestos = isSelected
-        ? prev.idRepuestos.filter((id) => id !== repuestoId)
-        : [...prev.idRepuestos, repuestoId];
+        ? prev.idRepuestos!.filter((id) => id !== repuestoId)
+        : [...prev.idRepuestos!, repuestoId];
       const newCantidadesRepuestos = isSelected
-        ? prev.cantidadesRepuestos.filter((_, index) => prev.idRepuestos[index] !== repuestoId)
-        : [...prev.cantidadesRepuestos, 1];
+        ? prev.cantidadesRepuestos!.filter((_, index) => prev.idRepuestos![index] !== repuestoId)
+        : [...prev.cantidadesRepuestos!, 1];
       return {
         ...prev,
         idRepuestos: newIdRepuestos,
@@ -69,9 +69,9 @@ export function SelectorRepuestos({
 
   const handleCantidadChange = (repuestoId: number, cantidad: number) => {
     setProyecto((prev) => {
-      const index = prev.idRepuestos.indexOf(repuestoId);
+      const index = prev.idRepuestos!.indexOf(repuestoId);
       if (index !== -1) {
-        const nuevasCantidades = [...prev.cantidadesRepuestos];
+        const nuevasCantidades = [...prev.cantidadesRepuestos!];
         nuevasCantidades[index] = cantidad;
         return { ...prev, cantidadesRepuestos: nuevasCantidades };
       }
@@ -84,7 +84,7 @@ export function SelectorRepuestos({
       <h3 className="font-semibold">Seleccionar Repuestos</h3>
       <div className="flex flex-col space-y-2">
         {repuestos.map((repuesto) => {
-          const isSelected = proyecto.idRepuestos.includes(repuesto.idRepuesto);
+          const isSelected = proyecto.idRepuestos!.includes(repuesto.idRepuesto);
           return (
             <RepuestoCard
               key={repuesto.idRepuesto}
@@ -93,8 +93,8 @@ export function SelectorRepuestos({
               onToggle={() => toggleRepuesto(repuesto.idRepuesto)}
               cantidad={
                 isSelected
-                  ? proyecto.cantidadesRepuestos[
-                      proyecto.idRepuestos.indexOf(repuesto.idRepuesto)
+                  ? proyecto.cantidadesRepuestos![
+                      proyecto.idRepuestos!.indexOf(repuesto.idRepuesto)
                     ]
                   : 1
               }

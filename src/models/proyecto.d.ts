@@ -1,3 +1,4 @@
+import { Cliente } from "./cliente";
 import { Especificacion } from "./especificacion";
 import { Repuesto } from "./repuesto";
 
@@ -7,19 +8,31 @@ export interface Proyecto {
     descripcion: string,
     fechaInicio: Date,
     fechaFin: Date,
+    costoManoObra?: number,
+    costoRepuestos?: number,
+    costoTotal?: number,
+
     idCliente: number,
     idSupervisor: number,
     idJefe: number,
     idEtapaActual: number,
-    costoManoObra?: number,
-    costoRepuestos?: number,
-    costoTotal?: number,
+
+    cliente?: Cliente,
+    supervisor?: Empleado,
+    jefe?: Empleado,
+    etapaActual?: string,
+
     idRepuestos?: number[],
     cantidadesRepuestos?: number[],
+
+    repuestos?: Repuesto[],
+
     idParametros?: number[],
     valoresMaximos?: number[],
     valoresMinimos?: number[],
+
     especificaciones?: Especificacion[],
-    repuestos?: Repuesto[],
+
     idEmpleados?: number[],
+    empleados?: Empleado[],
 }
