@@ -5,7 +5,7 @@ interface GenericCardProps {
   title: string;
   subtitle: string;
   useImage?: boolean;
-  image?: string;
+  image?: string | null;
   imageAlt?: string;
   children?: React.ReactNode;
 }
@@ -19,11 +19,11 @@ export function GenericCard({
   children,
 }: GenericCardProps) {
   return (
-    <CardContent className="sm:flex min-w-72 rounded-md border">
+    <CardContent className="flex min-w-72 rounded-md border">
       <div className="flex items-center space-x-4 p-4 max-h-32">
         {useImage && (
           <PictureCard
-            imageSrc={"https://placehold.co/400"}
+            imageSrc={image || "https://placehold.co/400"}
             name={imageAlt || title}
             className="max-w-20 sm:max-w-48"
           />

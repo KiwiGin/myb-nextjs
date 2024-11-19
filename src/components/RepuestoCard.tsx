@@ -20,9 +20,9 @@ export function RepuestoCard({
 }: RepuestoCardProps) {
   return (
     <div className="flex items-center space-x-6 border border-gray-300 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow duration-200 bg-white">
-      {repuesto.link_img ? (
+      {repuesto.linkImg ? (
         <Image
-          src={repuesto.link_img}
+          src={repuesto.linkImg}
           alt={repuesto.nombre}
           width={100}
           height={100}
@@ -36,7 +36,9 @@ export function RepuestoCard({
       
       <div className="flex-1">
         <Label className="text-lg font-semibold text-gray-800">{repuesto.nombre} - S/ {repuesto.precio}</Label>
-        <p className="text-gray-600 mt-1">{repuesto.descripcion}</p>
+        <p className="text-gray-600 mt-1">
+          {repuesto.descripcion.length > 100 ? `${repuesto.descripcion.substring(0, 80)}...` : repuesto.descripcion}
+        </p>
       </div>
       
       <div className='flex flex-col items-end'>

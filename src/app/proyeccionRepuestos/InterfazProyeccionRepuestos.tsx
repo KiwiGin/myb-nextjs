@@ -2,12 +2,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { REPUESTOS } from "@/models/MOCKUPS";
 import { useEffect } from "react";
 import RepuestosList from "@/components/RepuestosList";
 import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/Counter";
 import { Switch } from "@/components/ui/switch";
+import { Repuesto } from "@/models/repuesto";
 
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z
@@ -18,8 +18,7 @@ const repuestoSchema = z
     descripcion: z.string(),
     linkImg: z.string().optional(),
     checked: z.boolean(),
-    stockActual: z.number(),
-    stocKSolicitado: z.number().nullable().optional(),
+    stockRequerido: z.number().optional(),
     quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
   })
   .refine(
@@ -50,32 +49,61 @@ export function InterfazProyeccionRepuestos() {
     name: "repuestos",
   });
 
+  const idJefe = 1;
+
   useEffect(() => {
-    /*
-    fetch a la api
-    */
-    form.setValue(
-      "repuestos",
-      REPUESTOS.map((repuesto) => ({
-        idRepuesto: repuesto.idRepuesto || 0,
-        nombre: repuesto.nombre,
-        precio: repuesto.precio,
-        descripcion: repuesto.descripcion,
-        linkImg: repuesto.linkImg || "",
-        checked: false,
-        stockActual: repuesto.stockActual || 0,
-        stocKSolicitado: repuesto.stockSolicitado,
-        quantity: repuesto.stockSolicitado,
-      }))
-    );
-  }, []);
+    async function fetchRepuestos() {
+      try {
+        const response = await fetch(
+          `/api/repuesto/faltantes/por-jefe/${idJefe}`,
+          {
+            method: "GET",
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Error al obtener los repuestos requeridos");
+        }
+
+        const data: { repuesto: Repuesto; cantidadFaltante: number }[] =
+          await response.json();
+        const repuestosFaltantes = data.map((repuestoFaltante) => ({
+          idRepuesto: repuestoFaltante.repuesto.idRepuesto!,
+          nombre: repuestoFaltante.repuesto.nombre,
+          precio: Number(repuestoFaltante.repuesto.precio),
+          descripcion: repuestoFaltante.repuesto.descripcion,
+          linkImg: repuestoFaltante.repuesto.linkImg || "",
+          checked: false,
+          stockRequerido: repuestoFaltante.cantidadFaltante,
+          quantity: repuestoFaltante.cantidadFaltante,
+        }));
+
+        form.setValue("repuestos", repuestosFaltantes);
+      } catch (error) {
+        console.error("Error fetching repuestos:", error);
+      }
+    }
+    fetchRepuestos();
+  }, [form]);
 
   const onSubmit = (data: ProyeccionData) => {
     const selectedRepuestos = data.repuestos.filter(
       (repuesto) => repuesto.checked
     );
-    console.log("ON SUBMIT");
-    console.log(selectedRepuestos);
+
+    const respuestosSolicitados = selectedRepuestos.map((repuesto) => ({
+      idRepuesto: repuesto.idRepuesto,
+      cantidadSolicitada: repuesto.quantity,
+    }));
+
+    fetch("/api/repuesto/solicitados", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(respuestosSolicitados),
+    });
+
+    alert("Repuestos solicitados agregados exitosamente");
   };
 
   useEffect(() => {
@@ -92,9 +120,9 @@ export function InterfazProyeccionRepuestos() {
         Proyeccion de Repuestos
       </h1>
       <RepuestosList
+        repuestos={repuestosField.fields}
         className="grid lg:grid-cols-2 gap-4"
         messageNothingAdded="No hay repuestos por asignados a sus proyectos"
-        repuestos={repuestosField.fields}
         counter={(index, item) => (
           <Controller
             name={`repuestos.${index}.quantity`}
@@ -105,7 +133,7 @@ export function InterfazProyeccionRepuestos() {
                 onChange={(e) => {
                   field.onChange(e);
                 }}
-                className={`w-1/2 ${
+                className={`min-w-32 ${
                   form.formState.errors.repuestos?.[index]?.quantity
                     ? "border-red-500"
                     : ""

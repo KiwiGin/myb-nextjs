@@ -3,30 +3,18 @@ export interface Repuesto {
   nombre: string;
   precio: number;
   descripcion: string;
-  link_img?: string | null;
-  img_base64?: string;
-  stock_actual?: number;
-  stock_solicitado?: number;
-  cantidad?: number;
-}
-
-export interface RepuestoType {
-  idRepuesto?: number;
-  nombre: string;
-  precio: number;
-  descripcion: string;
   linkImg?: string | null;
   imgBase64?: string;
   stockActual?: number;
-  stockSolicitado?: number;
+  stockAsignado?: number;
+  stockDisponible?: number;
+  stockRequerido?: number;
   cantidad?: number;
 }
 
 //Control de inputs
-export interface RepuestoForm extends RepuestoType {
+export interface RepuestoForm extends Repuesto {
   idRepuesto: number;
   checked: boolean;
   quantity?: number | string | undefined;
-  stockActual: number;
-  stockSolicitado?: number;
 }

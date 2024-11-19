@@ -11,7 +11,7 @@ interface PictureCardProps extends React.HTMLAttributes<HTMLDivElement> {
 export function PictureCard({
   imageSrc,
   name,
-  imageProps,
+  // imageProps,
   ...props
 }: PictureCardProps) {
   return (
@@ -19,7 +19,7 @@ export function PictureCard({
       key={name}
       className={`${props.className} h-full flex flex-col justify-center items-center`}
     >
-      <img src={imageSrc} alt={name} className="h-full w-auto object-contain"/>
+      <Image src={imageSrc} alt={name} width={100} height={100} className="h-full w-auto object-contain"/>
     </div>
   );
 }

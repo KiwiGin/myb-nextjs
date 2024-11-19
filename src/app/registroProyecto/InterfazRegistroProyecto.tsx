@@ -9,14 +9,8 @@ import { Empleado } from "@/models/empleado";
 import { Proyecto } from "@/models/proyecto";
 import { SelectorPruebas } from "@/components/SelectorPruebas";
 import { z } from "zod";
-import { RepuestoForm } from "@/models/repuesto";
+import { Repuesto, RepuestoForm } from "@/models/repuesto";
 
-import {
-  CLIENTES,
-  REPUESTOS,
-  TIPOS_DE_PRUEBA,
-  EMPLEADOS,
-} from "@/models/MOCKUPS";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -33,7 +27,7 @@ import RepuestosList from "@/components/RepuestosList";
 import { Modal } from "@/components/Modal";
 import { Counter } from "@/components/Counter";
 import { Switch } from "@/components/ui/switch";
-import { TipoPruebaForms } from "@/models/tipoprueba";
+import { TipoPrueba, TipoPruebaForms } from "@/models/tipoprueba";
 import { PruebasList } from "@/components/PruebasList";
 import path from "path";
 
@@ -43,7 +37,7 @@ const repuestoSchema = z.object({
   precio: z.number(),
   descripcion: z.string(),
   linkImg: z.string().nullable().optional(),
-  stockActual: z.number().min(0),
+  stockActual: z.number().min(0).optional(),
   stockSolicitado: z.number().optional(),
   checked: z.boolean(),
   quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
@@ -101,6 +95,7 @@ const proyectoSchema = z.object({
   idCliente: z.number({ message: "Debe seleccionar un cliente." }),
   idSupervisor: z.number({ message: "Debe seleccionar un supervisor." }),
   idJefe: z.number({ message: "Debe seleccionar un jefe." }),
+  idEtapaActual: z.number({ message: "Debe seleccionar una etapa." }),
   costoManoObra: z
     .union([z.string(), z.number()])
     .refine((val) => val !== "" && val !== undefined, {
@@ -125,6 +120,7 @@ export function InterfazRegistroProyecto() {
       idCliente: 0,
       idSupervisor: 0,
       idJefe: 0,
+      idEtapaActual: 1,
       costoManoObra: 0,
       repuestos: [],
       pruebas: [],
@@ -146,10 +142,11 @@ export function InterfazRegistroProyecto() {
     descripcion: "",
     fechaInicio: new Date(),
     fechaFin: new Date(),
-    idCliente: -1,
-    idSupervisor: -1,
-    idJefe: -1,
-    costoManoObra: -1,
+    idCliente: 0,
+    idSupervisor: 0,
+    idJefe: 0,
+    idEtapaActual: 1,
+    costoManoObra: 0,
     idRepuestos: [],
     cantidadesRepuestos: [],
     idParametros: [],
@@ -164,46 +161,70 @@ export function InterfazRegistroProyecto() {
   const [pruebas, setPruebas] = useState<TipoPruebaForms[]>([]);
   const [openRepuestos, setOpenRepuestos] = useState(false);
   const [openPruebas, setOpenPruebas] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
+
   const fetchClientes = async () => {
-    /* const res = await fetch("/api/cliente");
-    const data = await res.json(); 
+    const res = await fetch("/api/cliente");
+    const data = await res.json();
     setClientes(data);
-    */
-    setClientes(CLIENTES);
   };
 
   const fetchSupervisores = async () => {
-    /* const res = await fetch("/api/empleado/por-rol/supervisor");
-    const data = await res.json(); 
+    const res = await fetch("/api/empleado/por-rol/supervisor");
+    const data = await res.json();
     setSupervisores(data);
-    */
-    setSupervisores(
-      EMPLEADOS.filter((empleado) => empleado.rol === "supervisor")
-    );
   };
 
   const fetchJefes = async () => {
-    /* const res = await fetch("/api/empleado/por-rol/jefe");
-    const data = await res.json(); 
+    const res = await fetch("/api/empleado/por-rol/jefe");
+    const data = await res.json();
     setJefes(data);
-    */
-    setJefes(EMPLEADOS.filter((empleado) => empleado.rol === "jefe"));
   };
 
   const fetchRepuestos = async () => {
-    /* const res = await fetch("/api/repuesto");
-    const data = await res.json(); 
-    setRepuestos(data);
-    */
-    setRepuestos(REPUESTOS.map((r) => ({ ...r, checked: false, quantity: 0 })));
+    const res = await fetch("/api/repuesto");
+    const data = await res.json();
+
+    const formattedData = data.map((repuesto: Repuesto) => ({
+      ...repuesto,
+      precio: Number(repuesto.precio),
+      checked: false,
+      quantity: 0,
+    }));
+
+    const parsedData = z.array(repuestoSchema).safeParse(formattedData);
+    if (parsedData.success) {
+      setRepuestos(parsedData.data);
+    } else {
+      console.log(parsedData.error);
+      setError("Error en la validación de los datos de repuestos");
+    }
   };
 
   const fetchPruebas = async () => {
-    /* const res = await fetch("/api/prueba");
-    const data = await res.json(); 
-    setPruebas(data);
-    */
-    setPruebas(TIPOS_DE_PRUEBA.map((p) => ({ ...p, checked: false })));
+    const res = await fetch("/api/pruebaconparametro");
+    const data = (await res.json()) as TipoPrueba[];
+
+    const formatedData = data.map((prueba) => ({
+      ...prueba,
+      checked: false,
+      parametros: prueba.parametros?.map((parametro) => ({
+        ...parametro,
+        valorMaximo: 0,
+        valorMinimo: 0,
+      })),
+    }));
+
+    console.log(formatedData);
+
+    const parsedData = z.array(pruebaSchema).safeParse(formatedData);
+
+    if (parsedData.success) {
+      setPruebas(parsedData.data);
+    } else {
+      setError("Error en la validación de los datos de pruebas");
+    }
   };
 
   useEffect(() => {
@@ -260,15 +281,46 @@ export function InterfazRegistroProyecto() {
     pruebaField.remove(index);
   };
 
-  const onSubmit = async (data: RegistroProyecto) => {
-    console.log(data);
-    /* try {
+  const onSubmit = async (proy: RegistroProyecto) => {
+    try {
+      const parametros = proy.pruebas.flatMap((prueba) => {
+        if (prueba.checked) {
+          return prueba.parametros.map((parametro) => parametro);
+        }
+        return [];
+      });
+
+      const formatedData = {
+        titulo: proy.titulo,
+        descripcion: proy.descripcion,
+        fechaInicio: proy.fechaInicio,
+        fechaFin: proy.fechaFin,
+        idCliente: proy.idCliente,
+        idSupervisor: proy.idSupervisor,
+        idJefe: proy.idJefe,
+        idEtapaActual: proy.idEtapaActual,
+        costoManoObra: Number(proy.costoManoObra),
+        idRepuestos: proy.repuestos
+          ? proy.repuestos?.map((repuesto) => repuesto.idRepuesto)
+          : [],
+        cantidadesRepuestos: proy.repuestos?.map(
+          (repuesto) => repuesto.quantity
+        ),
+        idParametros: parametros.map((parametro) => parametro.idParametro),
+        valoresMaximos: parametros.map((parametro) =>
+          parametro.valorMaximo ? Number(parametro.valorMaximo) : 0
+        ),
+        valoresMinimos: parametros.map((parametro) =>
+          parametro.valorMinimo ? Number(parametro.valorMinimo) : 0
+        ),
+      };
+
       const res = await fetch("/api/proyecto", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(proyecto),
+        body: JSON.stringify(formatedData),
       });
 
       if (!res.ok) {
@@ -287,7 +339,8 @@ export function InterfazRegistroProyecto() {
         idCliente: 0,
         idSupervisor: 0,
         idJefe: 0,
-        costoManoObra: 1,
+        idEtapaActual: 1,
+        costoManoObra: 0,
         idRepuestos: [],
         cantidadesRepuestos: [],
         idParametros: [],
@@ -299,13 +352,21 @@ export function InterfazRegistroProyecto() {
     } catch (error) {
       console.error("Error en el registro del proyecto:", error);
       alert("Hubo un error al registrar el proyecto. Inténtalo de nuevo.");
-    } */
+    }
   };
 
   useEffect(() => {
     console.log("repuestos");
     console.log(form.watch("repuestos"));
   }, [form.watch("repuestos")]);
+
+  if (error) {
+    return (
+      <div className="p-4 max-w-lg mx-auto">
+        <Label>Error: {error}</Label>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 max-w-lg mx-auto">

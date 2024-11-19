@@ -19,10 +19,7 @@ export default function RepuestosList<T extends RepuestoForm>({
   selector?: (index: number, item: T) => React.ReactNode;
 }) {
   return (
-    <div
-      className={`mx-3 overflow-y-auto ${className}`}
-      style={{ height: "40h" }}
-    >
+    <div className={`mx-3 ${className}`} style={{ height: "40h" }}>
       {repuestos.length === 0 ? (
         <p>{messageNothingAdded}</p>
       ) : (
@@ -32,13 +29,17 @@ export default function RepuestosList<T extends RepuestoForm>({
             className={`pt-2 w-full ${remover && "relative"}`}
           >
             <GenericCard
-              title={item.nombre}
-              subtitle={item.descripcion}
-              image={item.linkImg || ""}
+              title={`${item.nombre} - ${item.precio}`}
+              subtitle={
+                item.descripcion.length > 100
+                  ? `${item.descripcion.substring(0, 80)}...`
+                  : item.descripcion
+              }
+              image={item.linkImg}
               imageAlt={item.nombre}
             >
               <div
-                className={`"flex flex-row mx-auto items-center gap-4 ${
+                className={`"flex flex-row self-center gap-4 ${
                   counter && selector && "min-w-32"
                 }"`}
               >

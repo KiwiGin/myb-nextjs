@@ -85,3 +85,46 @@ export async function paObtenerEmpleados(): Promise<Empleado[]> {
     return [];
   }
 }
+
+//obtener empleados por ids
+export async function obtenerEmpleadosPorIds(ids: number[]): Promise<Empleado[]> {
+  try {
+    const res = await pool.query('SELECT * FROM paObtenerEmpleadosPorIds($1)', [ids]);
+
+    const empleados = res.rows.map((empleado: {
+      id_empleado: number,
+      usuario: string,
+      password: string,
+      nombre: string,
+      apellido: string,
+      correo: string,
+      telefono: string,
+      direccion: string,
+      tipo_documento: string,
+      documento_identidad: string,
+      rol: string
+    }) => {
+      return {
+        idEmpleado: empleado.id_empleado,
+        usuario: empleado.usuario,
+        password: empleado.password,
+        nombre: empleado.nombre,
+        apellido: empleado.apellido,
+        correo: empleado.correo,
+        telefono: empleado.telefono,
+        direccion: empleado.direccion,
+        documentoIdentidad: empleado.documento_identidad,
+        tipoDocumento: empleado.tipo_documento,
+        rol: empleado.rol
+      } as Empleado;
+    });
+    return empleados;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error al obtener empleados por ids:', err.stack);
+    } else {
+      console.error('Error al obtener empleados por ids:', err);
+    }
+    return [];
+  }
+}

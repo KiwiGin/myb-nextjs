@@ -8,33 +8,70 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useState } from "react";
-import { Combobox } from "@/components/Combobox";
+import { useEffect, useState } from "react";
 import { PictureCard } from "@/components/PictureCard";
 import { Repuesto } from "@/models/repuesto";
 import { REPUESTOS } from "@/models/MOCKUPS";
+import { Proyecto } from "@/models/proyecto";
 
 export function InterfazAsignacionRepuestos({
-  idProyecto,
+  proyecto,
 }: {
-  idProyecto: string;
+  proyecto: Proyecto;
 }) {
-  const [repuestos, setRepuestos] = useState<Repuesto[]>(REPUESTOS);
+  const [repuestos] = useState<Repuesto[]>(proyecto.repuestos || []);
   const [available, setAvaible] = useState<string>("Disponibles");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
+  useEffect(() => {
+    if (repuestos.some((repuesto) => repuesto.stockDisponible! < repuesto.cantidad!)) {
+      setAvaible("No disponibles");
+    } else {
+      setAvaible("Disponibles");
+    }
+  }, [repuestos]);
+
+  const pedirRepuestos = async () => {
+    const pedido = repuestos
+      .filter((repuesto) => repuesto.stockDisponible! < repuesto.cantidad!)
+      .map((repuesto) => ({
+      idRepuesto: repuesto.idRepuesto,
+      cantidadSolicitada: repuesto.cantidad! - repuesto.stockDisponible!,
+      }));
+
+    // POST /api/repuesto/solicitados
+    const response = await fetch("/api/repuesto/solicitados", {
+      method: "POST",
+      body: JSON.stringify(pedido),
+    });
+
+    if (!response.ok) {
+      console.error("Error al pedir repuestos");
+      return;
+    }
+
+    const data = await response.json();
+    console.log(data);
+  };
+
+  const asignarRepuestos = async () => {
+    // PUT /api/proyecto/repuesto/asignar
+    const response = await fetch(`/api/proyecto/repuesto/asignar`, {
+      method: "PUT",
+      body: JSON.stringify({ proyectoId: proyecto.idProyecto }),
+    });
+
+    if (!response.ok) {
+      console.error("Error al asignar repuestos");
+      return;
+    }
+
+    const data = await response.json();
+    console.log(data);
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      <Combobox
-        items={["Disponibles", "Pedidos", "No disponibles"]}
-        getValue={(r) => r}
-        getLabel={(r) => r}
-        getRealValue={(r) => r}
-        onSelection={(r) => {
-          setAvaible(r);
-        }}
-        itemName={"Estado"}
-      />
       <div className="flex justify-center items-center gap-4 w-full">
         <p
           className={`font-bold ${
@@ -65,7 +102,7 @@ export function InterfazAsignacionRepuestos({
                   <div className="h-full w-full flex flex-row gap-2 py-4 items-center">
                     <PictureCard
                       imageSrc={
-                        repuesto.link_img ||
+                        repuesto.linkImg ||
                         "https://avatar.iran.liara.run/public/6"
                       }
                       name={repuesto.nombre}
@@ -78,9 +115,9 @@ export function InterfazAsignacionRepuestos({
                   </div>
                   <div className="flex flex-col justify-self-end gap-2 px-3">
                     <p className="text-4xl font-extralight">
-                      {repuesto.stock_actual}
-                      {repuesto.stock_solicitado &&
-                        `/${repuesto.stock_solicitado}`}
+                      {repuesto.stockDisponible}
+                      {repuesto.cantidad &&
+                        `/${repuesto.cantidad}`}
                     </p>
                   </div>
                 </div>
@@ -92,7 +129,7 @@ export function InterfazAsignacionRepuestos({
                   type="submit"
                   className="w-full"
                   onClick={() => {
-                    // TODO: send request to backend to order repuestos
+                    pedirRepuestos();
                     setIsDialogOpen(false);
                   }}
                 >
@@ -103,7 +140,7 @@ export function InterfazAsignacionRepuestos({
           </DialogContent>
         </Dialog>
       </div>
-      <Button disabled={available !== "Disponibles"} className="w-full">
+      <Button onClick={asignarRepuestos} disabled={available !== "Disponibles"} className="w-full">
         Asignar repuestos
       </Button>
     </div>

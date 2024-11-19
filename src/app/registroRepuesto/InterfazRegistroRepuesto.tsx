@@ -14,8 +14,8 @@ const repuestoSchema = z.object({
   nombre: z.string().min(1, { message: "El nombre es obligatorio" }),
   precio: z.number().min(0.01, { message: "El precio debe ser mayor que cero" }),
   descripcion: z.string().min(1, { message: "La descripción es obligatoria" }),
-  img_base64: z.string().optional(),
-  stock_actual: z.number().min(0, { message: "El stock debe ser positivo" }).optional(),
+  imgBase64: z.string().optional(),
+  stockActual: z.number().min(0, { message: "El stock debe ser positivo" }).optional(),
 });
 
 export function InterfazRegistroRepuesto() {
@@ -23,19 +23,19 @@ export function InterfazRegistroRepuesto() {
     nombre: "",
     precio: 0,
     descripcion: "",
-    img_base64: "",
-    stock_actual: 0,
+    imgBase64: "",
+    stockActual: 0,
   });
   const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setRepuesto({ ...repuesto, [name]: name === "precio" || name === "stock_actual" ? parseFloat(value) : value });
+    setRepuesto({ ...repuesto, [name]: name === "precio" || name === "stockActual" ? parseFloat(value) : value });
   };
 
   const handleImageUpload = (base64: string | null) => {
     if (!base64) return;
-    setRepuesto({ ...repuesto, img_base64: base64 ? base64 : "" });
+    setRepuesto({ ...repuesto, imgBase64: base64 ? base64 : "" });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,11 +55,15 @@ export function InterfazRegistroRepuesto() {
 
     setErrors(null);
     
-    await fetch("/api/repuesto", {
+    const response = await fetch("/api/repuesto", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(repuesto),
     });
+
+    if (response.ok) {
+      alert("Repuesto registrado con éxito");
+    }
   };
 
   return (
@@ -111,16 +115,16 @@ export function InterfazRegistroRepuesto() {
         </div>
 
         <div className="mb-4">
-          <Label htmlFor="stock_actual">Stock Actual</Label>
+          <Label htmlFor="stockActual">Stock Actual</Label>
           <Input
-            id="stock_actual"
-            name="stock_actual"
+            id="stockActual"
+            name="stockActual"
             type="number"
             placeholder="Cantidad en stock"
-            value={repuesto.stock_actual}
+            value={repuesto.stockActual}
             onChange={handleChange}
           />
-          {errors?.stock_actual && <p className="text-red-500">{errors.stock_actual}</p>}
+          {errors?.stock_actual && <p className="text-red-500">{errors.stockActual}</p>}
         </div>
 
         <Button type="submit" className="w-full mt-4">
