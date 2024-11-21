@@ -3,11 +3,8 @@
 import { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { SelectorRepuestos } from "@/components/SelectorRepuestos";
 import { Cliente } from "@/models/cliente";
 import { Empleado } from "@/models/empleado";
-import { Proyecto } from "@/models/proyecto";
-import { SelectorPruebas } from "@/components/SelectorPruebas";
 import { z } from "zod";
 import { Repuesto, RepuestoForm } from "@/models/repuesto";
 
@@ -15,7 +12,6 @@ import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -23,25 +19,41 @@ import {
 } from "@/components/ui/form";
 import { Combobox } from "@/components/Combobox";
 import { Input } from "@/components/ui/input";
-import RepuestosList from "@/components/RepuestosList";
-import { Modal } from "@/components/Modal";
+import { RepuestosList } from "@components/RepuestosList";
 import { Counter } from "@/components/Counter";
-import { Switch } from "@/components/ui/switch";
 import { TipoPrueba, TipoPruebaForms } from "@/models/tipoprueba";
 import { PruebasList } from "@/components/PruebasList";
-import path from "path";
+import PruebasStock from "@/components/PruebasStock";
+import { RepuestosStock } from "@/components/RepuestosStock";
+import { Noice } from "@/components/Noice";
+import { NoiceType } from "@/models/noice";
 
-const repuestoSchema = z.object({
-  idRepuesto: z.number(),
-  nombre: z.string(),
-  precio: z.number(),
-  descripcion: z.string(),
-  linkImg: z.string().nullable().optional(),
-  stockActual: z.number().min(0).optional(),
-  stockSolicitado: z.number().optional(),
-  checked: z.boolean(),
-  quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
-});
+const repuestoSchema = z
+  .object({
+    idRepuesto: z.number(),
+    nombre: z.string(),
+    precio: z.number(),
+    descripcion: z.string(),
+    linkImg: z.string().nullable().optional(),
+    stockActual: z.number().min(0).optional(),
+    stockSolicitado: z.number().optional(),
+    checked: z.boolean(),
+    quantity: z.union([z.number(), z.undefined(), z.string()]).optional(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.checked && (val.quantity === undefined || val.quantity === "")) {
+      ctx.addIssue({
+        code: "custom",
+        message: `Debe ingresar una cantidad para ${val.nombre}  si está marcado.`,
+      });
+
+      ctx.addIssue({
+        code: "custom",
+        message: `Debe ingresar un valor.`,
+        path: ["quantity"],
+      });
+    }
+  });
 
 const parametroSchema = z
   .object({
@@ -51,30 +63,54 @@ const parametroSchema = z
     valorMaximo: z.union([z.number(), z.string(), z.undefined()]).optional(),
     valorMinimo: z.union([z.number(), z.string(), z.undefined()]).optional(),
   })
-  .refine(
-    (val) =>
-      (val.valorMaximo !== undefined && val.valorMaximo !== "") ||
-      (val.valorMinimo !== undefined && val.valorMinimo !== ""),
-    {
-      message: "Debe ingresar un valor máximo y mínimo.",
-      path: ["valorMaximo"],
-    }
-  )
-  .refine(
-    (val) =>
-      (val.valorMaximo !== undefined && val.valorMaximo !== "") ||
-      (val.valorMinimo !== undefined && val.valorMinimo !== ""),
-    {
-      message: "Debe ingresar un valor máximo y mínimo.",
-      path: ["valorMinimo"], // Otra validación personalizada.
-    }
-  );
+  .superRefine((val, ctx) => {
+    if (
+      (val.valorMaximo === undefined || val.valorMaximo === "") &&
+      (val.valorMinimo === undefined || val.valorMinimo === "")
+    ) {
+      ["valorMaximo", "valorMinimo"].forEach((key) => {
+        ctx.addIssue({
+          code: "custom",
+          message: "Debe ingresar un valor máximo o mínimo.",
+          path: [key],
+        });
+      });
 
+      return z.NEVER;
+    }
+  });
 const pruebaSchema = z.object({
   idTipoPrueba: z.number(),
   nombre: z.string(),
   checked: z.boolean(),
-  parametros: z.array(parametroSchema),
+  parametros: z.array(parametroSchema).superRefine((val, ctx) => {
+    const minBiggerMax = val.filter(
+      (param) => Number(param.valorMaximo) < Number(param.valorMinimo)
+    );
+    if (minBiggerMax.length > 0) {
+      minBiggerMax.forEach((param) => {
+        ctx.addIssue({
+          code: "custom",
+          message: `El valor máximo de ${param.nombre} debe ser mayor o igual al valor mínimo.`,
+          path: ["root"],
+        });
+
+        ctx.addIssue({
+          code: "custom",
+          message: "El valor máximo debe ser mayor o igual al valor mínimo.",
+          path: [val.indexOf(param), "valorMaximo"],
+        });
+
+        ctx.addIssue({
+          code: "custom",
+          message: "El valor minimo debe ser menor o igual al valor maximo.",
+          path: [val.indexOf(param), "valorMinimo"],
+        });
+      });
+
+      return z.NEVER;
+    }
+  }),
 });
 
 const proyectoSchema = z.object({
@@ -92,9 +128,17 @@ const proyectoSchema = z.object({
       message: "La fecha es inválida o no está en el formato esperado.",
     }
   ),
-  idCliente: z.number({ message: "Debe seleccionar un cliente." }),
-  idSupervisor: z.number({ message: "Debe seleccionar un supervisor." }),
-  idJefe: z.number({ message: "Debe seleccionar un jefe." }),
+  idCliente: z.number({ message: "Debe seleccionar un cliente." }).min(1, {
+    message: "Debe seleccionar un cliente valido.",
+  }),
+  idSupervisor: z
+    .number({ message: "Debe seleccionar un supervisor." })
+    .min(1, {
+      message: "Debe seleccionar un supervisor valido.",
+    }),
+  idJefe: z.number({ message: "Debe seleccionar un jefe." }).min(1, {
+    message: "Debe seleccionar un jefe valido.",
+  }),
   idEtapaActual: z.number({ message: "Debe seleccionar una etapa." }),
   costoManoObra: z
     .union([z.string(), z.number()])
@@ -117,9 +161,9 @@ export function InterfazRegistroProyecto() {
       descripcion: "",
       fechaInicio: new Date(),
       fechaFin: new Date(),
-      idCliente: 0,
-      idSupervisor: 0,
-      idJefe: 0,
+      idCliente: -1,
+      idSupervisor: -1,
+      idJefe: -1,
       idEtapaActual: 1,
       costoManoObra: 0,
       repuestos: [],
@@ -137,23 +181,6 @@ export function InterfazRegistroProyecto() {
     name: "pruebas",
   });
 
-  const [proyecto, setProyecto] = useState<Proyecto>({
-    titulo: "",
-    descripcion: "",
-    fechaInicio: new Date(),
-    fechaFin: new Date(),
-    idCliente: 0,
-    idSupervisor: 0,
-    idJefe: 0,
-    idEtapaActual: 1,
-    costoManoObra: 0,
-    idRepuestos: [],
-    cantidadesRepuestos: [],
-    idParametros: [],
-    valoresMaximos: [],
-    valoresMinimos: [],
-  });
-
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [supervisores, setSupervisores] = useState<Empleado[]>([]);
   const [jefes, setJefes] = useState<Empleado[]>([]);
@@ -162,24 +189,41 @@ export function InterfazRegistroProyecto() {
   const [openRepuestos, setOpenRepuestos] = useState(false);
   const [openPruebas, setOpenPruebas] = useState(false);
 
+  const [noice, setNoice] = useState<NoiceType | null>({
+    type: "loading",
+    message: "Cargando datos del proyecto...",
+  });
+
   const [error, setError] = useState<string | null>(null);
 
   const fetchClientes = async () => {
-    const res = await fetch("/api/cliente");
-    const data = await res.json();
-    setClientes(data);
+    try {
+      const res = await fetch("/api/cliente");
+      const data = await res.json();
+      setClientes(data);
+    } catch (error) {
+      throw new Error("Error en la carga de datos de clientes");
+    }
   };
 
   const fetchSupervisores = async () => {
-    const res = await fetch("/api/empleado/por-rol/supervisor");
-    const data = await res.json();
-    setSupervisores(data);
+    try {
+      const res = await fetch("/api/empleado/por-rol/supervisor");
+      const data = await res.json();
+      setSupervisores(data);
+    } catch (error) {
+      throw new Error("Error en la carga de datos de supervisores");
+    }
   };
 
   const fetchJefes = async () => {
-    const res = await fetch("/api/empleado/por-rol/jefe");
-    const data = await res.json();
-    setJefes(data);
+    try {
+      const res = await fetch("/api/empleado/por-rol/jefe");
+      const data = await res.json();
+      setJefes(data);
+    } catch (error) {
+      throw new Error("Error en la carga de datos de jefes");
+    }
   };
 
   const fetchRepuestos = async () => {
@@ -197,8 +241,7 @@ export function InterfazRegistroProyecto() {
     if (parsedData.success) {
       setRepuestos(parsedData.data);
     } else {
-      console.log(parsedData.error);
-      setError("Error en la validación de los datos de repuestos");
+      throw new Error("Error en la validación de los datos de repuestos");
     }
   };
 
@@ -216,23 +259,37 @@ export function InterfazRegistroProyecto() {
       })),
     }));
 
-    console.log(formatedData);
-
     const parsedData = z.array(pruebaSchema).safeParse(formatedData);
 
     if (parsedData.success) {
       setPruebas(parsedData.data);
     } else {
-      setError("Error en la validación de los datos de pruebas");
+      throw new Error("Error en la validación de los datos de pruebas");
     }
   };
 
   useEffect(() => {
-    fetchClientes();
-    fetchSupervisores();
-    fetchJefes();
-    fetchRepuestos();
-    fetchPruebas();
+    try {
+      const fetchData = async () => {
+        await Promise.all([
+          fetchClientes(),
+          fetchSupervisores(),
+          fetchJefes(),
+          fetchRepuestos(),
+          fetchPruebas(),
+        ]);
+      };
+      fetchData();
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+        return;
+      }
+      console.error("Error en la carga de datos:", error);
+      setError("Error en la carga de datos");
+    } finally {
+      setNoice(null);
+    }
   }, []);
 
   const handleSelectRepuesto = (repuesto: RepuestoForm) => {
@@ -283,6 +340,7 @@ export function InterfazRegistroProyecto() {
 
   const onSubmit = async (proy: RegistroProyecto) => {
     try {
+      console.log(proy);
       const parametros = proy.pruebas.flatMap((prueba) => {
         if (prueba.checked) {
           return prueba.parametros.map((parametro) => parametro);
@@ -330,23 +388,7 @@ export function InterfazRegistroProyecto() {
       const data = await res.json();
       console.log("Proyecto registrado:", data);
 
-      // Limpiar el formulario o realizar alguna acción adicional si es necesario
-      setProyecto({
-        titulo: "",
-        descripcion: "",
-        fechaInicio: new Date(),
-        fechaFin: new Date(),
-        idCliente: 0,
-        idSupervisor: 0,
-        idJefe: 0,
-        idEtapaActual: 1,
-        costoManoObra: 0,
-        idRepuestos: [],
-        cantidadesRepuestos: [],
-        idParametros: [],
-        valoresMaximos: [],
-        valoresMinimos: [],
-      });
+      form.reset();
 
       alert("Proyecto registrado con éxito");
     } catch (error) {
@@ -356,9 +398,13 @@ export function InterfazRegistroProyecto() {
   };
 
   useEffect(() => {
-    console.log("repuestos");
-    console.log(form.watch("repuestos"));
-  }, [form.watch("repuestos")]);
+    console.log("Errors");
+    console.log(form.formState.errors.repuestos);
+  }, [form.formState.errors]);
+
+  useEffect(() => {
+    console.log(noice);
+  }, [noice]);
 
   if (error) {
     return (
@@ -370,6 +416,7 @@ export function InterfazRegistroProyecto() {
 
   return (
     <div className="p-4 max-w-lg mx-auto">
+      {noice && <Noice noice={noice} />}
       <h2 className="text-lg font-semibold mb-4">Registro de Proyecto</h2>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -470,83 +517,85 @@ export function InterfazRegistroProyecto() {
             </div>
           </div>
 
-          {/* Select para Cliente */}
-          <FormField
-            control={form.control}
-            name="idCliente"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="idCliente">Clientes</FormLabel>
-                <Combobox<Cliente>
-                  items={clientes}
-                  getValue={(r) => {
-                    if (r && typeof r !== "string" && "idCliente" in r) {
-                      return r.idCliente.toString();
-                    }
-                  }}
-                  getLabel={(r) => r.nombre}
-                  getRealValue={(r) => r}
-                  onSelection={(r) => {
-                    field.onChange(r.idCliente);
-                  }}
-                  itemName={"Cliente"}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-y-3 mb-2">
+            {/* Select para Cliente */}
+            <FormField
+              control={form.control}
+              name="idCliente"
+              render={({ field }) => (
+                <FormItem className="flex flex-col w-full">
+                  <FormLabel htmlFor="idCliente">Clientes</FormLabel>
+                  <Combobox<Cliente>
+                    items={clientes}
+                    getValue={(r) => {
+                      if (r && typeof r !== "string" && "idCliente" in r) {
+                        return r.idCliente.toString();
+                      }
+                    }}
+                    getLabel={(r) => r.nombre}
+                    getRealValue={(r) => r}
+                    onSelection={(r) => {
+                      field.onChange(r.idCliente);
+                    }}
+                    itemName={"Cliente"}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Select para Supervisor */}
-          <FormField
-            control={form.control}
-            name="idSupervisor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="idSupervisor">Supervisores</FormLabel>
-                <Combobox<Empleado>
-                  items={supervisores}
-                  getValue={(r) => {
-                    if (r && typeof r !== "string" && "idEmpleado" in r) {
-                      return r.idEmpleado.toString();
-                    }
-                  }}
-                  getLabel={(r) => r.nombre}
-                  getRealValue={(r) => r}
-                  onSelection={(r) => {
-                    field.onChange(r.idEmpleado);
-                  }}
-                  itemName={"Supervisor"}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Select para Supervisor */}
+            <FormField
+              control={form.control}
+              name="idSupervisor"
+              render={({ field }) => (
+                <FormItem className="flex flex-col w-full">
+                  <FormLabel htmlFor="idSupervisor">Supervisores</FormLabel>
+                  <Combobox<Empleado>
+                    items={supervisores}
+                    getValue={(r) => {
+                      if (r && typeof r !== "string" && "idEmpleado" in r) {
+                        return r.idEmpleado.toString();
+                      }
+                    }}
+                    getLabel={(r) => r.nombre}
+                    getRealValue={(r) => r}
+                    onSelection={(r) => {
+                      field.onChange(r.idEmpleado);
+                    }}
+                    itemName={"Supervisor"}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          {/* Select para Jefe */}
-          <FormField
-            control={form.control}
-            name="idJefe"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel htmlFor="idJefe">Jefes</FormLabel>
-                <Combobox<Empleado>
-                  items={jefes}
-                  getValue={(r) => {
-                    if (r && typeof r !== "string" && "idEmpleado" in r) {
-                      return r.idEmpleado.toString();
-                    }
-                  }}
-                  getLabel={(r) => r.nombre}
-                  getRealValue={(r) => r}
-                  onSelection={(r) => {
-                    field.onChange(r.idEmpleado);
-                  }}
-                  itemName={"Jefe"}
-                />
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Select para Jefe */}
+            <FormField
+              control={form.control}
+              name="idJefe"
+              render={({ field }) => (
+                <FormItem className="flex flex-col w-full">
+                  <FormLabel htmlFor="idJefe">Jefes</FormLabel>
+                  <Combobox<Empleado>
+                    items={jefes}
+                    getValue={(r) => {
+                      if (r && typeof r !== "string" && "idEmpleado" in r) {
+                        return r.idEmpleado.toString();
+                      }
+                    }}
+                    getLabel={(r) => r.nombre}
+                    getRealValue={(r) => r}
+                    onSelection={(r) => {
+                      field.onChange(r.idEmpleado);
+                    }}
+                    itemName={"Jefe"}
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {/* Costo de Mano de Obra */}
           <div className="mb-4">
@@ -576,188 +625,176 @@ export function InterfazRegistroProyecto() {
             />
           </div>
 
-          <h1>REPUESTOS SELECCIONADOS</h1>
-          <RepuestosList
-            repuestos={repuestoField.fields}
-            className="w-full"
-            messageNothingAdded="No hay repuestos seleccionados"
-            counter={(index, item) => (
-              <Controller
-                name={`repuestos.${index}.quantity`}
-                control={form.control}
-                render={({ field }) => (
-                  <div className="flex h-full items-center gap-2">
-                    <Counter
-                      {...field}
-                      className={`w-16 ${
-                        form.formState.errors.repuestos?.[index]?.quantity
-                          ? "border-red-500"
-                          : ""
-                      }`}
-                      min={1}
-                      disabled={!form.watch(`repuestos.${index}.checked`)}
+          {/* Repuestos */}
+          <FormField
+            control={form.control}
+            name="repuestos"
+            render={({ field }) => (
+              <FormItem className="flex flex-col items-center my-4">
+                <FormLabel htmlFor="repuestos">
+                  Repuestos seleccionados
+                </FormLabel>
+                <RepuestosList
+                  repuestos={field.value || []}
+                  className="w-full"
+                  messageNothingAdded="No hay repuestos seleccionados"
+                  counter={(index, item) => (
+                    <Controller
+                      name={`repuestos.${index}.quantity`}
+                      control={form.control}
+                      render={({ field }) => (
+                        <div className="flex h-full items-center gap-2">
+                          <Counter
+                            {...field}
+                            className={`w-16 ${
+                              form.formState.errors.repuestos?.[index]?.quantity
+                                ? "border-red-500"
+                                : ""
+                            }`}
+                            min={1}
+                            disabled={!form.watch(`repuestos.${index}.checked`)}
+                          />
+                        </div>
+                      )}
                     />
-                  </div>
+                  )}
+                  remover={(index, item) => (
+                    <Button
+                      className="absolute right-0 top-0 z-50"
+                      onClick={() => {
+                        handleUnselectRepuesto(item, index);
+                      }}
+                      type="button"
+                    >
+                      &times;
+                    </Button>
+                  )}
+                  error={(index) =>
+                    form.formState.errors.repuestos?.[index]?.root && (
+                      <span className="text-red-500 font-sans text-sm">
+                        {
+                          form.formState.errors.repuestos?.[index]?.root
+                            ?.message
+                        }
+                      </span>
+                    )
+                  }
+                />
+                <Button type="button" onClick={() => setOpenRepuestos(true)}>
+                  Añadir repuestos
+                </Button>
+                {form.formState.errors.repuestos?.root && (
+                  <span className="text-red-500 font-sans text-sm">
+                    {form.formState.errors.repuestos?.root?.message}
+                  </span>
                 )}
-              />
-            )}
-            remover={(index, item) => (
-              <Button
-                className="absolute right-0 top-0 z-50"
-                onClick={() => {
-                  handleUnselectRepuesto(item, index);
-                }}
-                type="button"
-              >
-                &times;
-              </Button>
+              </FormItem>
             )}
           />
-          <Button type="button" onClick={() => setOpenRepuestos(true)}>
-            Añadir repuestos
-          </Button>
 
-          <Modal
-            isOpen={openRepuestos}
-            onClose={() => setOpenRepuestos(false)}
-            className=""
-          >
-            <div className="w-full flex items-center">
-              <h2 className="text-3xl font-extrabold my-2 dark:text-white">
-                Selecciona los repuestos
-              </h2>
-            </div>
+          <RepuestosStock
+            open={openRepuestos}
+            setOpen={setOpenRepuestos}
+            repuestos={repuestos}
+            handleSelectRepuesto={handleSelectRepuesto}
+            handleUnselectRepuesto={handleUnselectRepuesto}
+          />
 
-            <div
-              className="overflow-y-scroll flex-col items-center"
-              style={{ maxHeight: "80vh", maxWidth: "75vw" }}
-            >
-              <RepuestosList
-                repuestos={repuestos}
-                messageNothingAdded="No hay repuestos seleccionados"
-                selector={(index, item) => (
-                  <div className="flex h-full items-center gap-2">
-                    <Switch
-                      id={item.idRepuesto?.toString()}
-                      checked={item.checked}
-                      onClick={() => {
-                        if (!item.checked) {
-                          handleSelectRepuesto(item);
-                        } else {
-                          handleUnselectRepuesto(item, index);
-                        }
-                      }}
+          {/* Pruebas */}
+          <FormField
+            control={form.control}
+            name="pruebas"
+            render={({ field }) => (
+              <FormItem className="flex flex-col items-center my-2">
+                <FormLabel htmlFor="pruebas">Pruebas seleccionadas</FormLabel>
+                <PruebasList
+                  className="w-full"
+                  pruebas={field.value}
+                  messageNothingAdded="No hay pruebas seleccionadas"
+                  counterMin={(prueba_index, param_index) => (
+                    <FormField
+                      name={`pruebas.${prueba_index}.parametros.${param_index}.valorMinimo`}
+                      control={form.control}
+                      render={({ field }) => (
+                        <Counter
+                          {...field}
+                          className={`w-20 ${
+                            form.formState.errors.pruebas?.[prueba_index]
+                              ?.parametros?.[param_index]?.valorMinimo
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          disabled={
+                            !form.watch(`pruebas.${prueba_index}.checked`)
+                          }
+                        />
+                      )}
                     />
-                  </div>
+                  )}
+                  counterMax={(prueba_index, param_index) => (
+                    <FormField
+                      name={`pruebas.${prueba_index}.parametros.${param_index}.valorMaximo`}
+                      control={form.control}
+                      render={({ field }) => (
+                        <FormItem>
+                          <Counter
+                            {...field}
+                            className={`w-20 ${
+                              form.formState.errors.pruebas?.[prueba_index]
+                                ?.parametros?.[param_index]?.valorMaximo
+                                ? "border-red-500"
+                                : ""
+                            }`}
+                            disabled={
+                              !form.watch(`pruebas.${prueba_index}.checked`)
+                            }
+                          />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                  remover={(index, item) => (
+                    <Button
+                      className="absolute right-0 top-0 z-10"
+                      onClick={() => {
+                        handleUnselectPrueba(item, index);
+                      }}
+                      type="button"
+                    >
+                      &times;
+                    </Button>
+                  )}
+                  error={(index) =>
+                    form.formState.errors.pruebas?.[index]?.parametros
+                      ?.root && (
+                      <span className="text-red-500 font-sans text-sm">
+                        {
+                          form.formState.errors.pruebas?.[index]?.parametros
+                            ?.root?.message
+                        }
+                      </span>
+                    )
+                  }
+                />
+                <Button type="button" onClick={() => setOpenPruebas(true)}>
+                  Añadir pruebas
+                </Button>
+                {form.formState.errors.pruebas && (
+                  <span className="text-red-500 font-sans text-sm">
+                    {form.formState.errors.pruebas?.message}
+                  </span>
                 )}
-              />
-            </div>
-            <div className="w-full flex items-center justify-center py-4">
-              <Button className="w-1/2" onClick={() => setOpenRepuestos(false)}>
-                Cerrar
-              </Button>
-            </div>
-          </Modal>
-
-          <h1>PRUEBAS SELECCIONADAS</h1>
-          <PruebasList
-            className="w-full"
-            pruebas={pruebaField.fields}
-            messageNothingAdded="No hay pruebas seleccionadas"
-            counterMin={(prueba_index, param_index, item) => (
-              <Controller
-                name={`pruebas.${prueba_index}.parametros.${param_index}.valorMinimo`}
-                control={form.control}
-                render={({ field }) => (
-                  <Counter
-                    {...field}
-                    className={`w-20 ${
-                      form.formState.errors.pruebas?.[prueba_index]
-                        ?.parametros?.[param_index]?.valorMinimo
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    disabled={!form.watch(`pruebas.${prueba_index}.checked`)}
-                  />
-                )}
-              />
-            )}
-            counterMax={(prueba_index, param_index, item) => (
-              <Controller
-                name={`pruebas.${prueba_index}.parametros.${param_index}.valorMaximo`}
-                control={form.control}
-                render={({ field }) => (
-                  <Counter
-                    {...field}
-                    className={`w-20 ${
-                      form.formState.errors.pruebas?.[prueba_index]
-                        ?.parametros?.[param_index]?.valorMaximo
-                        ? "border-red-500"
-                        : ""
-                    }`}
-                    disabled={!form.watch(`pruebas.${prueba_index}.checked`)}
-                  />
-                )}
-              />
-            )}
-            remover={(index, item) => (
-              <Button
-                className="absolute right-0 top-0 z-10"
-                onClick={() => {
-                  handleUnselectPrueba(item, index);
-                }}
-                type="button"
-              >
-                &times;
-              </Button>
+              </FormItem>
             )}
           />
-          <Button type="button" onClick={() => setOpenPruebas(true)}>
-            Añadir pruebas
-          </Button>
 
-          <Modal
-            isOpen={openPruebas}
-            onClose={() => setOpenPruebas(false)}
-            className=""
-          >
-            <div className="w-full flex items-center">
-              <h2 className="text-3xl font-extrabold my-2 dark:text-white">
-                Selecciona las pruebas
-              </h2>
-            </div>
-
-            <div
-              className="overflow-y-scroll flex-col items-center"
-              style={{ maxHeight: "80vh", maxWidth: "75vw" }}
-            >
-              <PruebasList
-                className="grid grid-cols-1 gap-10"
-                pruebas={pruebas}
-                messageNothingAdded="No hay pruebas seleccionadas"
-                selector={(index, item) => (
-                  <div className="flex h-full items-center gap-2">
-                    <Switch
-                      id={item.idTipoPrueba?.toString()}
-                      checked={item.checked}
-                      onClick={() => {
-                        if (!item.checked) {
-                          handleSelectPrueba(item);
-                        } else {
-                          handleUnselectPrueba(item, index);
-                        }
-                      }}
-                    />
-                  </div>
-                )}
-              />
-            </div>
-            <div className="w-full flex items-center justify-center py-4">
-              <Button className="w-1/2" onClick={() => setOpenPruebas(false)}>
-                Cerrar
-              </Button>
-            </div>
-          </Modal>
+          <PruebasStock
+            open={openPruebas}
+            setOpen={setOpenPruebas}
+            pruebas={pruebas}
+            handleSelectPrueba={handleSelectPrueba}
+            handleUnselectPrueba={handleUnselectPrueba}
+          />
 
           <Button type="submit" className="w-full mt-4">
             Registrar Proyecto

@@ -3,13 +3,14 @@ import { GenericCard } from "./GenericCard";
 import React from "react";
 import { RepuestoForm } from "@/models/repuesto";
 
-export default function RepuestosList<T extends RepuestoForm>({
+export function RepuestosList<T extends RepuestoForm>({
   messageNothingAdded,
   repuestos,
   className,
   counter,
   remover,
   selector,
+  error,
 }: {
   messageNothingAdded: string;
   repuestos: T[];
@@ -17,11 +18,12 @@ export default function RepuestosList<T extends RepuestoForm>({
   counter?: (index: number, item: T) => React.ReactNode;
   remover?: (index: number, item: T) => React.ReactNode;
   selector?: (index: number, item: T) => React.ReactNode;
+  error?: (index: number) => React.ReactNode;
 }) {
   return (
     <div className={`mx-3 ${className}`} style={{ height: "40h" }}>
       {repuestos.length === 0 ? (
-        <p>{messageNothingAdded}</p>
+        <p className="w-full text-center">{messageNothingAdded}</p>
       ) : (
         repuestos.map((item, index) => (
           <div
@@ -48,6 +50,7 @@ export default function RepuestosList<T extends RepuestoForm>({
               </div>
             </GenericCard>
             {remover && remover(index, item as T)}
+            {error && error(index)}
           </div>
         ))
       )}

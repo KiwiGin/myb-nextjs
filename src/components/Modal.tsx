@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 
 interface ModalProps {
   isOpen: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: React.ReactNode;
   className?: string;
 }
@@ -10,6 +10,8 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, children, className }: ModalProps) {
   const modalRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
+    if(onClose === undefined) return;
+    
     const handleClickOutside = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();

@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
-import RepuestosList from "@/components/RepuestosList";
+import { RepuestosList } from "@/components/RepuestosList";
 import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/Counter";
 import { Switch } from "@/components/ui/switch";
@@ -151,8 +151,8 @@ export function InterfazProyeccionRepuestos() {
             control={form.control}
             render={({ field }) => (
               <Switch
-                id={item.idRepuesto.toString()}
                 checked={field.value}
+                id={item.idRepuesto.toString()}
                 onClick={() => {
                   field.onChange(!field.value);
                 }}

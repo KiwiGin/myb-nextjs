@@ -1,4 +1,5 @@
 import { TipoPruebaForms } from "@/models/tipoprueba";
+import React from "react";
 
 interface PruebasListProps<T extends TipoPruebaForms> {
   pruebas: T[];
@@ -12,6 +13,7 @@ interface PruebasListProps<T extends TipoPruebaForms> {
   counterMax?: (index: number, param_index: number, item: T) => React.ReactNode;
   remover?: (index: number, item: T) => React.ReactNode;
   selector?: (index: number, item: T) => React.ReactNode;
+  error?: (index: number) => React.ReactNode;
 }
 
 export function PruebasList<T extends TipoPruebaForms>({
@@ -22,17 +24,22 @@ export function PruebasList<T extends TipoPruebaForms>({
   counterMax,
   remover,
   selector,
+  error,
 }: PruebasListProps<T>) {
   return (
     <div className="mx-3 overflow-y-auto" style={{ height: "40h" }}>
       {pruebas.length === 0 ? (
-        <p>{messageNothingAdded}</p>
+        <p className="w-full text-center">{messageNothingAdded}</p>
       ) : (
         <div className={`${className && className} mb-2`}>
           {pruebas.map((item, prueba_index) => (
             <div key={item.idTipoPrueba} className="relative">
               <div className="flex flex-row justify-between">
-                <span className="text-2xl pb-6 text-left font-medium leading-none">
+                <span
+                  className={`text-2xl pb-6 text-left font-medium leading-none ${
+                    error && error(prueba_index) && "text-red-500"
+                  }`}
+                >
                   {item.nombre}
                 </span>
                 {selector && selector(prueba_index, item)}
@@ -100,6 +107,7 @@ export function PruebasList<T extends TipoPruebaForms>({
                 </div>
               </div>
               {remover && remover(prueba_index, item)}
+              {error && error(prueba_index)}
             </div>
           ))}
         </div>
