@@ -10,7 +10,10 @@ export function Noice({ noice }: NoiceProps) {
   if (noice.type === "loading") {
     return (
       <div className="absolute  z-50 right-0 top-0 w-lvw h-lvh flex items-center justify-center bg-white">
-        <div role="status" className="flex flex-col justify-center items-center gap-4">
+        <div
+          role="status"
+          className="flex flex-col justify-center items-center gap-4"
+        >
           <svg
             aria-hidden="true"
             className="inline w-20 h-20 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600"

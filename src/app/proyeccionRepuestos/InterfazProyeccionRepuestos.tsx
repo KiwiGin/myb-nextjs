@@ -162,7 +162,7 @@ export function InterfazProyeccionRepuestos() {
         )}
       />
       <div className="w-full flex justify-center">
-        <Button type="submit">Guardar</Button>
+        <Button type="submit">Pedir</Button>
       </div>
     </form>
   );

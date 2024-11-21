@@ -156,7 +156,7 @@ export function InterfazVisualizacionRepuestos() {
         )}
       />
       <div className="w-full flex justify-center">
-        <Button type="submit">Guardar</Button>
+        <Button type="submit">Marcar como obtenidos</Button>
       </div>
     </form>
   );

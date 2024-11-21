@@ -19,7 +19,13 @@ export function PictureCard({
       key={name}
       className={`${props.className} h-full flex flex-col justify-center items-center`}
     >
-      <Image src={imageSrc} alt={name} width={100} height={100} className="h-full w-auto object-contain"/>
+      <Image
+        src={imageSrc}
+        alt={name}
+        width={400}
+        height={400}
+        className="h-full w-auto object-contain"
+      />
     </div>
   );
 }

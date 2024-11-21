@@ -24,7 +24,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   return (
     <div className="flex flex-col items-center pt-10 px-20 gap-3">
       <ProyectoHeader proyecto={proyecto} />
-      <ProjectFlow etapa={proyecto.idEtapaActual} />
+      <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
       {proyecto.idEtapaActual == 1 ? (
         <div className="w-full">
           <InterfazAsignacionRepuestos proyecto={proyecto}/>
