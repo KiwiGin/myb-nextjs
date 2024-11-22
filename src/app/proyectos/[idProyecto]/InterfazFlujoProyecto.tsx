@@ -3,7 +3,9 @@ import { ProjectFlow } from "@/components/ProjectFlow/ProjectFlow";
 import { useEffect, useState } from "react";
 import { ProyectoHeader } from "@/components/ProyectoHeader";
 import { InterfazAsignacionRepuestos } from "./InterfazAsignacionRepuestos";
+import { InterfazAsignacionTareas } from "./InterfazAsignacionTareas";
 import { Proyecto } from "@/models/proyecto";
+import { set } from "react-hook-form";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
@@ -14,7 +16,8 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
       const response = await fetch(`/api/proyecto/por-id/${idProyecto}`);
       if (!response.ok) throw new Error("Error al cargar proyectos");
       const data: Proyecto = await response.json();
-      setProyecto(data);
+      /* setProyecto(data); */
+      setProyecto({ ...data, idEtapaActual: 2 });
     };
 
     fetchProyecto();
@@ -27,11 +30,11 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
       <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
       {proyecto.idEtapaActual == 1 ? (
         <div className="w-full">
-          <InterfazAsignacionRepuestos proyecto={proyecto}/>
+          <InterfazAsignacionRepuestos proyecto={proyecto} />
         </div>
       ) : proyecto.idEtapaActual == 2 ? (
-        <div>
-          <h1>Segunda etapa como Jefe</h1>
+        <div className="w-full">
+          <InterfazAsignacionTareas proyecto={proyecto} />
         </div>
       ) : proyecto.idEtapaActual == 4 ? (
         <>

@@ -1,18 +1,9 @@
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
-import { PictureCard } from "@/components/PictureCard";
 import { Repuesto } from "@/models/repuesto";
-import { REPUESTOS } from "@/models/MOCKUPS";
 import { Proyecto } from "@/models/proyecto";
+import { Modal } from "@/components/Modal";
+import { RepuestosList } from "@/components/RepuestosList";
 
 export function InterfazAsignacionRepuestos({
   proyecto,
@@ -24,7 +15,11 @@ export function InterfazAsignacionRepuestos({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (repuestos.some((repuesto) => repuesto.stockDisponible! < repuesto.cantidad!)) {
+    if (
+      repuestos.some(
+        (repuesto) => repuesto.stockDisponible! < repuesto.cantidad!
+      )
+    ) {
       setAvaible("No disponibles");
     } else {
       setAvaible("Disponibles");
@@ -35,8 +30,8 @@ export function InterfazAsignacionRepuestos({
     const pedido = repuestos
       .filter((repuesto) => repuesto.stockDisponible! < repuesto.cantidad!)
       .map((repuesto) => ({
-      idRepuesto: repuesto.idRepuesto,
-      cantidadSolicitada: repuesto.cantidad! - repuesto.stockDisponible!,
+        idRepuesto: repuesto.idRepuesto,
+        cantidadSolicitada: repuesto.cantidad! - repuesto.stockDisponible!,
       }));
 
     // POST /api/repuesto/solicitados
@@ -68,7 +63,7 @@ export function InterfazAsignacionRepuestos({
 
     const data = await response.json();
     console.log(data);
-  }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -84,63 +79,39 @@ export function InterfazAsignacionRepuestos({
           {available === "Pedidos" && "Esperando repuestos"}
           {available === "No disponibles" && "Repuestos no disponibles"}
         </p>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button variant="outline">Ver Respuestos</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[800px] sm:max-h-[800px]">
-            <DialogHeader>
-              <DialogTitle>Repuestos Faltantes</DialogTitle>
-              <DialogDescription></DialogDescription>
-            </DialogHeader>
-            <div className="flex flex-col w-full items-center">
-              {repuestos.map((repuesto) => (
-                <div
-                  key={repuesto.idRepuesto}
-                  className={`w-full flex flex-row justify-between items-center gap-4 px-4 shadow-md`}
-                >
-                  <div className="h-full w-full flex flex-row gap-2 py-4 items-center">
-                    <PictureCard
-                      imageSrc={
-                        repuesto.linkImg ||
-                        "https://avatar.iran.liara.run/public/6"
-                      }
-                      name={repuesto.nombre}
-                      className="w-1/4"
-                    />
-                    <div className="flex flex-col self-start items-start gap-1 w-3/4">
-                      <h1 className="text-xl font-bold">{repuesto.nombre}</h1>
-                      <p>{repuesto.descripcion}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col justify-self-end gap-2 px-3">
-                    <p className="text-4xl font-extralight">
-                      {repuesto.stockDisponible}
-                      {repuesto.cantidad &&
-                        `/${repuesto.cantidad}`}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <DialogFooter>
-              {available === "No disponibles" && (
-                <Button
-                  type="submit"
-                  className="w-full"
-                  onClick={() => {
-                    pedirRepuestos();
-                    setIsDialogOpen(false);
-                  }}
-                >
-                  Pedir
-                </Button>
-              )}
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+
+        <Button onClick={() => setIsDialogOpen(true)} variant="outline">
+          Ver repuestos
+        </Button>
+
+        <Modal
+          isOpen={isDialogOpen}
+          onClose={() => {
+            setIsDialogOpen(false);
+          }}
+        >
+          <div className="sm:max-w-[800px] sm:max-h-[800px]">
+            <RepuestosList
+              messageNothingAdded="No hay repuestos"
+              repuestos={repuestos}
+              className="w-full"
+            />
+            <Button
+              onClick={() => {
+                pedirRepuestos();
+                setIsDialogOpen(false);
+              }}
+            >
+              Pedir repuestos
+            </Button>
+          </div>
+        </Modal>
       </div>
-      <Button onClick={asignarRepuestos} disabled={available !== "Disponibles"} className="w-full">
+      <Button
+        onClick={asignarRepuestos}
+        disabled={available !== "Disponibles"}
+        className="w-full"
+      >
         Asignar repuestos
       </Button>
     </div>

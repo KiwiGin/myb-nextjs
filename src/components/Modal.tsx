@@ -38,7 +38,7 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
         ref={modalRef}
         className={`${
           className && className
-        } bg-white p-8 rounded-lg shadow-lg max-w-lg w-full`}
+        } bg-white p-8 rounded-lg shadow-lg`}
       >
         {children}
       </div>

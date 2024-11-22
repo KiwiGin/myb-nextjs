@@ -282,11 +282,11 @@ export function InterfazRegistroProyecto() {
       fetchData();
     } catch (error) {
       if (error instanceof Error) {
-        setError(error.message);
+        setNoice({ type: "error", message: error.message });
         return;
       }
       console.error("Error en la carga de datos:", error);
-      setError("Error en la carga de datos");
+      setNoice({ type: "error", message: "Error en la carga de datos" });
     } finally {
       setNoice(null);
     }

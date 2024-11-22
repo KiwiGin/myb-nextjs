@@ -4,28 +4,30 @@ import { PictureCard } from "./PictureCard";
 interface GenericCardProps {
   title: string;
   subtitle: string;
-  useImage?: boolean;
   image?: string | null;
   imageAlt?: string;
   children?: React.ReactNode;
+  className?: string;
 }
 
 export function GenericCard({
   title,
   subtitle,
   image,
-  useImage = true,
   imageAlt,
   children,
+  className,
 }: GenericCardProps) {
   return (
-    <CardContent className="flex min-w-72 rounded-md border">
+    <CardContent
+      className={`${className && className} flex min-w-72 rounded-md border`}
+    >
       <div className="flex items-center space-x-4 p-4 max-h-32">
-        {useImage && (
+        {image && (
           <PictureCard
-            imageSrc={image || "https://placehold.co/400"}
+            imageSrc={image}
             name={imageAlt || title}
-            className="max-w-20 sm:max-w-48"
+            className="w-1/4"
           />
         )}
         <div className="flex-1 space-y-1 overflow-x-auto min-w-min min-h-min">

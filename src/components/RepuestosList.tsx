@@ -1,9 +1,9 @@
 "use client";
 import { GenericCard } from "./GenericCard";
 import React from "react";
-import { RepuestoForm } from "@/models/repuesto";
+import { Repuesto, RepuestoForm } from "@/models/repuesto";
 
-export function RepuestosList<T extends RepuestoForm>({
+export function RepuestosList<T extends Repuesto>({
   messageNothingAdded,
   repuestos,
   className,
@@ -19,6 +19,7 @@ export function RepuestosList<T extends RepuestoForm>({
   remover?: (index: number, item: T) => React.ReactNode;
   selector?: (index: number, item: T) => React.ReactNode;
   error?: (index: number) => React.ReactNode;
+  children?: React.ReactNode;
 }) {
   return (
     <div className={`mx-3 ${className}`} style={{ height: "40h" }}>
@@ -40,14 +41,25 @@ export function RepuestosList<T extends RepuestoForm>({
               image={item.linkImg}
               imageAlt={item.nombre}
             >
-              <div
-                className={`"flex flex-row self-center gap-4 ${
-                  counter && selector && "min-w-32"
-                }"`}
-              >
-                {counter && counter(index, item as T)}
-                {selector && selector(index, item as T)}
-              </div>
+              {/* Form mode */}
+              {counter || selector ? (
+                <div
+                  className={`"flex flex-row self-center gap-4 ${
+                    counter && selector && "min-w-32"
+                  }"`}
+                >
+                  {counter && counter(index, item as T)}
+                  {selector && selector(index, item as T)}
+                </div>
+              ) : (
+                /* Visualize mode */
+                <div className="flex flex-col justify-center items-center gap-2 px-3">
+                  <p className="text-4xl font-extralight">
+                    {item.stockDisponible}
+                    {item.cantidad && `/${item.cantidad}`}
+                  </p>
+                </div>
+              )}
             </GenericCard>
             {remover && remover(index, item as T)}
             {error && error(index)}
