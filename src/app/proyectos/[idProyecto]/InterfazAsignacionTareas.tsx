@@ -74,7 +74,7 @@ export function InterfazAsignacionTareas({ proyecto }: { proyecto: Proyecto }) {
       idProyecto,
       empleados,
     });
-    
+
     setOpen(false);
     /* if (empleados.length === 0) {
       alert("Debe seleccionar al menos un técnico");
@@ -102,6 +102,16 @@ export function InterfazAsignacionTareas({ proyecto }: { proyecto: Proyecto }) {
   };
 
   useEffect(() => {
+    try {
+      fetchTecnicos();
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("Error al cargar los técnicos", error);
+        return;
+      }
+      
+      console.error("Error al cargar los técnicos", error);
+    }
     fetchTecnicos();
   }, []);
 
