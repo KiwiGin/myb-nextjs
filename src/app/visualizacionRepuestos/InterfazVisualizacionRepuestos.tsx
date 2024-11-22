@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
 import { useEffect } from "react";
-import RepuestosList from "@/components/RepuestosList";
+import { RepuestosList } from "@/components/RepuestosList";
 import { Button } from "@/components/ui/button";
 import { Repuesto } from "@/models/repuesto";
 import { Switch } from "@/components/ui/switch";
