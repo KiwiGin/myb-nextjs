@@ -44,6 +44,18 @@ export default function Home() {
         >
           Visualización de repuestos requeridos
         </a>
+        <a
+          href="/seguimientoTareas"
+          className="p-4 flex justify-center items-center bg-black text-white rounded-lg hover:bg-black hover:scale-105 transition duration-300 ease-in-out"
+        >
+          Seguimiento de tareas
+        </a>
+        <a
+          href="/verificacionReparacion"
+          className="p-4 flex justify-center items-center bg-black text-white rounded-lg hover:bg-black hover:scale-105 transition duration-300 ease-in-out"
+        >
+          Verificación de Reparación
+        </a>
       </div>
     </div>
   );

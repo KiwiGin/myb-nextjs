@@ -5,7 +5,6 @@ import { ProyectoHeader } from "@/components/ProyectoHeader";
 import { InterfazAsignacionRepuestos } from "./InterfazAsignacionRepuestos";
 import { InterfazAsignacionTareas } from "./InterfazAsignacionTareas";
 import { Proyecto } from "@/models/proyecto";
-import { set } from "react-hook-form";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
@@ -17,6 +16,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
       if (!response.ok) throw new Error("Error al cargar proyectos");
       const data: Proyecto = await response.json();
       /* setProyecto(data); */
+      console.log(data);
       setProyecto({ ...data, idEtapaActual: 2 });
     };
 
