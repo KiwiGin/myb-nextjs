@@ -10,7 +10,8 @@ import { useEffect, useState } from "react";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import { Modal } from "@/components/Modal";
-import ResultadosSection from "@/components/ResultadosSection";
+import { FeedbackList } from "@/components/FeedbackList";
+import { PruebasTable } from "@/components/PruebasTable";
 
 const resultadosSchema = z.object({
   idParametro: z.number(),
@@ -226,7 +227,7 @@ export function InterfazSeguimientoTareasReparacion({
             className="w-full md:mx-11 lg:mx-10 flex flex-col items-center gap-y-4"
           >
             <h1 className="text-2xl font-bold">Informe de Errores</h1>
-            <ResultadosSection
+            <FeedbackList
               feedback={form.watch("feedback")}
               pruebas={form.watch("pruebas")}
               messageNothingAdded="No hay feedback"
@@ -244,7 +245,7 @@ export function InterfazSeguimientoTareasReparacion({
           </Modal>
         </div>
       )}
-      
+
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="w-full flex flex-col items-center">
           <FormField
@@ -252,10 +253,11 @@ export function InterfazSeguimientoTareasReparacion({
             name="pruebas"
             render={({ field }) => (
               <EspecificacionesList
+                rol="tecnico"
                 pruebas={field.value}
                 className="grid grid-cols-1 lg:grid-cols-2 gap-2"
                 messageNothingAdded="No hay pruebas"
-                counterResult={(prueba_index, espec_index, item) => (
+                counterResult={(prueba_index, espec_index) => (
                   <FormField
                     name={`pruebas.${prueba_index}.especificaciones.${espec_index}.resultado`}
                     control={form.control}

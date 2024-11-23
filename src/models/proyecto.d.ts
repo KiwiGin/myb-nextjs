@@ -59,6 +59,4 @@ export interface ProyectoTecnico
 
 export interface ProyectoSupervisor extends ProyectoTecnico {
   pruebas: TipoPruebaEspecificacionResultado[];
-  aprobado: boolean;
-  comentario?: string;
 }
