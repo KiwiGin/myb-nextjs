@@ -34,6 +34,7 @@ export function InterfazRegistroRepuesto() {
     imgBase64: "",
     stockActual: 0,
   });
+  
   const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
