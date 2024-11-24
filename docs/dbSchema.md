@@ -100,7 +100,7 @@ Tablas relacionales:
     id_proyecto - id_tipo_prueba - id_parametro - valor_maximo? - valor_minimo?
     
 - Valores de los resultados de las pruebas
-    id_prueba_resultado - id_valor
+    id_prueba_resultado - id_parametro - resultado
 
 ---
 

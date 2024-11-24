@@ -5,7 +5,6 @@ import { Proyecto, ProyectoTecnico } from "@/models/proyecto";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { InterfazSeguimientoTareasReparacion } from "./InterfazSeguimientoTareasReparacion";
-import { format } from "path";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import { InterfazNoTareasAsignadas } from "./InterfazNoTareasAsignadas";
@@ -83,7 +82,7 @@ export function InterfazSeguimientoTareas() {
      */
 
       //Simular llamada a la API
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const data = {
         idProyecto: 1,
@@ -93,8 +92,8 @@ export function InterfazSeguimientoTareas() {
           nombre: "Cliente de prueba",
         },
         descripcion: "Descripcion de prueba",
-        idEtapaActual: 7,
-        etapaActual: "Etapa 1",
+        idEtapaActual: 3,
+        etapaActual: "Etapa 3",
         pruebas: [
           {
             idTipoPrueba: 1,
@@ -124,11 +123,11 @@ export function InterfazSeguimientoTareas() {
         },
       };
 
-      /* const data = { message: "no_proyecto" }; */
+      // const data = { message: "no_proyecto" };
 
-      if (data.message && data.message === "no_proyecto") {
-        return;
-      }
+      // if (data.message && data.message === "no_proyecto") {
+      //   return;
+      // }
 
       const parsedData = proyectoSchema.safeParse(data);
 
