@@ -4,6 +4,9 @@ import { Repuesto } from "@/models/repuesto";
 import { Proyecto } from "@/models/proyecto";
 import { Modal } from "@/components/Modal";
 import { RepuestosList } from "@/components/RepuestosList";
+import { NoiceType } from "@/models/noice";
+import { Noice } from "@/components/Noice";
+import MyBError from "@/lib/mybError";
 
 export function InterfazAsignacionRepuestos({
   proyecto,
@@ -13,6 +16,7 @@ export function InterfazAsignacionRepuestos({
   const [repuestos] = useState<Repuesto[]>(proyecto.repuestos || []);
   const [available, setAvaible] = useState<string>("Disponibles");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [noice, setNoice] = useState<NoiceType | null>(null);
 
   useEffect(() => {
     if (
@@ -27,46 +31,95 @@ export function InterfazAsignacionRepuestos({
   }, [repuestos]);
 
   const pedirRepuestos = async () => {
-    const pedido = repuestos
-      .filter((repuesto) => repuesto.stockDisponible! < repuesto.cantidad!)
-      .map((repuesto) => ({
-        idRepuesto: repuesto.idRepuesto,
-        cantidadSolicitada: repuesto.cantidad! - repuesto.stockDisponible!,
-      }));
-
-    // POST /api/repuesto/solicitados
-    const response = await fetch("/api/repuesto/solicitados", {
-      method: "POST",
-      body: JSON.stringify(pedido),
+    setNoice({
+      type: "loading",
+      message: "Solicitando repuestos...",
+      styleType: "modal",
     });
 
-    if (!response.ok) {
-      console.error("Error al pedir repuestos");
-      return;
-    }
+    try {
+      const pedido = repuestos
+        .filter((repuesto) => repuesto.stockDisponible! < repuesto.cantidad!)
+        .map((repuesto) => ({
+          idRepuesto: repuesto.idRepuesto,
+          cantidadSolicitada: repuesto.cantidad! - repuesto.stockDisponible!,
+        }));
 
-    const data = await response.json();
-    console.log(data);
+      // POST /api/repuesto/solicitados
+      const response = await fetch("/api/repuesto/solicitados", {
+        method: "POST",
+        body: JSON.stringify(pedido),
+      });
+
+      if (!response.ok) throw new MyBError("Error al solicitar repuestos");
+
+      const data = await response.json();
+      console.log(data);
+
+      setNoice({
+        type: "success",
+        message: "Repuestos solicitados con éxito",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 2000);
+      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else setNoice({ type: "error", message: "Error al solicitar repuestos" });
+      console.error(error);
+    }
   };
 
   const asignarRepuestos = async () => {
-    // PUT /api/proyecto/repuesto/asignar
-    const response = await fetch(`/api/proyecto/repuesto/asignar`, {
-      method: "PUT",
-      body: JSON.stringify({ proyectoId: proyecto.idProyecto }),
+    setNoice({
+      type: "loading",
+      message: "Asignando repuestos...",
+      styleType: "modal",
     });
 
-    if (!response.ok) {
-      console.error("Error al asignar repuestos");
-      return;
-    }
+    try {
+      // PUT /api/proyecto/repuesto/asignar
+      const response = await fetch(`/api/proyecto/repuesto/asignar`, {
+        method: "PUT",
+        body: JSON.stringify({ proyectoId: proyecto.idProyecto }),
+      });
 
-    const data = await response.json();
-    console.log(data);
+      if (!response.ok) throw new MyBError("Error al asignar repuestos");
+
+      const data = await response.json();
+      console.log(data);
+
+      setNoice({
+        type: "success",
+        message: "Repuestos asignados con éxito",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 2000);
+      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else setNoice({ type: "error", message: "Error al solicitar repuestos" });
+      console.error(error);
+    }
   };
 
   return (
     <div className="flex flex-col gap-4">
+      {noice && <Noice noice={noice} />}
       <div className="flex justify-center items-center gap-4 w-full">
         <p
           className={`font-bold ${

@@ -12,6 +12,7 @@ import { NoiceType } from "@/models/noice";
 import { Modal } from "@/components/Modal";
 import { FeedbackList } from "@/components/FeedbackList";
 import { PruebasTable } from "@/components/PruebasTable";
+import MyBError from "@/lib/mybError";
 
 const resultadosSchema = z.object({
   idParametro: z.number(),
@@ -144,7 +145,7 @@ export function InterfazSeguimientoTareasReparacion({
       proyecto.pruebas === undefined ||
       proyecto.pruebas.length === 0
     )
-      throw new Error(
+      throw new MyBError(
         "Ha sido asignado a un proyecto, \n pero no se han podido cargar las pruebas"
       );
 
@@ -163,7 +164,7 @@ export function InterfazSeguimientoTareasReparacion({
     if (parsedData.success) {
       form.setValue("pruebas", formattedPruebas);
     } else {
-      throw new Error(
+      throw new MyBError(
         "Ha sido asignado a un proyecto, \n pero no se han podido cargar las especificaciones"
       );
     }
@@ -178,7 +179,7 @@ export function InterfazSeguimientoTareasReparacion({
     if (parsedData.success) {
       form.setValue("feedback", feedback);
     } else {
-      throw new Error(
+      throw new MyBError(
         "Su ultima reparación ha sido rechazada, pero hubo un error al cargar el feedback"
       );
     }
@@ -190,7 +191,7 @@ export function InterfazSeguimientoTareasReparacion({
       formatFeedback();
       setNoice(null);
     } catch (error) {
-      if (error instanceof Error)
+      if (error instanceof MyBError)
         setNoice({ type: "error", message: error.message });
       else setNoice({ type: "error" });
       console.error(error);
@@ -198,10 +199,47 @@ export function InterfazSeguimientoTareasReparacion({
   }, []);
 
   const onSubmit = async (data: z.infer<typeof reparacionSchema>) => {
-    console.log("Empleado:");
-    console.log(idEmpleado);
-    console.log("Resultados");
-    console.log(data.pruebas);
+    setNoice({
+      type: "loading",
+      message: "Registrando resultados...",
+      styleType: "modal",
+    });
+
+    try {
+      console.log("Empleado:");
+      console.log(idEmpleado);
+      console.log("Resultados");
+      console.log(data.pruebas);
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 2000);
+      });
+
+      setNoice({
+        type: "success",
+        message: "Resultados registrados con éxito",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 2000);
+      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else
+        setNoice({
+          type: "error",
+          message: "Hubo un error al registrar sus resultados",
+        });
+      console.error(error);
+    }
   };
 
   useEffect(() => {

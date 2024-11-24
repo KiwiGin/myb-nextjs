@@ -1,5 +1,9 @@
+import { Noice } from "@/components/Noice";
 import { Button } from "@/components/ui/button";
+import MyBError from "@/lib/mybError";
+import { NoiceType } from "@/models/noice";
 import { ProyectoTecnico } from "@/models/proyecto";
+import { useState } from "react";
 
 export function InterfazSeguimientoTareasPintado({
   proyecto,
@@ -8,10 +12,50 @@ export function InterfazSeguimientoTareasPintado({
   proyecto: ProyectoTecnico;
   idEmpleado: string;
 }) {
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [noice, setNoice] = useState<NoiceType | null>(null);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Empleado", idEmpleado);
-    console.log("Proyecto:", proyecto.idProyecto);
+
+    setNoice({
+      type: "loading",
+      message: "Registrando completado de tarea de pintado y embalado....",
+      styleType: "modal",
+    });
+
+    try {
+      console.log("Empleado", idEmpleado);
+      console.log("Proyecto:", proyecto.idProyecto);
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 2000);
+      });
+
+      setNoice({
+        type: "success",
+        message: "Tarea de pintado y embalado completada con éxito",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 2000);
+      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else
+        setNoice({
+          type: "error",
+          message: "Error en el registro de la tarea de pintado y embalado",
+        });
+      console.error(error);
+    }
   };
 
   return (
@@ -19,6 +63,7 @@ export function InterfazSeguimientoTareasPintado({
       onSubmit={onSubmit}
       className="w-full flex flex-row justify-center py-7"
     >
+      {noice && <Noice noice={noice} />}
       <Button type="submit" className="sm:w-1/2 lg:w-1/4">
         Completar Tarea de pintado y embalado
       </Button>

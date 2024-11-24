@@ -1,14 +1,17 @@
 "use client";
 import { EmpleadosList } from "@/components/EmpleadosList";
 import { Modal } from "@/components/Modal";
+import { Noice } from "@/components/Noice";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
+import MyBError from "@/lib/mybError";
 import { Empleado } from "@/models/empleado";
+import { NoiceType } from "@/models/noice";
 import { Proyecto } from "@/models/proyecto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { z } from "zod";
 
 const empleadoSchema = z.object({
@@ -38,80 +41,51 @@ const empleadosSchema = z.object({
     }
   }),
 });
-export function InterfazAsignacionTareas({ proyecto }: { proyecto: Proyecto }) {
+
+export function InterfazAsignacionTareas({
+  proyecto,
+  etapaLabel,
+}: {
+  proyecto: Proyecto;
+  etapaLabel: string;
+}) {
   const [open, setOpen] = useState<boolean>(false);
   const form = useForm<z.infer<typeof empleadosSchema>>({
     resolver: zodResolver(empleadosSchema),
     defaultValues: { empleados: [] },
   });
+  const [noice, setNoice] = useState<NoiceType | null>({
+    type: "loading",
+    message: "Cargando técnicos...",
+  });
 
   const fetchTecnicos = async () => {
-    const res = await fetch("/api/empleado/por-rol/tecnico");
-    const data = await res.json();
+    try {
+      const res = await fetch("/api/empleado/por-rol/tecnico");
+      const data = await res.json();
 
-    const formatedData = data.map((empleado: Empleado) => ({
-      ...empleado,
-      checked: false,
-    }));
+      const formatedData = data.map((empleado: Empleado) => ({
+        ...empleado,
+        checked: false,
+      }));
 
-    const parsedData = z.array(empleadoSchema).safeParse(formatedData);
+      const parsedData = z.array(empleadoSchema).safeParse(formatedData);
 
-    if (parsedData.success) {
-      form.setValue("empleados", parsedData.data);
-    } else {
-      console.log(parsedData.error);
-      throw new Error("Error en la carga de datos de supervisores");
+      if (parsedData.success) {
+        form.setValue("empleados", parsedData.data);
+      } else {
+        throw new MyBError("Error en la carga de datos de supervisores");
+      }
+
+      setNoice(null);
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else setNoice({ type: "error", message: "Error al cargar los técnicos" });
     }
-  };
-
-  const onSubmit = async (data: z.infer<typeof empleadosSchema>) => {
-    const empleados = data.empleados
-      .filter((empleado) => empleado.checked)
-      .map((empleado) => empleado.idEmpleado);
-    const idProyecto = proyecto.idProyecto;
-
-    console.log({
-      idProyecto,
-      empleados,
-    });
-
-    setOpen(false);
-    /* if (empleados.length === 0) {
-      alert("Debe seleccionar al menos un técnico");
-      return;
-    }
-
-    const body = {
-      idProyecto: proyecto.idProyecto,
-      empleados: empleados.map((empleado) => empleado.idEmpleado),
-    };
-
-    const res = await fetch("/api/proyecto/asignar-tarea", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (res.ok) {
-      alert("Tarea asignada correctamente");
-    } else {
-      alert("Error al asignar tarea");
-    } */
   };
 
   useEffect(() => {
-    try {
-      fetchTecnicos();
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error("Error al cargar los técnicos", error);
-        return;
-      }
-      
-      console.error("Error al cargar los técnicos", error);
-    }
     fetchTecnicos();
   }, []);
 
@@ -119,8 +93,58 @@ export function InterfazAsignacionTareas({ proyecto }: { proyecto: Proyecto }) {
     console.log(form.formState.errors.empleados);
   }, [form.formState.errors.empleados]);
 
+  // Simulate asignarTareas
+  const asignarTareas = async () => {
+    await new Promise<void>((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 2000);
+    });
+  };
+
+  const onSubmit = async (data: z.infer<typeof empleadosSchema>) => {
+    setNoice({
+      type: "loading",
+      message: "Asignando tareas...",
+      styleType: "modal",
+    });
+
+    try {
+      const empleados = data.empleados
+        .filter((empleado) => empleado.checked)
+        .map((empleado) => empleado.idEmpleado);
+      const { idProyecto, idEtapaActual } = proyecto;
+      console.log({
+        idProyecto,
+        idEtapaActual,
+        empleados,
+      });
+
+      await asignarTareas();
+
+      setOpen(false);
+      setNoice({
+        type: "success",
+        message: "Tareas asignadas correctamente",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 3000);
+      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else setNoice({ type: "error", message: "Error al asignar las tareas" });
+    }
+  };
   return (
     <Form {...form}>
+      {noice && <Noice noice={noice} />}
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <div className="flex justify-center items-center gap-4 w-full">
           <Button
@@ -129,7 +153,7 @@ export function InterfazAsignacionTareas({ proyecto }: { proyecto: Proyecto }) {
             variant="outline"
             type="button"
           >
-            Asignar Tarea de Reparación
+            Asignar Tarea de {etapaLabel}
           </Button>
 
           <Modal
@@ -145,7 +169,7 @@ export function InterfazAsignacionTareas({ proyecto }: { proyecto: Proyecto }) {
               render={({ field }) => (
                 <div className="w-full flex flex-col items-center max-h-80vh">
                   <FormLabel className="text-lg font-bold mb-4">
-                    Asignar Tarea de Reparación
+                    Asignar Tarea de {etapaLabel}
                   </FormLabel>
 
                   <div className="overflow-y-auto w-full">

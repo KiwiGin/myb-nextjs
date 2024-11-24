@@ -2,12 +2,15 @@
 import { useEffect, useState } from "react";
 import { Proyecto } from "@/models/proyecto";
 import { ProyectosList } from "@/components/ProyectosList";
+import { Noice } from "@/components/Noice";
+import { NoiceType } from "@/models/noice";
 
 export function InterfazListaProyectos() {
-
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [noice, setNoice] = useState<NoiceType | null>({
+    type: "loading",
+    message: "Cargando proyectos...",
+  });
 
   const jefeId = 1;
 
@@ -18,21 +21,18 @@ export function InterfazListaProyectos() {
         if (!response.ok) throw new Error("Error al cargar proyectos");
         const data: Proyecto[] = await response.json();
         setProyectos(data);
+        setNoice(null);
       } catch {
-        setError("Error al cargar proyectos");
-      } finally {
-        setLoading(false);
+        setNoice({ type: "error", message: "Error al cargar sus proyectos" });
       }
     };
 
     fetchProyectos();
   }, []);
 
-  if (loading) return <div>Cargando proyectos...</div>;
-  if (error) return <div>Error: {error}</div>;
-
   return (
     <div className="p-4">
+      {noice && <Noice noice={noice} />}
       <ProyectosList proyectos={proyectos} />
     </div>
   );

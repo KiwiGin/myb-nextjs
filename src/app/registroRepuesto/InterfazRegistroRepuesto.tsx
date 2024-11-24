@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -8,14 +8,22 @@ import { Button } from "@/components/ui/button";
 import { ImageLoader } from "@/components/ImageComponents/ImageLoader";
 import { Repuesto } from "@/models/repuesto";
 import { z } from "zod";
+import { NoiceType } from "@/models/noice";
+import MyBError from "@/lib/mybError";
+import { Noice } from "@/components/Noice";
 
 // Esquema de validación con Zod
 const repuestoSchema = z.object({
   nombre: z.string().min(1, { message: "El nombre es obligatorio" }),
-  precio: z.number().min(0.01, { message: "El precio debe ser mayor que cero" }),
+  precio: z
+    .number()
+    .min(0.01, { message: "El precio debe ser mayor que cero" }),
   descripcion: z.string().min(1, { message: "La descripción es obligatoria" }),
   imgBase64: z.string().optional(),
-  stockActual: z.number().min(0, { message: "El stock debe ser positivo" }).optional(),
+  stockActual: z
+    .number()
+    .min(0, { message: "El stock debe ser positivo" })
+    .optional(),
 });
 
 export function InterfazRegistroRepuesto() {
@@ -27,10 +35,17 @@ export function InterfazRegistroRepuesto() {
     stockActual: 0,
   });
   const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
+  const [noice, setNoice] = useState<NoiceType | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setRepuesto({ ...repuesto, [name]: name === "precio" || name === "stockActual" ? parseFloat(value) : value });
+    setRepuesto({
+      ...repuesto,
+      [name]:
+        name === "precio" || name === "stockActual" ? parseFloat(value) : value,
+    });
   };
 
   const handleImageUpload = (base64: string | null) => {
@@ -40,34 +55,64 @@ export function InterfazRegistroRepuesto() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const validationResult = repuestoSchema.safeParse(repuesto);
-    
+
     if (!validationResult.success) {
       const newErrors = validationResult.error.errors.reduce((acc, curr) => {
         acc[curr.path[0]] = curr.message;
         return acc;
       }, {} as { [key: string]: string });
-      
+
       setErrors(newErrors);
       return;
     }
 
     setErrors(null);
-    
-    const response = await fetch("/api/repuesto", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(repuesto),
+
+    setNoice({
+      type: "loading",
+      message: "Registrando repuesto...",
+      styleType: "modal",
     });
 
-    if (response.ok) {
-      alert("Repuesto registrado con éxito");
+    try {
+      const response = await fetch("/api/repuesto", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(repuesto),
+      });
+
+      if (!response.ok) throw new MyBError("Error al registrar el repuesto");
+
+      setNoice({
+        type: "success",
+        message: "Repuesto registrado con éxito",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 2000);
+      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else
+        setNoice({
+          type: "error",
+          message: "Error en el registro del repuesto",
+        });
+      console.error(error);
     }
   };
 
   return (
     <div className="p-4 max-w-md mx-auto">
+      {noice && <Noice noice={noice} />}
       <h2 className="text-lg font-semibold mb-4">Registro de Repuesto</h2>
 
       <form onSubmit={handleSubmit}>
@@ -106,12 +151,16 @@ export function InterfazRegistroRepuesto() {
             value={repuesto.descripcion}
             onChange={handleChange}
           />
-          {errors?.descripcion && <p className="text-red-500">{errors.descripcion}</p>}
+          {errors?.descripcion && (
+            <p className="text-red-500">{errors.descripcion}</p>
+          )}
         </div>
 
         <div className="mb-4">
           <Label>Imagen del Repuesto</Label>
-          <ImageLoader setBase64={(base64: string | null) => handleImageUpload(base64)} />
+          <ImageLoader
+            setBase64={(base64: string | null) => handleImageUpload(base64)}
+          />
         </div>
 
         <div className="mb-4">
@@ -124,7 +173,9 @@ export function InterfazRegistroRepuesto() {
             value={repuesto.stockActual}
             onChange={handleChange}
           />
-          {errors?.stock_actual && <p className="text-red-500">{errors.stockActual}</p>}
+          {errors?.stock_actual && (
+            <p className="text-red-500">{errors.stockActual}</p>
+          )}
         </div>
 
         <Button type="submit" className="w-full mt-4">

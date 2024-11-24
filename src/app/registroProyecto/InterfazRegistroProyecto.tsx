@@ -8,7 +8,7 @@ import { Empleado } from "@/models/empleado";
 import { z } from "zod";
 import { Repuesto, RepuestoForm } from "@/models/repuesto";
 
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, set, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -27,6 +27,7 @@ import PruebasStock from "@/components/PruebasStock";
 import { RepuestosStock } from "@/components/RepuestosStock";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
+import MyBError from "@/lib/mybError";
 
 const repuestoSchema = z
   .object({
@@ -197,37 +198,57 @@ export function InterfazRegistroProyecto() {
   const [error, setError] = useState<string | null>(null);
 
   const fetchClientes = async () => {
-    try {
-      const res = await fetch("/api/cliente");
-      const data = await res.json();
-      setClientes(data);
-    } catch (error) {
-      throw new Error("Error en la carga de datos de clientes");
-    }
+    setNoice({
+      type: "loading",
+      message: "Cargando datos de clientes...",
+    });
+    const res = await fetch("/api/cliente");
+
+    if (!res.ok) throw new MyBError("Error en la carga de datos de clientes");
+
+    const data = await res.json();
+    setClientes(data);
   };
 
   const fetchSupervisores = async () => {
-    try {
-      const res = await fetch("/api/empleado/por-rol/supervisor");
-      const data = await res.json();
-      setSupervisores(data);
-    } catch (error) {
-      throw new Error("Error en la carga de datos de supervisores");
-    }
+    setNoice({
+      type: "loading",
+      message: "Cargando datos de supervisores...",
+    });
+
+    const res = await fetch("/api/empleado/por-rol/supervisor");
+
+    if (!res.ok)
+      throw new MyBError("Error en la carga de datos de supervisores");
+
+    const data = await res.json();
+    setSupervisores(data);
   };
 
   const fetchJefes = async () => {
-    try {
-      const res = await fetch("/api/empleado/por-rol/jefe");
-      const data = await res.json();
-      setJefes(data);
-    } catch (error) {
-      throw new Error("Error en la carga de datos de jefes");
-    }
+    setNoice({
+      type: "loading",
+      message: "Cargando datos de jefes...",
+    });
+
+    const res = await fetch("/api/empleado/por-rol/jefe");
+
+    if (!res.ok) throw new MyBError("Error en la carga de datos de jefes");
+
+    const data = await res.json();
+    setJefes(data);
   };
 
   const fetchRepuestos = async () => {
+    setNoice({
+      type: "loading",
+      message: "Cargando datos de repuestos...",
+    });
+
     const res = await fetch("/api/repuesto");
+
+    if (!res.ok) throw new MyBError("Error en la carga de datos de repuestos");
+
     const data = await res.json();
 
     const formattedData = data.map((repuesto: Repuesto) => ({
@@ -241,12 +262,20 @@ export function InterfazRegistroProyecto() {
     if (parsedData.success) {
       setRepuestos(parsedData.data);
     } else {
-      throw new Error("Error en la validación de los datos de repuestos");
+      throw new MyBError("Error en la validación de los datos de repuestos");
     }
   };
 
   const fetchPruebas = async () => {
+    setNoice({
+      type: "loading",
+      message: "Cargando datos de pruebas...",
+    });
+
     const res = await fetch("/api/pruebaconparametro");
+
+    if (!res.ok) throw new MyBError("Error en la carga de datos de pruebas");
+
     const data = (await res.json()) as TipoPrueba[];
 
     const formatedData = data.map((prueba) => ({
@@ -269,8 +298,8 @@ export function InterfazRegistroProyecto() {
   };
 
   useEffect(() => {
-    try {
-      const fetchData = async () => {
+    const fetchData = async () => {
+      try {
         await Promise.all([
           fetchClientes(),
           fetchSupervisores(),
@@ -278,18 +307,15 @@ export function InterfazRegistroProyecto() {
           fetchRepuestos(),
           fetchPruebas(),
         ]);
-      };
-      fetchData();
-    } catch (error) {
-      if (error instanceof Error) {
-        setNoice({ type: "error", message: error.message });
-        return;
+        setNoice(null);
+      } catch (error) {
+        if (error instanceof MyBError)
+          setNoice({ type: "error", message: error.message });
+        else setNoice({ type: "error", message: "Error en la carga de datos" });
+        console.error("Error en la carga de datos:", error);
       }
-      console.error("Error en la carga de datos:", error);
-      setNoice({ type: "error", message: "Error en la carga de datos" });
-    } finally {
-      setNoice(null);
-    }
+    };
+    fetchData();
   }, []);
 
   const handleSelectRepuesto = (repuesto: RepuestoForm) => {
@@ -339,6 +365,12 @@ export function InterfazRegistroProyecto() {
   };
 
   const onSubmit = async (proy: RegistroProyecto) => {
+    setNoice({
+      type: "loading",
+      message: "Registrando proyecto...",
+      styleType: "modal",
+    });
+
     try {
       console.log(proy);
       const parametros = proy.pruebas.flatMap((prueba) => {
@@ -390,10 +422,25 @@ export function InterfazRegistroProyecto() {
 
       form.reset();
 
-      alert("Proyecto registrado con éxito");
+      setNoice({
+        type: "success",
+        message: "Proyecto registrado con éxito",
+        styleType: "modal",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 2000);
+      });
     } catch (error) {
-      console.error("Error en el registro del proyecto:", error);
-      alert("Hubo un error al registrar el proyecto. Inténtalo de nuevo.");
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else
+        setNoice({ type: "error", message: "Error al registrar el proyecto" });
+      console.error("Error al registrar el proyecto:", error);
     }
   };
 
@@ -401,18 +448,6 @@ export function InterfazRegistroProyecto() {
     console.log("Errors");
     console.log(form.formState.errors.repuestos);
   }, [form.formState.errors]);
-
-  useEffect(() => {
-    console.log(noice);
-  }, [noice]);
-
-  if (error) {
-    return (
-      <div className="p-4 max-w-lg mx-auto">
-        <Label>Error: {error}</Label>
-      </div>
-    );
-  }
 
   return (
     <div className="p-4 max-w-lg mx-auto">

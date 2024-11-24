@@ -57,6 +57,7 @@ export interface ProyectoTecnico
   feedback?: FeedbackResultados;
 }
 
-export interface ProyectoSupervisor extends ProyectoTecnico {
+export interface ProyectoSupervisor extends Pick<Proyecto, "idProyecto"> {
   pruebas: TipoPruebaEspecificacionResultado[];
+  feedback?: FeedbackResultados;
 }

@@ -10,6 +10,7 @@ import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import { InterfazNoTareasAsignadas } from "./InterfazNoTareasAsignadas";
 import { InterfazSeguimientoTareasPintado } from "./InterfazSeguimientoTareasPintado";
+import MyBError from "@/lib/mybError";
 
 const resultadosSchema = z.object({
   idParametro: z.number(),
@@ -75,78 +76,79 @@ export function InterfazSeguimientoTareas() {
   });
 
   const fetchTareas = async () => {
-    /* Obtener el proyecto al que esta asigando el empleado
+    try {
+      /* Obtener el proyecto al que esta asigando el empleado
     const res = await fetch(`/api/proyecto/por-id/${idEmpleado}`);
     const data = await res.json();
      */
 
-    const data = {
-      idProyecto: 1,
-      titulo: "Proyecto de prueba",
-      cliente: {
-        idCliente: 1,
-        nombre: "Cliente de prueba",
-      },
-      descripcion: "Descripcion de prueba",
-      idEtapaActual: 3,
-      etapaActual: "Etapa 1",
-      pruebas: [
-        {
-          idTipoPrueba: 1,
-          nombre: "Prueba de prueba",
-          especificaciones: [
+      //Simular llamada a la API
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+
+      const data = {
+        idProyecto: 1,
+        titulo: "Proyecto de prueba",
+        cliente: {
+          idCliente: 1,
+          nombre: "Cliente de prueba",
+        },
+        descripcion: "Descripcion de prueba",
+        idEtapaActual: 7,
+        etapaActual: "Etapa 1",
+        pruebas: [
+          {
+            idTipoPrueba: 1,
+            nombre: "Prueba de prueba",
+            especificaciones: [
+              {
+                idParametro: 1,
+                nombre: "Parametro de prueba",
+                unidad: "Unidad de prueba",
+                valorMaximo: 10,
+                valorMinimo: 1,
+              },
+            ],
+          },
+        ],
+        feedback: {
+          idFeedback: 1,
+          aprobado: true,
+          comentario: "Comentario de prueba",
+          resultados: [
             {
               idParametro: 1,
-              nombre: "Parametro de prueba",
-              unidad: "Unidad de prueba",
-              valorMaximo: 10,
-              valorMinimo: 1,
+              resultadoTecnico: 5,
+              resultadoSupervisor: 20,
             },
           ],
         },
-      ],
-      feedback: {
-        idFeedback: 1,
-        aprobado: true,
-        comentario: "Comentario de prueba",
-        resultados: [
-          {
-            idParametro: 1,
-            resultadoTecnico: 5,
-            resultadoSupervisor: 20,
-          },
-        ],
-      },
-    };
+      };
 
-    /* const data = { message: "no_proyecto" }; */
+      /* const data = { message: "no_proyecto" }; */
 
-    if (data.message && data.message === "no_proyecto") {
-      return;
-    }
+      if (data.message && data.message === "no_proyecto") {
+        return;
+      }
 
-    const parsedData = proyectoSchema.safeParse(data);
+      const parsedData = proyectoSchema.safeParse(data);
 
-    if (parsedData.success) {
-      console.log(parsedData.data);
-      setProyecto(parsedData.data);
-    } else {
-      console.error(parsedData.error);
-      throw new Error("Error al cargar el proyecto");
+      if (parsedData.success) {
+        setProyecto(parsedData.data);
+      } else {
+        throw new MyBError("Error al cargar el proyecto");
+      }
+
+      setNoice(null);
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else setNoice({ type: "error", message: "Error al cargar las tareas" });
+      console.error(error);
     }
   };
 
   useEffect(() => {
-    fetchTareas()
-      .catch((error) => {
-        if (error instanceof Error)
-          setNoice({ type: "error", message: error.message });
-        else setNoice({ type: "error" });
-        console.error(error);
-      })
-      .finally(() => {
-        setNoice(null);
-      });
+    fetchTareas();
   }, []);
 
   if (noice) return <Noice noice={noice} />;
@@ -164,7 +166,9 @@ export function InterfazSeguimientoTareas() {
         </div>
       ) : proyecto.idEtapaActual == 4 ? (
         <div className="w-full p-7">
-          <h1 className="text-center font-bold text-xl">En control de calidad...</h1>
+          <h1 className="text-center font-bold text-xl">
+            En control de calidad...
+          </h1>
         </div>
       ) : proyecto.idEtapaActual == 7 ? (
         <div className="w-full">
