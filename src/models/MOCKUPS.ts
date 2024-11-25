@@ -382,3 +382,38 @@ export const REPUESTOS = [
     stockSolicitado: 40,
   },
 ];
+
+export const USUARIOS = [
+  {
+    idUsuario: 1,
+    username: "admin",
+    password: "admin",
+    nombre: "Administrador",
+    apellido: "General",
+    rol: "admin",
+  },
+  {
+    idUsuario: 2,
+    username: "jefe",
+    password: "jefe",
+    nombre: "Jefe",
+    apellido: "de taller",
+    rol: "jefe",
+  },
+  {
+    idUsuario: 3,
+    username: "supervisor",
+    password: "supervisor",
+    nombre: "Supervisor",
+    apellido: "de pruebas",
+    rol: "supervisor",
+  },
+  {
+    idUsuario: 4,
+    username: "tecnico",
+    password: "tecnico",
+    nombre: "Técnico",
+    apellido: "de laboratorio",
+    rol: "tecnico",
+  },
+];

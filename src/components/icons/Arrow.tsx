@@ -1,5 +1,5 @@
 import Image from "next/image";
-import arrowIcon from "../assets/arrow-down.svg";
+import arrowIcon from "../../assets/arrow-down.svg";
 
 export function Arrow({ orientation = "right" }) {
   return (

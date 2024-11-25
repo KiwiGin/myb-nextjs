@@ -1,4 +1,4 @@
-import { Arrow } from "../Arrow";
+import { Arrow } from "../icons/Arrow";
 import { FlowStage } from "@components/ProjectFlow/FlowStage";
 
 export function ProjectFlow({ etapa = 0 }: { etapa?: number }) {
