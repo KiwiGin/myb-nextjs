@@ -233,7 +233,7 @@ CALL paObtenerProyectoPorEmpleado(idEmpleado);
       "especificaciones": [
         {
           "idParametro": number,
-          "resultado": string,
+          "resultado": number,
         }
       ]
     }
@@ -304,16 +304,11 @@ CALL paCambiarEtapaProyecto(
   "costoManoObra": number,
   "costoRepuestos": number,
   "costoTotal": number,
-
-  "idCliente": number,
-  "idSupervisor": number,
-  "idJefe": number,
   "idEtapaActual": number,
-
+  "etapaActual": string,
   "cliente": Cliente,
   "supervisor": Empleado,
   "jefe": Empleado,
-  "etapaActual": Etapa,
 
   "repuestos": Repuesto[],
   "especificaciones": Especificacion[],
@@ -362,7 +357,7 @@ CALL paCambiarEtapaProyecto(
 {
   "idProyecto": number,
   "idEmpleado": number,
-  "id_resultado_prueba_tecnico": number,
+  "idResultadoPruebaTecnico": number,
   "aprobado": bool,
   "comentario": string,
   "fecha": Date,
@@ -491,6 +486,21 @@ Proyecto
 ```
 
 ```json
+"repuesto": Repuesto,
+Repuesto
+{
+  "idRepuesto": number,
+  "nombre": string,
+  "descripcion": string,
+  "precio": number,
+  "linkImg": string,
+  "stockDisponible": number, 
+  "stockAsignado": number,
+  "stockRequerido": number
+}
+```
+
+```json
   "cliente": Cliente,
 Cliente
 {
@@ -577,7 +587,7 @@ Feedback
 {
   "idFeedback": number,
   "idResultadoPruebaTecnico": number,
-  "idResultadoPruebaJefe": number,
+  "idResultadoPruebaSupervisor": number,
   "aprobado": bool,
   "comentario": string
 }

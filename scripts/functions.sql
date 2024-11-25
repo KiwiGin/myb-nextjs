@@ -829,3 +829,387 @@ begin
         where v_cantidades_faltantes[i] > 0;
 end;
 $$ language plpgsql;
+
+
+------ Sprint 5 -------
+-- pa: paObtenerTecnicosDisponibles -> Obtiene los técnicos disponibles
+create or replace function paObtenerTecnicosDisponibles()
+    returns json
+as
+$$
+declare
+    json_result json;
+begin
+    SELECT json_agg(
+                   json_build_object(
+                           'idEmpleado', e.id_empleado,
+                           'usuario', e.usuario,
+                           'nombre', e.nombre,
+                           'apellido', e.apellido,
+                           'correo', e.correo,
+                           'telefono', e.telefono,
+                           'direccion', e.direccion,
+                           'documentoIdentidad', e.documento_identidad,
+                           'tipoDocumento', e.tipo_documento,
+                           'rol', e.rol
+                   )
+           )
+
+    INTO json_result
+    FROM empleado e
+    WHERE e.rol = 'tecnico'
+      AND e.id_empleado NOT IN (SELECT pee.id_tecnico
+                                FROM proyecto_etapa_empleado pee
+                                         JOIN proyecto_etapas_cambio pec
+                                              ON pee.id_proyecto = pec.id_proyecto
+                                WHERE pec.fecha_fin IS NULL
+                                   OR pec.fecha_fin > CURRENT_DATE);
+
+    RETURN json_result;
+end;
+$$ language plpgsql;
+
+
+-- pa: paAsignarEmpleadosAProyecto -> Asigna empleados a un proyecto
+create or replace procedure paAsignarEmpleadosAProyecto(
+    p_idProyecto int,
+    p_idEmpleados int[],
+    p_fechaAsignacion date
+)
+as
+$$
+declare
+    v_ids_tecnicos_libres int[];
+begin
+    v_ids_tecnicos_libres := (select array_agg(e.id_empleado)
+                              from empleado e
+                              where e.rol = 'tecnico'
+                                and e.id_empleado not in (select pee.id_tecnico
+                                                          from proyecto_etapa_empleado pee
+                                                                   join proyecto_etapas_cambio pec
+                                                                        on pee.id_proyecto = pec.id_proyecto
+                                                          where pec.fecha_fin is null
+                                                             or pec.fecha_fin > current_date));
+    IF array_length(p_idEmpleados, 1) IS NULL THEN
+        RAISE EXCEPTION 'La lista de empleados no puede estar vacía.';
+    END IF;
+    IF NOT p_idEmpleados <@ v_ids_tecnicos_libres THEN
+        RAISE EXCEPTION 'No se puede asignar a un técnico que no está disponible';
+    END IF;
+    for i in 1..array_length(p_idEmpleados, 1)
+        loop
+            INSERT INTO proyecto_etapa_empleado (id_proyecto, id_etapa, id_tecnico)
+            VALUES (p_idProyecto, 3, p_idEmpleados[i]);
+        end loop;
+    call paCambiarEtapaProyecto(p_idProyecto, 3, p_fechaAsignacion);
+end;
+$$ language plpgsql;
+
+-- pa: paCambiarEtapaProyecto -> Cambia la etapa de un proyecto
+create or replace procedure paCambiarEtapaProyecto(
+    p_id_proyecto int,
+    p_id_etapa int,
+    p_fecha_inicio date
+)
+as
+$$
+declare
+    v_id_etapa_prev int;
+begin
+    select pec.id_etapa
+    into v_id_etapa_prev
+    from proyecto_etapas_cambio pec
+    where pec.id_proyecto = p_id_proyecto
+      and pec.fecha_fin is null;
+    update proyecto_etapas_cambio pec
+    set fecha_fin = p_fecha_inicio
+    where pec.id_proyecto = p_id_proyecto
+      and pec.id_etapa = v_id_etapa_prev;
+    insert into proyecto_etapas_cambio (id_proyecto, id_etapa, fecha_inicio)
+    values (p_id_proyecto, p_id_etapa, p_fecha_inicio);
+    update proyecto
+    set id_etapa_actual = p_id_etapa
+    where id_proyecto = p_id_proyecto;
+end;
+$$ language plpgsql;
+-- pa: paObtenerProyectoPorEmpleado -> Obtiene los proyectos de un empleado
+create or replace function paObtenerProyectoPorEmpleado(p_id_empleado int)
+    returns json as
+$$
+declare
+    v_ids_proyectos  int[];
+    v_proyectos_json json;
+    v_proyecto_json  json;
+begin
+    select pee.id_proyecto into v_ids_proyectos from proyecto_etapa_empleado pee where pee.id_tecnico = p_id_empleado;
+    v_proyecto_json := '[]';
+    for i in 1..array_length(v_ids_proyectos, 1)
+        loop
+            v_proyecto_json := paObtenerDatosProyectoPorId(v_ids_proyectos[i]);
+            v_proyectos_json := v_proyectos_json || v_proyecto_json;
+        end loop;
+    return v_proyectos_json;
+end;
+$$ language plpgsql;
+
+--pa: paRegistrarResultados -> Registra los resultados de una prueba
+create or replace function paRegistrarResultados(
+    p_registro_json json
+)
+    returns int as
+$$
+declare
+    v_resultados          json[];
+    v_especificaciones    json[];
+    v_resultado_prueba_id int;
+begin
+    insert into resultado_prueba (id_proyecto, id_empleado, fecha)
+    values (p_registro_json ->> 'idProyecto', p_registro_json ->> 'idEmpleado', p_registro_json ->> 'fecha')
+    returning id_resultado_prueba into v_resultado_prueba_id;
+    select array(
+                   select json_array_elements(p_registro_json -> 'resultados')
+           )
+    into v_resultados;
+    for i in 1..array_length(v_resultados, 1)
+        loop
+            select array(
+                           select json_array_elements(v_resultados[i] -> 'especificaciones')
+                   )
+            into v_especificaciones;
+            for j in 1..array_length(v_especificaciones, 1)
+                loop
+                    insert into prueba_parametro_resultado (id_resultado_prueba, id_tipo_prueba, id_parametro, valor)
+                    values (v_resultado_prueba_id, v_resultados[i] ->> 'idTipoPrueba',
+                            v_especificaciones[j] ->> 'idParametro', v_especificaciones[j] ->> 'resultado');
+                end loop;
+        end loop;
+    call paCambiarEtapaProyecto(p_registro_json ->> 'idProyecto', 4, p_registro_json ->> 'fecha');
+    return v_resultado_prueba_id;
+end;
+$$ language plpgsql;
+
+
+-- pa: paObtenerProyectosPorId -> Obtiene los proyectos por id
+create or replace function paObtenerProyectosPorId(p_id_proyecto int)
+    returns json as
+$$
+declare
+    v_cliente_json            json;
+    v_supervisor_json         json;
+    v_jefe_json               json;
+    v_repuestos_json          json;
+    v_especificaciones_json   json;
+    v_resultados_prueba_json  json;
+    v_resultados_json         json;
+    v_feedback_json           json;
+    v_empleados_actuales_json json;
+    v_proyecto_json           json;
+begin
+    select json_build_object(
+                   'idCliente', c.id_cliente,
+                   'nombre', c.nombre,
+                   'ruc', c.ruc,
+                   'direccion', c.direccion,
+                   'telefono', c.telefono,
+                   'correo', c.correo,
+                   'documentoIdentidad', c.documento_de_identidad,
+                   'tipoDocumento', c.tipo_de_documento_de_identidad
+           )
+    into v_cliente_json
+    from cliente c
+             join proyecto p on c.id_cliente = p.id_cliente
+    where p.id_proyecto = p_id_proyecto;
+
+    select json_build_object(
+                   'idEmpleado', e.id_empleado,
+                   'usuario', e.usuario,
+                   'nombre', e.nombre,
+                   'apellido', e.apellido,
+                   'correo', e.correo,
+                   'telefono', e.telefono,
+                   'direccion', e.direccion,
+                   'documentoIdentidad', e.documento_identidad,
+                   'tipoDocumento', e.tipo_documento,
+                   'rol', e.rol
+           )
+    into v_supervisor_json
+    from empleado e
+    where e.id_empleado = (select p.id_supervisor from proyecto p where p.id_proyecto = p_id_proyecto);
+
+    select json_build_object(
+                   'idEmpleado', e.id_empleado,
+                   'usuario', e.usuario,
+                   'nombre', e.nombre,
+                   'apellido', e.apellido,
+                   'correo', e.correo,
+                   'telefono', e.telefono,
+                   'direccion', e.direccion,
+                   'documentoIdentidad', e.documento_identidad,
+                   'tipoDocumento', e.tipo_documento,
+                   'rol', e.rol
+           )
+    into v_jefe_json
+    from empleado e
+    where e.id_empleado = (select p.id_jefe from proyecto p where p.id_proyecto = p_id_proyecto);
+
+    select json_agg(
+                   json_build_object(
+                           'idRepuesto', r.id_repuesto,
+                           'nombre', r.nombre,
+                           'descripcion', r.descripcion,
+                           'precio', r.precio,
+                           'linkImg', r.link_img,
+                           'stockDisponible', r.stock_disponible,
+                           'stockAsignado', r.stock_asignado,
+                           'stockRequerido', r.stock_requerido
+                   )
+           )
+    into v_repuestos_json
+    from repuesto r
+             join proyecto_repuestos_cantidad prc on r.id_repuesto = prc.id_repuesto
+    where prc.id_proyecto = p_id_proyecto;
+
+    select json_agg(
+                   json_build_object(
+                           'idParametro', p.id_parametro,
+                           'nombre', p.nombre,
+                           'unidades', p.unidades,
+                           'valorMaximo', pep.valor_maximo,
+                           'valorMinimo', pep.valor_minimo
+                   )
+           )
+    into v_especificaciones_json
+    from proyecto_especificaciones_pruebas pep
+             join parametro p on pep.id_parametro = p.id_parametro
+    where pep.id_proyecto = p_id_proyecto;
+
+    select json_agg(
+                   json_build_object(
+                           'idTipoPrueba', subquery.id_tipo_prueba,
+                           'resultadosParametros', resultados_parametros
+                   )
+           )
+    into v_resultados_json
+    from (select prp.id_tipo_prueba,
+                 json_agg(
+                         json_build_object(
+                                 'idParametro', p.id_parametro,
+                                 'nombre', p.nombre,
+                                 'unidades', p.unidades,
+                                 'valor', prp.valor
+                         )
+                 ) as resultados_parametros
+          from parametro p
+                   join prueba_parametro_resultado prp on p.id_parametro = prp.id_parametro
+                   join resultado_prueba rp on prp.id_resultado_prueba = rp.id_resultado_prueba
+          where rp.id_proyecto = p_id_proyecto
+          group by prp.id_tipo_prueba) as subquery;
+
+    select json_build_object(
+                   'idResultadoPrueba', rp.id_resultado_prueba,
+                   'idProyecto', rp.id_proyecto,
+                   'idTipoPrueba', prp.id_tipo_prueba,
+                   'fecha', rp.fecha,
+                   'resultados', v_resultados_json
+           )
+    into v_resultados_prueba_json
+    from resultado_prueba rp
+             join prueba_parametro_resultado prp on rp.id_resultado_prueba = prp.id_resultado_prueba
+    where rp.id_proyecto = p_id_proyecto;
+
+    select json_agg(
+                   json_build_object(
+                           'idFeedback', f.id_feedback,
+                           'idResultadoPruebaTecnico', f.id_resultado_prueba_tecnico,
+                           'idResultadoPruebaSupervisor', f.id_resultado_prueba_supervisor,
+                           'aprobado', f.aprobado,
+                           'comentario', f.comentario
+                   )
+           )
+    into v_feedback_json
+    from feedback f
+    where f.id_resultado_prueba_supervisor in (select rp.id_resultado_prueba
+                                               from resultado_prueba rp
+                                               where rp.id_proyecto = p_id_proyecto)
+       or f.id_resultado_prueba_tecnico in (select rp.id_resultado_prueba
+                                            from resultado_prueba rp
+                                            where rp.id_proyecto = p_id_proyecto);
+
+    select json_agg(
+                   json_build_object(
+                           'idEmpleado', e.id_empleado,
+                           'usuario', e.usuario,
+                           'nombre', e.nombre,
+                           'apellido', e.apellido,
+                           'correo', e.correo,
+                           'telefono', e.telefono,
+                           'direccion', e.direccion,
+                           'documentoIdentidad', e.documento_identidad,
+                           'tipoDocumento', e.tipo_documento,
+                           'rol', e.rol
+                   )
+           )
+    into v_empleados_actuales_json
+    from empleado e
+             join proyecto_etapa_empleado pee on e.id_empleado = pee.id_tecnico
+    where pee.id_etapa = (select pec.id_etapa
+                          from proyecto_etapas_cambio pec
+                          where pec.fecha_fin is null
+                            and pec.id_proyecto = p_id_proyecto)
+      and pee.id_proyecto = p_id_proyecto;
+
+    select json_build_object(
+                   'idProyecto', p.id_proyecto,
+                   'titulo', p.titulo,
+                   'descripcion', p.descripcion,
+                   'fechaInicio', p.fechaInicio,
+                   'fechaFin', p.fechaFin,
+                   'costoManoObra', c.costo_mano_obra,
+                   'costoRepuestos', c.costo_repuestos,
+                   'costoTotal', c.costo_total,
+                   'idEtapaActual', p.id_etapa_actual,
+                   'etapaActual', (select e.nombre from etapa e where e.id_etapa = p.id_etapa_actual),
+                   'cliente', v_cliente_json,
+                   'supervisor', v_supervisor_json,
+                   'jefe', v_jefe_json,
+                   'repuestos', v_repuestos_json,
+                   'especificaciones', v_especificaciones_json,
+                   'resultados', v_resultados_prueba_json,
+                   'feedbacks', v_feedback_json,
+                   'empleadosActuales', v_empleados_actuales_json
+           )
+    into v_proyecto_json
+    from proyecto p
+             join costos c on p.id_costo = c.id_costo
+    where id_proyecto = p_id_proyecto;
+    return v_proyecto_json;
+end;
+$$ language plpgsql;
+
+-- pa: paRegistrarFeedback -> Registra un feedback
+create or replace function paRegistrarFeedback(
+    p_feedback_json json
+) returns int
+as
+$$
+declare
+    v_resultados                     json;
+    v_resultado_prueba_supervisor_id int;
+    v_feedback_id                    int;
+begin
+    select json_build_object(
+                   'idProyecto', p_feedback_json ->> 'idProyecto',
+                   'idEmpleado', p_feedback_json ->> 'idEmpleado',
+                   'fecha', p_feedback_json ->> 'fecha',
+                   'resultados', p_feedback_json -> 'resultados'
+           )
+    into v_resultados;
+    select * into v_resultado_prueba_supervisor_id from paRegistrarResultados(v_resultados);
+    insert into feedback (id_resultado_prueba_tecnico, id_resultado_prueba_supervisor, aprobado, comentario)
+    values (p_feedback_json ->> 'idResultadoPruebaTecnico', v_resultado_prueba_supervisor_id,
+            p_feedback_json ->> 'aprobado', p_feedback_json ->> 'comentario')
+    returning id_feedback into v_feedback_id;
+    return v_feedback_id;
+    call pacambiaretapaproyecto(p_feedback_json ->> 'idProyecto', 3, p_feedback_json ->> 'fecha');
+end;
+$$ language plpgsql;
