@@ -1,13 +1,14 @@
 "use client";
 
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { NoiceType } from "@/models/noice";
 import { Noice } from "@/components/Noice";
 import { PictureCard } from "@/components/PictureCard";
 import { Button } from "@/components/ui/button";
 import { Logout } from "@/components/icons/Logout";
+import { authorizedRoutes } from "@/lib/auth";
 
 export default function Home() {
   const { data: session } = useSession();
@@ -28,37 +29,34 @@ export default function Home() {
       {noice && <Noice noice={noice} />}
       {session?.user.rol === "admin" ? (
         <div className="flex flex-col md:grid md:grid-cols-3 gap-4 lg:flex-row justify-center p-6 bg-white shadow-lg rounded-lg">
-          {getRoute("/registroEmpleado")}
-          {getRoute("/registroCliente")}
-          {getRoute("/registroProyecto")}
-          {getRoute("/registroPrueba")}
-          {getRoute("/registroRepuesto")}
-          {getRoute("/proyeccionRepuestos")}
-          {getRoute("/proyectos")}
-          {getRoute("/seguimientoTareas")}
-          {getRoute("/visualizacionRepuestos")}
+          {authorizedRoutes.admin.map((route) => (
+            <Fragment key={route}>{getRoute(route)}</Fragment>
+          ))}
         </div>
       ) : session?.user.rol === "jefe" ? (
         <div className="flex flex-col md:grid md:grid-cols-2 gap-4 w-full px-32 justify-center p-6 bg-white shadow-lg rounded-lg">
-          {getRoute("/registroCliente")}
-          {getRoute("/registroProyecto")}
-          {getRoute("/registroPrueba")}
-          {getRoute("/registroRepuesto")}
-          {getRoute("/proyeccionRepuestos")}
-          {getRoute("/proyectos")}
+          {authorizedRoutes.jefe.map((route) => (
+            <Fragment key={route}>{getRoute(route)}</Fragment>
+          ))}
         </div>
       ) : session?.user.rol === "supervisor" ? (
         <div className="flex flex-col gap-4 w-full px-32 justify-center p-6 bg-white shadow-lg rounded-lg">
-          {getRoute("/proyectos")}
+          {authorizedRoutes.supervisor.map((route) => (
+            <Fragment key={route}>{getRoute(route)}</Fragment>
+          ))}
         </div>
       ) : session?.user.rol === "tecnico" ? (
         <div className="flex flex-col gap-4 w-full px-32 justify-center p-6 bg-white shadow-lg rounded-lg">
-          {getRoute("/seguimientoTareas")}
+          {authorizedRoutes.tecnico.map((route) => (
+            <Fragment key={route}>{getRoute(route)}</Fragment>
+          ))}
         </div>
       ) : (
         session?.user.rol === "logistica" && (
           <div className="flex flex-col gap-4 w-full px-32 justify-center p-6 bg-white shadow-lg rounded-lg">
-            {getRoute("/visualizacionRepuestos")}
+            {authorizedRoutes.logistica.map((route) => (
+              <Fragment key={route}>{getRoute(route)}</Fragment>
+            ))}
           </div>
         )
       )}
@@ -107,18 +105,7 @@ export default function Home() {
   );
 }
 
-const getRoute = (
-  path:
-    | "/registroEmpleado"
-    | "/registroCliente"
-    | "/registroProyecto"
-    | "/registroPrueba"
-    | "/registroRepuesto"
-    | "/proyeccionRepuestos"
-    | "/visualizacionRepuestos"
-    | "/proyectos"
-    | "/seguimientoTareas"
-) => {
+const getRoute = (path: string) => {
   switch (path) {
     case "/registroEmpleado":
       return (

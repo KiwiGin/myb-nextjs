@@ -68,3 +68,28 @@ export const authOptions: NextAuthOptions = {
     signIn: "/auth/login",
   },
 };
+
+export const authorizedRoutes = {
+  admin: [
+    "/registroEmpleado",
+    "/proyeccionRepuestos",
+    "/proyectos",
+    "/registroCliente",
+    "/registroRepuesto",
+    "/registroProyecto",
+    "/registroPrueba",
+    "/seguimientoTareas",
+    "/visualizacionRepuestos",
+  ],
+  jefe: [
+    "/proyeccionRepuestos",
+    "/proyectos",
+    "/registroCliente",
+    "/registroRepuesto",
+    "/registroProyecto",
+    "/registroPrueba",
+  ],
+  supervisor: ["/proyectos"],
+  tecnico: ["/seguimientoTareas"],
+  logistica: ["/visualizacionRepuestos"],
+};
