@@ -59,35 +59,36 @@ export function InterfazAsignacionTareas({
     message: "Cargando técnicos...",
   });
 
-  const fetchTecnicos = async () => {
-    try {
-      const res = await fetch("/api/empleado/por-rol/tecnico");
-      const data = await res.json();
-
-      const formatedData = data.map((empleado: Empleado) => ({
-        ...empleado,
-        checked: false,
-      }));
-
-      const parsedData = z.array(empleadoSchema).safeParse(formatedData);
-
-      if (parsedData.success) {
-        form.setValue("empleados", parsedData.data);
-      } else {
-        throw new MyBError("Error en la carga de datos de supervisores");
-      }
-
-      setNoice(null);
-    } catch (error) {
-      if (error instanceof MyBError)
-        setNoice({ type: "error", message: error.message });
-      else setNoice({ type: "error", message: "Error al cargar los técnicos" });
-    }
-  };
-
   useEffect(() => {
+    const fetchTecnicos = async () => {
+      try {
+        // TODO: Fetchear solo los técnicos disponibles
+        const res = await fetch("/api/empleado/por-rol/tecnico");
+        const data = await res.json();
+  
+        const formatedData = data.map((empleado: Empleado) => ({
+          ...empleado,
+          checked: false,
+        }));
+  
+        const parsedData = z.array(empleadoSchema).safeParse(formatedData);
+  
+        if (parsedData.success) {
+          form.setValue("empleados", parsedData.data);
+        } else {
+          throw new MyBError("Error en la carga de datos de supervisores");
+        }
+  
+        setNoice(null);
+      } catch (error) {
+        if (error instanceof MyBError)
+          setNoice({ type: "error", message: error.message });
+        else setNoice({ type: "error", message: "Error al cargar los técnicos" });
+      }
+    };
+
     fetchTecnicos();
-  }, []);
+  }, [form]);
 
   useEffect(() => {
     console.log(form.formState.errors.empleados);

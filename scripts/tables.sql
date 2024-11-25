@@ -141,6 +141,38 @@ create table proyecto_etapas_cambio
     foreign key (id_etapa) references etapa (id_etapa)
 );
 
+-- tabla: resultado_prueba
+create table resultado_prueba
+(
+    id_resultado_prueba serial primary key,
+    id_proyecto         int  not null,
+    id_empleado         int  not null,
+    fecha               date not null
+);
+
+create table prueba_parametro_resultado
+(
+    id_resultado_prueba int            not null,
+    id_tipo_prueba      int            not null, 
+    id_parametro        int            not null,
+    valor               decimal(10, 2) not null,
+    primary key (id_resultado_prueba, id_tipo_prueba, id_parametro),
+    foreign key (id_resultado_prueba) references resultado_prueba (id_resultado_prueba) on delete cascade,
+    foreign key (id_tipo_prueba) references tipo_prueba (id_tipo_prueba) on delete cascade,
+    foreign key (id_parametro, id_tipo_prueba) references parametro (id_parametro, id_tipo_prueba) on delete cascade
+);
+
+create table feedback
+(
+    id_feedback                    serial primary key,
+    id_resultado_prueba_tecnico    int     not null,
+    id_resultado_prueba_supervisor int     not null,
+    aprobado                       boolean not null,
+    comentario                     text,
+    foreign key (id_resultado_prueba_tecnico) references resultado_prueba (id_resultado_prueba) on delete cascade,
+    foreign key (id_resultado_prueba_supervisor) references resultado_prueba (id_resultado_prueba) on delete cascade
+);
+
 -- tipo compuesto: info_parametro_proyecto
 create type info_parametro_proyecto as
 (
