@@ -1,7 +1,6 @@
 "use client";
 import { Cliente } from "@/models/cliente";
 import { Proyecto } from "@/models/proyecto";
-import { PictureCard } from "@components/PictureCard";
 
 export function ProyectoHeader<
   T extends Pick<Proyecto, "titulo" | "idProyecto"> & {

@@ -4,8 +4,6 @@ import { Proyecto } from "@/models/proyecto";
 import { RepuestoCard } from "@/components/RepuestoCard";
 import { z } from "zod";
 
-import { REPUESTOS } from "@/models/MOCKUPS";
-
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z.object({
   idRepuesto: z.number(),

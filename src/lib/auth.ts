@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
       session.user = token.user;
       return session; // Session interface we declared in next-auth.d.ts
     },
-    redirect({ url, baseUrl }) {
+    redirect({}) {
       return "/"; // Redirect to home page
     },
   },

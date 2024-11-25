@@ -1,14 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Cliente } from "@/models/cliente";
 import { Empleado } from "@/models/empleado";
 import { z } from "zod";
 import { Repuesto, RepuestoForm } from "@/models/repuesto";
 
-import { Controller, set, useFieldArray, useForm } from "react-hook-form";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -194,8 +193,6 @@ export function InterfazRegistroProyecto() {
     type: "loading",
     message: "Cargando datos del proyecto...",
   });
-
-  const [error, setError] = useState<string | null>(null);
 
   const fetchClientes = async () => {
     setNoice({
@@ -673,7 +670,7 @@ export function InterfazRegistroProyecto() {
                   repuestos={field.value || []}
                   className="w-full"
                   messageNothingAdded="No hay repuestos seleccionados"
-                  counter={(index, item) => (
+                  counter={(index) => (
                     <Controller
                       name={`repuestos.${index}.quantity`}
                       control={form.control}

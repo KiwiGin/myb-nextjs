@@ -1,7 +1,7 @@
 "use client";
 import { GenericCard } from "./GenericCard";
 import React from "react";
-import { Repuesto, RepuestoForm } from "@/models/repuesto";
+import { Repuesto } from "@/models/repuesto";
 
 export function RepuestosList<T extends Repuesto>({
   messageNothingAdded,

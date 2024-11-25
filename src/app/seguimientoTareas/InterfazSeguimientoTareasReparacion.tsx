@@ -1,5 +1,5 @@
 import { ProyectoTecnico } from "@/models/proyecto";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { EspecificacionesList } from "@/components/EspecificacionesList";
@@ -11,7 +11,6 @@ import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import { Modal } from "@/components/Modal";
 import { FeedbackList } from "@/components/FeedbackList";
-import { PruebasTable } from "@/components/PruebasTable";
 import MyBError from "@/lib/mybError";
 
 const resultadosSchema = z.object({

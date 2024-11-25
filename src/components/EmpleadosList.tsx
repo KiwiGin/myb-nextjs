@@ -1,5 +1,4 @@
 import { EmpleadoForm } from "@/models/empleado";
-import { GenericCard } from "@components/GenericCard";
 
 interface EmpleadoListProps<T extends EmpleadoForm> {
   messageNothingAdded: string;

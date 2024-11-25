@@ -1,8 +1,5 @@
 "use client";
-import { ProjectFlow } from "@/components/ProjectFlow/ProjectFlow";
-import { ProyectoHeader } from "@/components/ProyectoHeader";
-import { ProyectoSupervisor } from "@/models/proyecto";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
@@ -10,13 +7,12 @@ import { Form, FormField, FormItem } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Counter } from "@/components/Counter";
 import { EspecificacionesList } from "@/components/EspecificacionesList";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FeedbackList } from "@/components/FeedbackList";
 import { Modal } from "@/components/Modal";
 import { FeedbackResultados } from "@/models/feedback";
 import { Textarea } from "@/components/ui/textarea";
-import { resolve } from "path";
 import MyBError from "@/lib/mybError";
 
 const especificacionSchema = z

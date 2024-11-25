@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
-import { useForm, useFieldArray, set } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { NoiceType } from "@/models/noice";
 import { useState } from "react";
@@ -40,7 +40,6 @@ export function InterfazRegistroPrueba() {
     handleSubmit,
     control,
     formState: { errors },
-    reset,
   } = useForm<TipoPruebaForm>({
     resolver: zodResolver(tipoPruebaSchema),
     defaultValues: { nombre: "", parametros: [] },

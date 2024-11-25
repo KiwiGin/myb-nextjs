@@ -3,7 +3,7 @@ import { EmpleadosList } from "@/components/EmpleadosList";
 import { Modal } from "@/components/Modal";
 import { Noice } from "@/components/Noice";
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormField, FormLabel } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import MyBError from "@/lib/mybError";
 import { Empleado } from "@/models/empleado";
@@ -11,7 +11,7 @@ import { NoiceType } from "@/models/noice";
 import { Proyecto } from "@/models/proyecto";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useState } from "react";
-import { set, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 const empleadoSchema = z.object({

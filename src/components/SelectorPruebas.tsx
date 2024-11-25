@@ -1,8 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Proyecto } from "@/models/proyecto";
 import { TipoPruebaCard } from "@/components/TipoPruebaCard";
-import { TipoPrueba } from "@/models/tipoprueba";
-import { TIPOS_DE_PRUEBA } from "@/models/MOCKUPS";
 import { z } from "zod";
 
 // Define la estructura de una prueba usando Zod

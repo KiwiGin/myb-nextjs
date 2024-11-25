@@ -121,7 +121,7 @@ export function InterfazVisualizacionRepuestos() {
         repuestos={repuestoField.fields}
         className="grid lg:grid-cols-2 gap-4"
         messageNothingAdded="No hay repuestos seleccionados"
-        counter={(index, item) => (
+        counter={(index) => (
           <Controller
             name={`repuestos.${index}.quantity`}
             control={form.control}
