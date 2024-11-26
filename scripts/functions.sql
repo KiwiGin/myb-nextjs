@@ -970,6 +970,7 @@ declare
     v_resultados          json[];
     v_especificaciones    json[];
     v_resultado_prueba_id int;
+    v_etapa_previa        int;
 begin
     insert into resultado_prueba (id_proyecto, id_empleado, fecha)
     values (p_registro_json ->> 'idProyecto', p_registro_json ->> 'idEmpleado', p_registro_json ->> 'fecha')
@@ -991,10 +992,14 @@ begin
                             v_especificaciones[j] ->> 'idParametro', v_especificaciones[j] ->> 'resultado');
                 end loop;
         end loop;
-    call paCambiarEtapaProyecto(p_registro_json ->> 'idProyecto', 4, p_registro_json ->> 'fecha');
+    select p.id_proyecto into v_etapa_previa from proyecto p where p.id_proyecto = p_registro_json ->> 'idProyecto';
+    if v_etapa_previa = 3 then
+        call paCambiarEtapaProyecto(p_registro_json ->> 'idProyecto', 4, p_registro_json ->> 'fecha');
+    end if;
     return v_resultado_prueba_id;
 end;
 $$ language plpgsql;
+
 
 
 -- pa: paObtenerProyectosPorId -> Obtiene los proyectos por id
