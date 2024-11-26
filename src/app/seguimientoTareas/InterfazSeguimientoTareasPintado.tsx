@@ -24,8 +24,16 @@ export function InterfazSeguimientoTareasPintado({
     });
 
     try {
-      console.log("Empleado", idEmpleado);
-      console.log("Proyecto:", proyecto.idProyecto);
+      const response = await fetch(`/api/proyecto/etapa`, {
+        method: "PUT",
+        body: JSON.stringify({
+          idProyecto: proyecto.idProyecto,
+          idEtapa: 8,
+          fechaInicio: new Date(),
+        }),
+      });
+  
+      if (!response.ok) throw new Error("Error al cambiar de etapa");
 
       await new Promise<void>((resolve) => {
         setTimeout(() => {

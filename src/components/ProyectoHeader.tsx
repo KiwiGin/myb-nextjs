@@ -1,25 +1,21 @@
 "use client";
-import { Cliente } from "@/models/cliente";
 import { Proyecto } from "@/models/proyecto";
+import { useState } from "react";
+import ProjectDetailsModal from "./ProyectDetailsModal";
+import { Button } from "./ui/button";
 
-export function ProyectoHeader<
-  T extends Pick<Proyecto, "titulo" | "idProyecto"> & {
-    cliente?: Pick<Cliente, "idCliente" | "nombre">;
-  }
->({
-  proyecto,
-}: // showSeeMore = true,
-{
-  proyecto: T;
-  showSeeMore?: boolean;
-}) {
+export function ProyectoHeader({proyecto} : {proyecto: Proyecto}) {
+
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   return (
     <div className="flex flex-row justify-between items-center w-full">
+      <ProjectDetailsModal open={dialogOpen} onClose={() => setDialogOpen(false)} proyecto={proyecto} />
       <div className="flex flex-col gap-4 items-start w-3/4">
         <h1 className="font-bold text-3xl">{proyecto.titulo}</h1>
         <div>
           <h4 className="text-xl">{proyecto.cliente?.nombre}</h4>
-          {/*{ showSeeMore && <ProjectSeeMoreModal project={project} /> } */}
+          <Button onClick={() => setDialogOpen(true)}>Ver Detalles</Button>
         </div>
       </div>
       {/* <div className="flex gap-2 h-20 self-start">

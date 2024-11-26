@@ -6,6 +6,7 @@
   import { Form, FormField, FormItem } from "@/components/ui/form";
   import { Noice } from "@/components/Noice";
   import { Proyecto } from "@/models/proyecto";
+import { ResultadosModal } from "@/components/ResultadosModal";
 
   const especificacionSchema = z.object({
     idParametro: z.number(),
@@ -46,6 +47,7 @@
 
   export function InterfazSeguimientoTareasReparacion({ proyecto, idEmpleado }: SeguimientoTareasProps) {
     const [noice, setNoice] = useState<{ type: "loading" | "success" | "error"; message: string } | null>(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
 
     const form = useForm<FormValues>({
       resolver: zodResolver(resultadosSchema),
@@ -93,6 +95,15 @@
         });
 
         form.reset();
+
+        await new Promise<void>((resolve) => {
+          setTimeout(() => {
+            setNoice(null);
+            resolve();
+            window.location.reload();
+          }, 3000);
+        });
+
       } catch (error) {
         setNoice({
           type: "error",
@@ -105,6 +116,12 @@
     return (
       <Form {...form}>
         {noice && <Noice noice={noice} />}
+
+        <Button onClick={() => setDialogOpen(true)} className="mb-4">
+          Ver Resultados Anteriores
+        </Button>
+
+        <ResultadosModal open={dialogOpen} onClose={() => setDialogOpen(false)} proyecto={proyecto} />
 
         <form onSubmit={(event) => {
             event.preventDefault();

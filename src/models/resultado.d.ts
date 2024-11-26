@@ -17,5 +17,3 @@ export type ResultadoParametro = {
   unidad: string;
   resultado: number;
 }
-
-

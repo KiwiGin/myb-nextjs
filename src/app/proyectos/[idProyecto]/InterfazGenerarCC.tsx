@@ -7,10 +7,18 @@ export function InterfazGenerarCC({ idProyecto }: { idProyecto: number }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
   const generarInformeCC = async () => {
-    /* const response = await fetch(`/api/proyecto/${idProyecto}/generar-cc`, {
-        method: "POST",
-      }); 
-      */
+    
+    const response = await fetch(`/api/proyecto/etapa`, {
+      method: "PUT",
+      body: JSON.stringify({
+        idProyecto: idProyecto,
+        idEtapa: 6,
+        fechaInicio: new Date(),
+      }),
+    });
+
+    if (!response.ok) throw new Error("Error al cambiar de etapa");
+    
 
     // Simulación de llamada al backend
     await new Promise<void>((resolve) => {

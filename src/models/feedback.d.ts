@@ -1,7 +1,7 @@
 export interface Feedback {
   idFeedback: number;
   idResultadoPruebaTecnico: number;
-  idResultadoPruebaJefe: number;
+  idResultadoPruebaSupervisor: number;
   aprobado: boolean;
   comentario: string;
 }

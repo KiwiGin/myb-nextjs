@@ -481,8 +481,6 @@ export async function obtenerProyectoPorId(idProyecto: number): Promise<Proyecto
           throw new Error(`No se encontró un proyecto con el ID: ${idProyecto}`);
       }
 
-      console.log('Proyecto encontrado:', res.rows[0].paobtenerproyectosporid);
-
       return res.rows[0].paobtenerproyectosporid as Proyecto;
   } catch (error) {
       console.error('Error al obtener el proyecto por ID:', error);
@@ -532,14 +530,6 @@ export async function registrarResultados(jsonData : {
   }[];
 }) {
   try {
-      if (
-          !jsonData.idProyecto ||
-          !jsonData.idEmpleado ||
-          !jsonData.fecha ||
-          !Array.isArray(jsonData.resultados)
-      ) {
-          throw new Error('El JSON proporcionado no es válido.');
-      }
 
       console.log('Registrando resultados db:', JSON.stringify(jsonData));
 
@@ -558,6 +548,43 @@ export async function registrarResultados(jsonData : {
       } else {
           console.error('Error desconocido al registrar resultados:', err);
           throw new Error('Error desconocido al registrar resultados.');
+      }
+  }
+}
+
+export async function registrarFeedback(jsonData: {
+  idProyecto: number;
+  idEmpleado: number;
+  fecha: Date;
+  idResultadoPruebaTecnico: number;
+  aprobado: boolean;
+  comentario: string;
+  resultados: {
+      idTipoPrueba: number,
+      especificaciones: {
+          idParametro: number,
+          resultado: number,
+        }[]
+    }[]
+}) {
+  try {
+      console.log('Registrando feedback db:', JSON.stringify(jsonData));
+
+      // Ejecutar el procedimiento almacenado con el JSON
+      const res = await pool.query(
+          `SELECT paregistrarfeedback($1::json) AS id_feedback`,
+          [JSON.stringify(jsonData)]
+      );
+
+      // Devolver el ID del feedback
+      return res.rows[0].id_feedback;
+  } catch (err) {
+      if (err instanceof Error) {
+          console.error('Error al registrar feedback:', err.message);
+          throw new Error(`Error al registrar feedback: ${err.message}`);
+      } else {
+          console.error('Error desconocido al registrar feedback:', err);
+          throw new Error('Error desconocido al registrar feedback.');
       }
   }
 }

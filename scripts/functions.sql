@@ -923,23 +923,50 @@ as
 $$
 declare
     v_id_etapa_prev int;
+    v_fecha_fin_prev date;
 begin
-    select pec.id_etapa
-    into v_id_etapa_prev
+    -- Obtener la etapa previa y su fecha de inicio
+    select pec.id_etapa, pec.fecha_inicio
+    into v_id_etapa_prev, v_fecha_fin_prev
     from proyecto_etapas_cambio pec
     where pec.id_proyecto = p_id_proyecto
       and pec.fecha_fin is null;
-    update proyecto_etapas_cambio pec
-    set fecha_fin = p_fecha_inicio
-    where pec.id_proyecto = p_id_proyecto
-      and pec.id_etapa = v_id_etapa_prev;
-    insert into proyecto_etapas_cambio (id_proyecto, id_etapa, fecha_inicio)
-    values (p_id_proyecto, p_id_etapa, p_fecha_inicio);
+
+    -- Si hay una etapa previa, actualizar su fecha de fin
+    if v_id_etapa_prev is not null then
+        update proyecto_etapas_cambio
+        set fecha_fin = p_fecha_inicio
+        where id_proyecto = p_id_proyecto
+          and id_etapa = v_id_etapa_prev;
+    end if;
+
+    -- Verificar si la etapa que se quiere insertar ya existe
+    if exists (
+        select 1
+        from proyecto_etapas_cambio
+        where id_proyecto = p_id_proyecto
+          and id_etapa = p_id_etapa
+    ) then
+        -- Si existe, actualizar sus fechas
+        update proyecto_etapas_cambio
+        set fecha_inicio = p_fecha_inicio,
+            fecha_fin = null
+        where id_proyecto = p_id_proyecto
+          and id_etapa = p_id_etapa;
+    else
+        -- Si no existe, insertar la nueva etapa
+        insert into proyecto_etapas_cambio (id_proyecto, id_etapa, fecha_inicio)
+        values (p_id_proyecto, p_id_etapa, p_fecha_inicio);
+    end if;
+
+    -- Actualizar la etapa actual del proyecto
     update proyecto
     set id_etapa_actual = p_id_etapa
     where id_proyecto = p_id_proyecto;
 end;
 $$ language plpgsql;
+
+
 -- pa: paObtenerProyectoPorEmpleado -> Obtiene los proyectos de un empleado
 create or replace function paObtenerProyectoPorEmpleado(p_id_empleado int)
     returns json as
@@ -1004,6 +1031,7 @@ begin
     return v_resultado_prueba_id;
 end;
 $$ language plpgsql;
+
 --pa: paRegistrarResultados -> Registra los resultados de una prueba
 create or replace function paRegistrarResultados(
     p_registro_json json
@@ -1286,10 +1314,14 @@ begin
     into v_resultados;
     select * into v_resultado_prueba_supervisor_id from paRegistrarResultados(v_resultados);
     insert into feedback (id_resultado_prueba_tecnico, id_resultado_prueba_supervisor, aprobado, comentario)
-    values (p_feedback_json ->> 'idResultadoPruebaTecnico', v_resultado_prueba_supervisor_id,
-            p_feedback_json ->> 'aprobado', p_feedback_json ->> 'comentario')
+    values ((p_feedback_json ->> 'idResultadoPruebaTecnico')::integer, v_resultado_prueba_supervisor_id,
+            (p_feedback_json ->> 'aprobado')::boolean, p_feedback_json ->> 'comentario')
     returning id_feedback into v_feedback_id;
+    if (p_feedback_json ->> 'aprobado')::boolean then
+        call paCambiarEtapaProyecto((p_feedback_json ->> 'idProyecto')::int, 5, (p_feedback_json ->> 'fecha')::date);
+    else
+        call paCambiarEtapaProyecto((p_feedback_json ->> 'idProyecto')::int, 3, (p_feedback_json ->> 'fecha')::date);
+    end if;
     return v_feedback_id;
-    call pacambiaretapaproyecto(p_feedback_json ->> 'idProyecto', 3, p_feedback_json ->> 'fecha');
 end;
 $$ language plpgsql;

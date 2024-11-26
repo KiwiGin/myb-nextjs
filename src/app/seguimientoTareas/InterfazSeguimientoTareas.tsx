@@ -6,6 +6,9 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { InterfazSeguimientoTareasReparacion } from "./InterfazSeguimientoTareasReparacion";
 import { Noice } from "@/components/Noice";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { NoiceType } from "@/models/noice";
 import { InterfazNoTareasAsignadas } from "./InterfazNoTareasAsignadas";
 import { InterfazSeguimientoTareasPintado } from "./InterfazSeguimientoTareasPintado";
@@ -93,7 +96,7 @@ const proyectoSchema = z.object({
     z.object({
       idFeedback: z.number(),
       idResultadoPruebaTecnico: z.number(),
-      idResultadoPruebaJefe: z.number(),
+      idResultadoPruebaSupervisor: z.number(),
       aprobado: z.boolean(),
       comentario: z.string(),
     })
@@ -108,18 +111,21 @@ const proyectoSchema = z.object({
 })
 
 export function InterfazSeguimientoTareas() {
-  const [idEmpleado] = useState<string>("5");
+  const [idEmpleadoMock, setIdEmpleadoMock] = useState<string>("5");
+  const [idProyectoMock, setIdProyectoMock] = useState<string>("3");
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [noice, setNoice] = useState<NoiceType | null>({
     type: "loading",
     message: "Cargando tareas...",
   });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newIdProyecto, setNewIdProyecto] = useState<string>("");
 
   const fetchTareas = async () => {
     try {
-      const res = await fetch(`/api/proyecto/por-id/${1}`);
+      const res = await fetch(`/api/proyecto/por-id/${idProyectoMock}`);
       const data = await res.json();
-      
+
       console.log("data", data);
       const parsedData = proyectoSchema.safeParse(data);
 
@@ -139,39 +145,76 @@ export function InterfazSeguimientoTareas() {
     }
   };
 
+  const handleIdProyectoChange = () => {
+    setIdProyectoMock(newIdProyecto);
+    setIsDialogOpen(false);
+    fetchTareas();
+  };
+
   useEffect(() => {
     fetchTareas();
-  }, []);
+  }, [idProyectoMock]);
 
-  if (noice) return <Noice noice={noice} />;
-
-  return proyecto ? (
+  return (
     <div className="flex flex-col items-center pt-10 px-20 gap-3">
-      <ProyectoHeader proyecto={proyecto} />
-      <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
-      {proyecto.idEtapaActual == 3 ? (
-        <div className="w-full">
-          <InterfazSeguimientoTareasReparacion
-            idEmpleado={Number(idEmpleado)}
-            proyecto={proyecto}
+      <Button onClick={() => setIsDialogOpen(true)}   className="fixed top-5 right-5 z-50 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg">
+        Cambiar Proyecto
+      </Button>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogTrigger asChild>
+          <Button className="hidden">Abrir Modal</Button>
+        </DialogTrigger>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Cambiar Proyecto</DialogTitle>
+            <DialogDescription>
+              Ingresa el nuevo ID del proyecto para actualizar los datos.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            placeholder="Nuevo ID de Proyecto"
+            value={newIdProyecto}
+            onChange={(e) => setNewIdProyecto(e.target.value)}
           />
-        </div>
-      ) : proyecto.idEtapaActual == 4 ? (
-        <div className="w-full p-7">
-          <h1 className="text-center font-bold text-xl">
-            En control de calidad...
-          </h1>
-        </div>
-      ) : proyecto.idEtapaActual == 7 ? (
-        <div className="w-full">
-          <InterfazSeguimientoTareasPintado
-            proyecto={proyecto}
-            idEmpleado={idEmpleado}
-          />
-        </div>
-      ) : null}
+          <DialogFooter>
+            <Button onClick={() => setIsDialogOpen(false)} variant="secondary">
+              Cancelar
+            </Button>
+            <Button onClick={handleIdProyectoChange}>
+              Guardar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {noice ? (
+        <Noice noice={noice} />
+      ) : proyecto ? (
+        <>
+          <ProyectoHeader proyecto={proyecto} />
+          <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
+          {proyecto.idEtapaActual == 3 ? (
+            <InterfazSeguimientoTareasReparacion
+              idEmpleado={Number(idEmpleadoMock)}
+              proyecto={proyecto}
+            />
+          ) : proyecto.idEtapaActual == 4 ? (
+            <div className="w-full p-7">
+              <h1 className="text-center font-bold text-xl">
+                En control de calidad...
+              </h1>
+            </div>
+          ) : proyecto.idEtapaActual == 7 ? (
+            <InterfazSeguimientoTareasPintado
+              proyecto={proyecto}
+              idEmpleado={idEmpleadoMock}
+            />
+          ) : null}
+        </>
+      ) : (
+        <InterfazNoTareasAsignadas />
+      )}
     </div>
-  ) : (
-    <InterfazNoTareasAsignadas />
   );
 }
