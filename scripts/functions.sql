@@ -1086,7 +1086,7 @@ begin
                    json_build_object(
                            'idTipoPrueba', sq.id_tipo_prueba,
                            'nombre', (select tp.nombre from tipo_prueba tp where tp.id_tipo_prueba = sq.id_tipo_prueba),
-                           'parametros', parametro_prueba
+                           'especificaciones', parametro_prueba
                    )
            )
     into v_especificaciones_json
@@ -1095,7 +1095,7 @@ begin
                          json_build_object(
                                  'idParametro', p.id_parametro,
                                  'nombre', p.nombre,
-                                 'unidad', p.unidades,
+                                 'unidades', p.unidades,
                                  'valorMaximo', pep.valor_maximo,
                                  'valorMinimo', pep.valor_minimo
                          )
@@ -1145,8 +1145,9 @@ begin
                          join prueba_parametro_resultado prp on p.id_parametro = prp.id_parametro
                          join resultado_prueba rp on prp.id_resultado_prueba = rp.id_resultado_prueba
                 where rp.id_proyecto = p_id_proyecto
-                group by prp.id_tipo_prueba, prp.id_resultado_prueba, rp.id_proyecto, rp.fecha) as sq
+                group by prp.id_tipo_prueba, prp.id_resultado_prueba, rp.id_proyecto, rp.fecha, rp.id_empleado) as sq
           group by sq.id_tipo_prueba, sq.id_resultado_prueba, sq.id_proyecto, sq.id_empleado, sq.fecha) as sq2;
+
 
     select json_agg(
                    json_build_object(
