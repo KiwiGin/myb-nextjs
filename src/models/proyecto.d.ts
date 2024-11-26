@@ -1,6 +1,8 @@
 import { Cliente } from "./cliente";
-import { Especificacion } from "./especificacion";
-import { FeedbackResultados } from "./feedback";
+import { Empleado } from "./empleado";
+import { EspecificacionPrueba } from "./especificacion";
+import { ResultadoPrueba } from "./resultado";
+import { Feedback, FeedbackResultados } from "./feedback";
 import { Repuesto } from "./repuesto";
 import {
   TipoPruebaEspecificacion,
@@ -11,35 +13,35 @@ export interface Proyecto {
   idProyecto?: number;
   titulo: string;
   descripcion: string;
-  fechaInicio: Date;
-  fechaFin: Date;
+
   costoManoObra?: number;
   costoRepuestos?: number;
   costoTotal?: number;
 
-  idCliente: number;
-  idSupervisor: number;
-  idJefe: number;
-  idEtapaActual: number;
+  idEtapaActual?: number;
+  etapaActual?: string;
 
   cliente?: Cliente;
   supervisor?: Empleado;
   jefe?: Empleado;
-  etapaActual?: string;
-
-  idRepuestos?: number[];
-  cantidadesRepuestos?: number[];
 
   repuestos?: Repuesto[];
+  especificaciones?: EspecificacionPrueba[];
+
+  resultados: ResultadoPrueba[];
+  feedbacks: Feedback[];
+  empleadosActuales: Empleado[];
+  
+  idCliente?: number;
+  idSupervisor?: number;
+  idJefe?: number;
+  idEmpleadosActuales?: number[];
+  idRepuestos?: number[];
+  cantidadesRepuestos?: number[];
 
   idParametros?: number[];
   valoresMaximos?: number[];
   valoresMinimos?: number[];
-
-  especificaciones?: Especificacion[];
-
-  idEmpleados?: number[];
-  empleados?: Empleado[];
 }
 
 export interface ProyectoTecnico

@@ -60,12 +60,11 @@ export function InterfazAsignacionTareas({
   });
 
   useEffect(() => {
-    const fetchTecnicos = async () => {
+    const fetchTecnicosDisponibles = async () => {
       try {
-        // TODO: Fetchear solo los técnicos disponibles
-        const res = await fetch("/api/empleado/por-rol/tecnico");
+        const res = await fetch("/api/empleado/disponibles/tecnico");
         const data = await res.json();
-  
+
         const formatedData = data.map((empleado: Empleado) => ({
           ...empleado,
           checked: false,
@@ -87,20 +86,31 @@ export function InterfazAsignacionTareas({
       }
     };
 
-    fetchTecnicos();
+    fetchTecnicosDisponibles();
   }, [form]);
 
   useEffect(() => {
     console.log(form.formState.errors.empleados);
   }, [form.formState.errors.empleados]);
 
-  // Simulate asignarTareas
   const asignarTareas = async () => {
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 2000);
+    const data = {
+      idProyecto: proyecto.idProyecto,
+      idEmpleados: form.getValues("empleados")
+        .filter((empleado) => empleado.checked)
+        .map((empleado) => empleado.idEmpleado),
+      fechaAsignacion: new Date(),
+    };
+    const res = await fetch("/api/proyecto/asignar-empleados", {
+      method: "PUT",
+      body: JSON.stringify(data),
     });
+
+    if (!res.ok) {
+      throw new MyBError("Error al asignar las tareas");
+    }
+
+    return res.json();
   };
 
   const onSubmit = async (data: z.infer<typeof empleadosSchema>) => {

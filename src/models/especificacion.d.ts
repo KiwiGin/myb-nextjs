@@ -1,4 +1,4 @@
-export interface Especificacion {
+export interface EspecificacionPrueba {
   idParametro: number;
   nombre: string;
   unidad: string;
@@ -6,7 +6,7 @@ export interface Especificacion {
   valorMinimo: number;
 }
 
-export interface EspecificacionForm extends Especificacion {
+export interface EspecificacionForm extends EspecificacionPrueba {
   resultado?: number | string;
   valorMaximo?: number;
   valorMinimo?: number;

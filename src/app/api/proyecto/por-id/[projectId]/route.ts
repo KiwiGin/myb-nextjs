@@ -1,4 +1,4 @@
-import { obtenerDatosProyectoPorId } from '@/backend/dataBaseUtils/proyectoDA';
+import { obtenerProyectoPorId } from '@/backend/dataBaseUtils/proyectoDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { Proyecto } from '@/models/proyecto';
 
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest, { params }: { params: { projectI
 
   try {
     // Ejecuta la función para obtener datos de proyecto por id
-    const proyecto: Proyecto = await obtenerDatosProyectoPorId(Number(projectId));
+    const proyecto: Proyecto = await obtenerProyectoPorId(Number(projectId));
 
     // Retorna los datos de proyecto como JSON
     return NextResponse.json(proyecto);

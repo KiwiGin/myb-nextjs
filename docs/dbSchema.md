@@ -62,7 +62,6 @@ Valor:
 ResultadoPrueba:
   - id_resultado_prueba
   - id_proyecto
-  - id_tipo_prueba
   - id_empleado
   - fecha
 
@@ -100,7 +99,7 @@ Tablas relacionales:
     id_proyecto - id_tipo_prueba - id_parametro - valor_maximo? - valor_minimo?
     
 - Valores de los resultados de las pruebas
-    id_prueba_resultado - id_parametro - resultado
+    id_prueba_resultado - id_tipo_prueba - id_parametro - resultado
 
 ---
 

@@ -1,6 +1,6 @@
 import { pool } from '../clientConnection';
 import { Proyecto } from '@/models/proyecto';
-import { Especificacion } from '@/models/especificacion';
+import { EspecificacionPrueba } from '@/models/especificacion';
 import { Repuesto } from '@/models/repuesto';
 import { Cliente } from '@/models/cliente';
 import { Empleado } from '@/models/empleado';
@@ -57,7 +57,7 @@ export async function obtenerProyectos(): Promise<Proyecto[]> {
       };
     });
 
-    const especificaciones: Especificacion[] = [];
+    const especificaciones: EspecificacionPrueba[] = [];
     const repuestos: Repuesto[] = [];
     proyectos.forEach(proyecto => {
       proyecto.infoParametros.ids_parametro.forEach((idParametro, index) => {
@@ -333,18 +333,14 @@ export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Pro
     const res = await pool.query('SELECT * FROM paObtenerDatosProyectoPorId($1)', [idProyecto]);
 
     const proyecto = res.rows[0];
-    console.log(proyecto);
 
-    const especificaciones: Especificacion[] = [];
+    const especificaciones: EspecificacionPrueba[] = [];
     const repuestos: Repuesto[] = [];
 
     const parametrosString = proyecto.info_parametros;
 
     const parametros = parseParametros(parametrosString);
     
-    console.log("parametros")
-    console.log(parametros)
-
     const idParametros = parametros[0].map(Number);
     const nombresParametros = parametros[1];
     const unidades = parametros[2];
@@ -360,9 +356,6 @@ export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Pro
         valorMinimo: valoresMinimos[i],
       });
     }
-
-    console.log("especificaciones")
-    console.log(especificaciones)
 
     const res_1 = await pool.query('SELECT * FROM paObtenerRepuestosPorProyecto($1)', [idProyecto]);
     res_1.rows.forEach((repuesto: {
@@ -416,7 +409,7 @@ export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Pro
       etapaActual: etapaActual,
 
       repuestos: repuestos as Repuesto[],
-      especificaciones: especificaciones as Especificacion[],
+      especificaciones: especificaciones as EspecificacionPrueba[],
 
       empleadosActuales: empleadosActuales as Empleado[]
     } as Proyecto;
@@ -488,5 +481,51 @@ export async function obtenerProyectosPorJefe(idJefe: number): Promise<Proyecto[
       console.error('Error executing query', err);
     }
     throw err;
+  }
+}
+
+export async function obtenerProyectoPorId(idProyecto: number): Promise<Proyecto> {
+  try {
+      const res = await pool.query('SELECT * FROM paObtenerProyectosPorId($1)', [idProyecto]);
+
+      if (!res || !res.rows || res.rows.length === 0) {
+          throw new Error(`No se encontró un proyecto con el ID: ${idProyecto}`);
+      }
+
+      console.log('Proyecto encontrado:', res.rows[0].paobtenerproyectosporid);
+
+      return res.rows[0].paobtenerproyectosporid as Proyecto;
+  } catch (error) {
+      console.error('Error al obtener el proyecto por ID:', error);
+      throw error;
+  }
+}
+// Función para asignar empleados a un proyecto
+export async function asignarEmpleadosAProyecto(data: {
+  idProyecto: number;
+  idEmpleados: number[];
+  fechaAsignacion: Date;
+}): Promise<void> {
+  try {
+      const { idProyecto, idEmpleados, fechaAsignacion } = data;
+
+      // Verifica que el array de empleados no esté vacío
+      if (!idEmpleados || idEmpleados.length === 0) {
+          throw new Error('La lista de empleados no puede estar vacía.');
+      }
+
+      // Ejecuta el procedimiento almacenado
+      await pool.query(
+          'CALL paAsignarEmpleadosAProyecto($1, $2, $3)',
+          [idProyecto, idEmpleados, fechaAsignacion]
+      );
+  } catch (err) {
+      if (err instanceof Error) {
+          console.error('Error al asignar empleados al proyecto:', err.message);
+          throw new Error(`Error al asignar empleados: ${err.message}`);
+      } else {
+          console.error('Error desconocido al asignar empleados:', err);
+          throw new Error('Error desconocido al asignar empleados.');
+      }
   }
 }

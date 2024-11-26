@@ -128,3 +128,28 @@ export async function obtenerEmpleadosPorIds(ids: number[]): Promise<Empleado[]>
     return [];
   }
 }
+
+// Cambio a JSON
+export async function obtenerTecnicosDisponibles(): Promise<Empleado[]> {
+  try {
+      // Realiza la consulta a la base de datos
+      const res = await pool.query('SELECT * FROM paObtenerTecnicosDisponibles()');
+
+      // Asegúrate de que el resultado tiene datos
+      if (!res || !res.rows || res.rows.length === 0) {
+          console.warn('No se encontraron técnicos disponibles.');
+          return [];
+      }
+
+      // La función almacenada devuelve un JSON con camelCase
+      const empleados = res.rows[0].paobtenertecnicosdisponibles as Empleado[];
+      return empleados || [];
+  } catch (err) {
+      if (err instanceof Error) {
+          console.error('Error al obtener técnicos disponibles:', err.stack);
+      } else {
+          console.error('Error desconocido al obtener técnicos disponibles:', err);
+      }
+      return [];
+  }
+}

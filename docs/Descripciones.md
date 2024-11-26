@@ -304,11 +304,14 @@ CALL paCambiarEtapaProyecto(
   "costoManoObra": number,
   "costoRepuestos": number,
   "costoTotal": number,
-  "idEtapaActual": number,
-  "etapaActual": string,
+
+
   "cliente": Cliente,
   "supervisor": Empleado,
   "jefe": Empleado,
+  
+  "idEtapaActual": number,
+  "etapaActual": string,
 
   "repuestos": Repuesto[],
   "especificaciones": Especificacion[],
@@ -442,15 +445,6 @@ CALL paObtenerProyectoPorId(idProyecto);
   "empleadosActuales": Empleado[]
 }
 ```
-
-SPRINT 5
-# [ ] CUS-10 Generar informe final de reparación
-# [ ] CUS-09 Generar informe de control de calidad
-# [ ] CUS-03 Cierre de Proyecto
-
-
-
-
 # Sobre el objeto Proyecto:
 
 
@@ -554,7 +548,6 @@ ResultadoPrueba
 {
   "idResultadoPrueba": number,
   "idProyecto": number,
-  "idTipoPrueba": number,
   "idEmpleado": number,
   "fecha": Date,
   "resultados": Resultado[]
@@ -592,3 +585,9 @@ Feedback
   "comentario": string
 }
 ```
+
+
+SPRINT 5
+# [ ] CUS-10 Generar informe final de reparación
+# [ ] CUS-09 Generar informe de control de calidad
+# [ ] CUS-03 Cierre de Proyecto

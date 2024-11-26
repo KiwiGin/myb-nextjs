@@ -14,7 +14,7 @@ import MyBError from "@/lib/mybError";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
-  const [empleadoRol, setEmpleadoRol] = useState<"jefe" | "supervisor">("jefe");
+  const [empleadoRol] = useState<"jefe" | "supervisor">("jefe");
   const [noice, setNoice] = useState<NoiceType | null>({
     type: "loading",
     message: "Cargando proyecto...",
@@ -30,6 +30,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
         /* setProyecto(data); */
         setProyecto({ ...data });
         setNoice(null);
+        console.log("proy: ", data);
       } catch (error) {
         if (error instanceof MyBError)
           setNoice({ type: "error", message: error.message });

@@ -9,10 +9,10 @@ SPRINT 2
 - [X] CUS-15 Registro de repuestos
 
 SPRINT 3
-- [ ] CUS-04 Proyección de Repuestos
-- [ ] CUS-13 Visualización de Repuestos Requeridos
-- [ ] CUS-01 Asignación de Repuestos
-- [ ] CUS-07 Seguimiento de Proyecto
+- [X] CUS-04 Proyección de Repuestos
+- [X] CUS-13 Visualización de Repuestos Requeridos
+- [X] CUS-01 Asignación de Repuestos
+- [X] CUS-07 Seguimiento de Proyecto
 
 SPRINT 4
 - [ ] CUS-02 Asignación de Tareas
