@@ -1014,7 +1014,6 @@ declare
     v_repuestos_json          json;
     v_especificaciones_json   json;
     v_resultados_prueba_json  json;
-    v_resultados_json         json;
     v_feedback_json           json;
     v_empleados_actuales_json json;
     v_proyecto_json           json;
@@ -1088,7 +1087,7 @@ begin
                    json_build_object(
                            'idTipoPrueba', sq.id_tipo_prueba,
                            'nombre', (select tp.nombre from tipo_prueba tp where tp.id_tipo_prueba = sq.id_tipo_prueba),
-                           'parametros', parametro_prueba
+                           'especificaciones', parametro_prueba
                    )
            )
     into v_especificaciones_json
@@ -1097,7 +1096,7 @@ begin
                          json_build_object(
                                  'idParametro', p.id_parametro,
                                  'nombre', p.nombre,
-                                 'unidad', p.unidades,
+                                 'unidades', p.unidades,
                                  'valorMaximo', pep.valor_maximo,
                                  'valorMinimo', pep.valor_minimo
                          )
@@ -1107,12 +1106,15 @@ begin
           where pep.id_proyecto = p_id_proyecto
           group by pep.id_tipo_prueba) as sq;
 
-    select json_build_object(
-                   'idResultadoPrueba', sq2.id_resultado_prueba,
-                   'idProyecto', sq2.id_proyecto,
-                   'idTipoPrueba', sq2.id_tipo_prueba,
-                   'fecha', sq2.fecha,
-                   'resultados', resultados
+
+    select json_agg(
+                   json_build_object(
+                           'idResultadoPrueba', sq2.id_resultado_prueba,
+                           'idProyecto', sq2.id_proyecto,
+                           'idTipoPrueba', sq2.id_tipo_prueba,
+                           'fecha', sq2.fecha,
+                           'resultados', resultados
+                   )
            )
     into v_resultados_prueba_json
     from (select sq.id_tipo_prueba,
