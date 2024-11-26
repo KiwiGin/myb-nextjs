@@ -1,4 +1,10 @@
 export interface EspecificacionPrueba {
+  idTipoPrueba: number;
+  nombre: string;
+  parametros: ParametroPrueba[];
+}
+
+export interface ParametroPrueba {
   idParametro: number;
   nombre: string;
   unidad: string;

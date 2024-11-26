@@ -28,9 +28,9 @@ export interface Proyecto {
   repuestos?: Repuesto[];
   especificaciones?: EspecificacionPrueba[];
 
-  resultados: ResultadoPrueba[];
-  feedbacks: Feedback[];
-  empleadosActuales: Empleado[];
+  resultados?: ResultadoPrueba[];
+  feedbacks?: Feedback[];
+  empleadosActuales?: Empleado[];
   
   idCliente?: number;
   idSupervisor?: number;

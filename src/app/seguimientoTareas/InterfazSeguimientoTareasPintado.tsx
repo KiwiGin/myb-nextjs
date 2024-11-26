@@ -2,14 +2,14 @@ import { Noice } from "@/components/Noice";
 import { Button } from "@/components/ui/button";
 import MyBError from "@/lib/mybError";
 import { NoiceType } from "@/models/noice";
-import { ProyectoTecnico } from "@/models/proyecto";
+import { Proyecto } from "@/models/proyecto";
 import { useState } from "react";
 
 export function InterfazSeguimientoTareasPintado({
   proyecto,
   idEmpleado,
 }: {
-  proyecto: ProyectoTecnico;
+  proyecto: Proyecto;
   idEmpleado: string;
 }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);

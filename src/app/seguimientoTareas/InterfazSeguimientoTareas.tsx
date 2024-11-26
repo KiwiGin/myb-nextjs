@@ -22,6 +22,12 @@ const proyectoSchema = z.object({
   cliente: z.object({
     idCliente: z.number(),
     nombre: z.string(),
+    ruc: z.string(),
+    direccion: z.string(),
+    telefono: z.string(),
+    correo: z.string(),
+    documentoDeIdentidad: z.string(),
+    tipoDeDocumento: z.string(),
   }),
 
   supervisor: z.object({
@@ -37,28 +43,36 @@ const proyectoSchema = z.object({
   repuestos: z.array(
     z.object({
       idRepuesto: z.number(),
+      precio: z.number(),
       nombre: z.string(),
       descripcion: z.string(),
-      linkImg: z.string().optional().nullable(),
+      linkImg: z.string().optional().optional(),
       cantidad: z.number(),
     })
   ),
 
   especificaciones: z.array(
     z.object({
-      idParametro: z.number(),
+      idTipoPrueba: z.number(),
       nombre: z.string(),
-      valorMaximo: z.number(),
-      valorMinimo: z.number(),
+      parametros: z.array(
+        z.object({
+          idParametro: z.number(),
+          nombre: z.string(),
+          unidad: z.string(),
+          valorMaximo: z.number(),
+          valorMinimo: z.number(),
+        })
+      ),
     })
-  ),
+  ).optional(),
 
   resultados: z.array(
     z.object({
       idResultadoPrueba: z.number(),
       idProyecto: z.number(),
       idEmpleado: z.number(),
-      fecha: z.string(),
+      fecha: z.date(),
       resultados: z.array(
         z.object({
           idTipoPrueba: z.number(),
@@ -73,6 +87,16 @@ const proyectoSchema = z.object({
         })
       ),
     })
+  ).optional(),
+
+  feedbacks: z.array(
+    z.object({
+      idFeedback: z.number(),
+      idResultadoPruebaTecnico: z.number(),
+      idResultadoPruebaJefe: z.number(),
+      aprobado: z.boolean(),
+      comentario: z.string(),
+    })
   ),
 
   empleadosActuales: z.array(
@@ -80,8 +104,8 @@ const proyectoSchema = z.object({
       idEmpleado: z.number(),
       nombre: z.string(),
     })
-  ),
-});
+  ).optional(),
+})
 
 export function InterfazSeguimientoTareas() {
   const [idEmpleado] = useState<string>("5");
@@ -95,8 +119,8 @@ export function InterfazSeguimientoTareas() {
     try {
       const res = await fetch(`/api/proyecto/por-id/${1}`);
       const data = await res.json();
+      
       console.log("data", data);
-
       const parsedData = proyectoSchema.safeParse(data);
 
       if (parsedData.success) {
@@ -127,7 +151,7 @@ export function InterfazSeguimientoTareas() {
       {proyecto.idEtapaActual == 3 ? (
         <div className="w-full">
           <InterfazSeguimientoTareasReparacion
-            idEmpleado={idEmpleado}
+            idEmpleado={Number(idEmpleado)}
             proyecto={proyecto}
           />
         </div>
