@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
         idTipoPrueba: number;
         especificaciones: {
           idParametro: number;
-          resultado: string;
+          resultado: number;
         }[]
       }[]
     }

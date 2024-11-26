@@ -13,7 +13,7 @@
 
   const especificacionSchema = z.object({
     idParametro: z.number(),
-    resultado: z.string().nonempty("El resultado es obligatorio."),
+    resultado: z.number()
   });
 
   const pruebaSchema = z.object({
@@ -32,7 +32,7 @@
     idTipoPrueba: number;
     especificaciones: {
       idParametro: number;
-      resultado: string;
+      resultado: number;
     }[];
   };
 
@@ -67,7 +67,7 @@
           idTipoPrueba: prueba.idTipoPrueba,
           especificaciones: prueba.parametros.map((parametro) => ({
             idParametro: parametro.idParametro,
-            resultado: "",
+            resultado: 0,
           })),
         }));
 
@@ -110,7 +110,11 @@
       <Form {...form}>
         {noice && <Noice noice={noice} />}
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
+        <form onSubmit={(event) => {
+            event.preventDefault();
+            console.log("Formulario antes del envío:", form.getValues());
+            form.handleSubmit(onSubmit)(event);
+          }} className="w-full">
         {form.watch("resultados").map((prueba, pruebaIndex) => {
           const especificacionOriginal = proyecto.especificaciones?.find(
             (spec) => spec.idTipoPrueba === prueba.idTipoPrueba
@@ -137,7 +141,12 @@
                       name={`resultados.${pruebaIndex}.especificaciones.${especIndex}.resultado`}
                       render={({ field }) => (
                         <FormItem>
-                          <Counter {...field} />
+                          <input
+                            {...field}
+                            type="number"
+                            className="w-16 text-center border border-gray-300 rounded"
+                            onChange={(e) => field.onChange(Number(e.target.value))} // Convertir a número
+                          />
                         </FormItem>
                       )}
                     />

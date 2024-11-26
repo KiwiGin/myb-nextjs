@@ -14,6 +14,9 @@ export interface Proyecto {
   titulo: string;
   descripcion: string;
 
+  fechaInicio?: Date;
+  fechaFin?: Date;
+
   costoManoObra?: number;
   costoRepuestos?: number;
   costoTotal?: number;
