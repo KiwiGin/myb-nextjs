@@ -72,7 +72,7 @@ const proyectoSchema = z.object({
       idResultadoPrueba: z.number(),
       idProyecto: z.number(),
       idEmpleado: z.number(),
-      fecha: z.date(),
+      fecha: z.string(),
       resultados: z.array(
         z.object({
           idTipoPrueba: z.number(),

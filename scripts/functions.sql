@@ -961,7 +961,6 @@ end;
 $$ language plpgsql;
 
 --pa: paRegistrarResultados -> Registra los resultados de una prueba
---pa: paRegistrarResultados -> Registra los resultados de una prueba
 create or replace function paRegistrarResultados(
     p_registro_json json
 )
@@ -1137,7 +1136,7 @@ begin
                                json_build_object(
                                        'idParametro', p.id_parametro,
                                        'nombre', p.nombre,
-                                       'unidades', p.unidades,
+                                       'unidad', p.unidades,
                                        'resultado', prp.valor
                                )
                        ) as resultados_parametros
