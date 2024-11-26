@@ -880,6 +880,7 @@ as
 $$
 declare
     v_ids_tecnicos_libres int[];
+    v_id_etapa_prev       int;
 begin
     v_ids_tecnicos_libres := (select array_agg(e.id_empleado)
                               from empleado e
@@ -901,7 +902,14 @@ begin
             INSERT INTO proyecto_etapa_empleado (id_proyecto, id_etapa, id_tecnico)
             VALUES (p_idProyecto, 3, p_idEmpleados[i]);
         end loop;
-    call paCambiarEtapaProyecto(p_idProyecto, 3, p_fechaAsignacion);
+    select p.id_etapa_actual into v_id_etapa_prev from proyecto p where p.id_proyecto = p_idProyecto;
+    if v_id_etapa_prev = 2 then
+        call paCambiarEtapaProyecto(p_idProyecto, 3, p_fechaAsignacion);
+    else
+        if v_id_etapa_prev = 6 then
+            call paCambiarEtapaProyecto(p_idProyecto, 7, p_fechaAsignacion);
+        end if;
+    end if;
 end;
 $$ language plpgsql;
 
