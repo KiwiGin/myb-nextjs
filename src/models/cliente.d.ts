@@ -5,6 +5,6 @@ export interface Cliente {
   direccion: string,
   telefono: string,
   correo: string,
-  documentoDeIdentidad: string,
-  tipoDeDocumento: string
+  documentoIdentidad: string,
+  tipoDocumento: string
 }

@@ -26,8 +26,8 @@ const proyectoSchema = z.object({
     direccion: z.string(),
     telefono: z.string(),
     correo: z.string(),
-    documentoDeIdentidad: z.string(),
-    tipoDeDocumento: z.string(),
+    documentoIdentidad: z.string(),
+    tipoDocumento: z.string(),
   }),
 
   supervisor: z.object({
@@ -65,7 +65,7 @@ const proyectoSchema = z.object({
         })
       ),
     })
-  ).optional(),
+  ).nullable(),
 
   resultados: z.array(
     z.object({
@@ -80,14 +80,14 @@ const proyectoSchema = z.object({
             z.object({
               idParametro: z.number(),
               nombre: z.string(),
-              unidades: z.string(),
+              unidad: z.string(),
               resultado: z.number(),
             })
           ),
         })
       ),
     })
-  ).optional(),
+  ).nullable(),
 
   feedbacks: z.array(
     z.object({
@@ -97,14 +97,14 @@ const proyectoSchema = z.object({
       aprobado: z.boolean(),
       comentario: z.string(),
     })
-  ),
+  ).nullable(),
 
   empleadosActuales: z.array(
     z.object({
       idEmpleado: z.number(),
       nombre: z.string(),
     })
-  ).optional(),
+  ).nullable(),
 })
 
 export function InterfazSeguimientoTareas() {
@@ -126,6 +126,7 @@ export function InterfazSeguimientoTareas() {
       if (parsedData.success) {
         setProyecto(parsedData.data);
       } else {
+        console.error(parsedData.error.errors);
         throw new MyBError("Error al cargar el proyecto");
       }
 

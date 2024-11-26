@@ -1069,7 +1069,8 @@ begin
                            'linkImg', r.link_img,
                            'stockDisponible', r.stock_disponible,
                            'stockAsignado', r.stock_asignado,
-                           'stockRequerido', r.stock_requerido
+                           'stockRequerido', r.stock_requerido,
+                           'cantidad', prc.cantidad
                    )
            )
     into v_repuestos_json
@@ -1090,7 +1091,7 @@ begin
                          json_build_object(
                                  'idParametro', p.id_parametro,
                                  'nombre', p.nombre,
-                                 'unidades', p.unidades,
+                                 'unidad', p.unidades,
                                  'valorMaximo', pep.valor_maximo,
                                  'valorMinimo', pep.valor_minimo
                          )

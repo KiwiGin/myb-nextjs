@@ -283,8 +283,8 @@ export async function obtenerClientesPorIds(idsClientes: number[]): Promise<Clie
         direccion: cliente.direccion,
         telefono: cliente.telefono,
         correo: cliente.correo,
-        documentoDeIdentidad: cliente.documento_de_identidad,
-        tipoDeDocumento: cliente.tipo_de_documento_de_identidad
+        documentoIdentidad: cliente.documento_de_identidad,
+        tipoDocumento: cliente.tipo_de_documento_de_identidad
       } as Cliente;
     });
   }
@@ -526,6 +526,49 @@ export async function asignarEmpleadosAProyecto(data: {
       } else {
           console.error('Error desconocido al asignar empleados:', err);
           throw new Error('Error desconocido al asignar empleados.');
+      }
+  }
+}
+
+export async function registrarResultados(jsonData : {
+  idProyecto: number;
+  idEmpleado: number;
+  fecha: Date;
+  resultados: {
+    idTipoPrueba: number;
+    especificaciones: {
+      idParametro: number;
+      resultado: string;
+    }[];
+  }[];
+}) {
+  try {
+      if (
+          !jsonData.idProyecto ||
+          !jsonData.idEmpleado ||
+          !jsonData.fecha ||
+          !Array.isArray(jsonData.resultados)
+      ) {
+          throw new Error('El JSON proporcionado no es válido.');
+      }
+
+      console.log('Registrando resultados db:', jsonData);
+
+      // Ejecutar el procedimiento almacenado con el JSON
+      const res = await pool.query(
+          `SELECT paregistrarresultados($1::json) AS id_resultado_prueba`,
+          [JSON.stringify(jsonData)]
+      );
+
+      // Devolver el ID del resultado de la prueba
+      return res.rows[0].id_resultado_prueba;
+  } catch (err) {
+      if (err instanceof Error) {
+          console.error('Error al registrar resultados:', err.message);
+          throw new Error(`Error al registrar resultados: ${err.message}`);
+      } else {
+          console.error('Error desconocido al registrar resultados:', err);
+          throw new Error('Error desconocido al registrar resultados.');
       }
   }
 }

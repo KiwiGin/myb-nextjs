@@ -11,7 +11,7 @@ export const Counter = forwardRef<
       {...props}
       ref={ref || null}
       type="number"
-      className={cn("text-center", props.className || "w-12")}
+      className={cn("text-center", props.className || "w-16")}
     />
   );
 });

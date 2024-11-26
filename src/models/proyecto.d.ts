@@ -25,12 +25,12 @@ export interface Proyecto {
   supervisor?: Empleado;
   jefe?: Empleado;
 
-  repuestos?: Repuesto[];
-  especificaciones?: EspecificacionPrueba[];
+  repuestos?: Repuesto[] | null;
+  especificaciones?: EspecificacionPrueba[] | null;
 
-  resultados?: ResultadoPrueba[];
-  feedbacks?: Feedback[];
-  empleadosActuales?: Empleado[];
+  resultados?: ResultadoPrueba[] | null;
+  feedbacks?: Feedback[] | null;
+  empleadosActuales?: Empleado[] | null;
   
   idCliente?: number;
   idSupervisor?: number;
