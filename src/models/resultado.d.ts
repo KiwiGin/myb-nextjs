@@ -2,7 +2,7 @@ export type ResultadoPrueba = {
   idResultadoPrueba: number;
   idProyecto: number;
   idEmpleado: number;
-  fecha: Date;
+  fecha: Date | string;
   resultados: Resultado[];
 }
 

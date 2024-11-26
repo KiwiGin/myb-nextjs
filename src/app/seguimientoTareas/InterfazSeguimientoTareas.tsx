@@ -49,7 +49,7 @@ const proyectoSchema = z.object({
       precio: z.number(),
       nombre: z.string(),
       descripcion: z.string(),
-      linkImg: z.string().optional().optional(),
+      linkImg: z.string().optional(),
       cantidad: z.number(),
     })
   ),
@@ -111,7 +111,7 @@ const proyectoSchema = z.object({
 })
 
 export function InterfazSeguimientoTareas() {
-  const [idEmpleadoMock, setIdEmpleadoMock] = useState<string>("5");
+  const [idEmpleadoMock] = useState<string>("5");
   const [idProyectoMock, setIdProyectoMock] = useState<string>("3");
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [noice, setNoice] = useState<NoiceType | null>({

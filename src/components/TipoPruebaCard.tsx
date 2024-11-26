@@ -40,7 +40,7 @@ export function TipoPruebaCard({
                 placeholder="Mín"
                 min="0"
                 value={valoresMinimos[index] || 0}
-                onChange={(e) => onValorChange(parametro.idParametro, Number(e.target.value), "min")}
+                onChange={(e) => onValorChange(parametro.idParametro!, Number(e.target.value), "min")}
                 className="border rounded p-1 w-16"
               />
               <input
@@ -48,7 +48,7 @@ export function TipoPruebaCard({
                 placeholder="Máx"
                 min="0"
                 value={valoresMaximos[index] || 0}
-                onChange={(e) => onValorChange(parametro.idParametro, Number(e.target.value), "max")}
+                onChange={(e) => onValorChange(parametro.idParametro!, Number(e.target.value), "max")}
                 className="border rounded p-1 w-16"
               />
             </div>
