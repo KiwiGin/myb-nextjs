@@ -1,14 +1,10 @@
   import React, { useEffect, useState } from "react";
-  import { useForm, Controller } from "react-hook-form";
+  import { useForm } from "react-hook-form";
   import { z } from "zod";
   import { zodResolver } from "@hookform/resolvers/zod";
   import { Button } from "@/components/ui/button";
   import { Form, FormField, FormItem } from "@/components/ui/form";
-  import { Counter } from "@/components/Counter";
-  import { EspecificacionesList } from "@/components/EspecificacionesList";
   import { Noice } from "@/components/Noice";
-  import { Modal } from "@/components/Modal";
-  import MyBError from "@/lib/mybError";
   import { Proyecto } from "@/models/proyecto";
 
   const especificacionSchema = z.object({
