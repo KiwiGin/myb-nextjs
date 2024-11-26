@@ -973,7 +973,8 @@ declare
     v_etapa_previa        int;
 begin
     insert into resultado_prueba (id_proyecto, id_empleado, fecha)
-    values ((p_registro_json ->> 'idProyecto')::integer, (p_registro_json ->> 'idEmpleado')::integer, (p_registro_json ->> 'fecha')::date)
+    values ((p_registro_json ->> 'idProyecto')::integer, (p_registro_json ->> 'idEmpleado')::integer,
+            (p_registro_json ->> 'fecha')::date)
     returning id_resultado_prueba into v_resultado_prueba_id;
     select array(
                    select json_array_elements(p_registro_json -> 'resultados')
@@ -988,11 +989,59 @@ begin
             for j in 1..array_length(v_especificaciones, 1)
                 loop
                     insert into prueba_parametro_resultado (id_resultado_prueba, id_tipo_prueba, id_parametro, valor)
-                    values (v_resultado_prueba_id,( v_resultados[i] ->> 'idTipoPrueba')::int,
-                            (v_especificaciones[j] ->> 'idParametro')::int, (v_especificaciones[j] ->> 'resultado')::numeric);
+                    values (v_resultado_prueba_id, (v_resultados[i] ->> 'idTipoPrueba')::int,
+                            (v_especificaciones[j] ->> 'idParametro')::int,
+                            (v_especificaciones[j] ->> 'resultado')::numeric);
                 end loop;
         end loop;
-    select p.id_proyecto into v_etapa_previa from proyecto p where p.id_proyecto = p_registro_json ->> 'idProyecto';
+    select p.id_etapa_actual
+    into v_etapa_previa
+    from proyecto p
+    where p.id_proyecto = (p_registro_json ->> 'idProyecto')::int;
+    if v_etapa_previa = 3 then
+        call paCambiarEtapaProyecto((p_registro_json ->> 'idProyecto')::int, 4, (p_registro_json ->> 'fecha')::date);
+    end if;
+    return v_resultado_prueba_id;
+end;
+$$ language plpgsql;
+--pa: paRegistrarResultados -> Registra los resultados de una prueba
+create or replace function paRegistrarResultados(
+    p_registro_json json
+)
+    returns int as
+$$
+declare
+    v_resultados          json[];
+    v_especificaciones    json[];
+    v_resultado_prueba_id int;
+    v_etapa_previa        int;
+begin
+    insert into resultado_prueba (id_proyecto, id_empleado, fecha)
+    values ((p_registro_json ->> 'idProyecto')::integer, (p_registro_json ->> 'idEmpleado')::integer,
+            (p_registro_json ->> 'fecha')::date)
+    returning id_resultado_prueba into v_resultado_prueba_id;
+    select array(
+                   select json_array_elements(p_registro_json -> 'resultados')
+           )
+    into v_resultados;
+    for i in 1..array_length(v_resultados, 1)
+        loop
+            select array(
+                           select json_array_elements(v_resultados[i] -> 'especificaciones')
+                   )
+            into v_especificaciones;
+            for j in 1..array_length(v_especificaciones, 1)
+                loop
+                    insert into prueba_parametro_resultado (id_resultado_prueba, id_tipo_prueba, id_parametro, valor)
+                    values (v_resultado_prueba_id, (v_resultados[i] ->> 'idTipoPrueba')::int,
+                            (v_especificaciones[j] ->> 'idParametro')::int,
+                            (v_especificaciones[j] ->> 'resultado')::numeric);
+                end loop;
+        end loop;
+    select p.id_etapa_actual
+    into v_etapa_previa
+    from proyecto p
+    where p.id_proyecto = (p_registro_json ->> 'idProyecto')::int;
     if v_etapa_previa = 3 then
         call paCambiarEtapaProyecto((p_registro_json ->> 'idProyecto')::int, 4, (p_registro_json ->> 'fecha')::date);
     end if;
