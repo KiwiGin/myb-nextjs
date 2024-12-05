@@ -1,67 +1,97 @@
-  import React, { useEffect, useState } from "react";
-  import { useForm } from "react-hook-form";
-  import { z } from "zod";
-  import { zodResolver } from "@hookform/resolvers/zod";
-  import { Button } from "@/components/ui/button";
-  import { Form, FormField, FormItem } from "@/components/ui/form";
-  import { Noice } from "@/components/Noice";
-  import { Proyecto } from "@/models/proyecto";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem } from "@/components/ui/form";
+import { Noice } from "@/components/Noice";
+import { Proyecto } from "@/models/proyecto";
 import { ResultadosModal } from "@/components/ResultadosModal";
+import { EspecificacionesList } from "@/components/EspecificacionesList";
+import { Counter } from "@/components/Counter";
 
-  const especificacionSchema = z.object({
-    idParametro: z.number(),
-    resultado: z.number()
+const especificacionSchema = z.object({
+  idParametro: z.number(),
+  resultado: z
+    .preprocess((value) => {
+      if (value === "") {
+        return undefined;
+      }
+      return Number(value);
+    }, z.union([z.number(), z.undefined()]))
+    .refine((value) => typeof value !== "undefined", {
+      message: "No se puede dejar un resultado vacío",
+    }),
+});
+
+const pruebaSchema = z.object({
+  idTipoPrueba: z.number(),
+  especificaciones: z.array(especificacionSchema).superRefine((value, ctx) => {
+    const noResult = value.some(
+      (especificacion) => typeof especificacion.resultado === "undefined"
+    );
+    if (noResult) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "No se puede dejar un resultado vacío",
+        path: ["root"],
+      });
+      return z.NEVER;
+    }
+  }),
+});
+
+const resultadosSchema = z.object({
+  idProyecto: z.number(),
+  idEmpleado: z.number(),
+  fecha: z.date(),
+  resultados: z.array(pruebaSchema),
+});
+
+type ResultadosPruebaForm = {
+  idTipoPrueba: number;
+  especificaciones: {
+    idParametro: number;
+    resultado: number;
+  }[];
+};
+
+type FormValues = {
+  idProyecto: number;
+  idEmpleado: number;
+  fecha: Date;
+  resultados: ResultadosPruebaForm[];
+};
+
+interface SeguimientoTareasProps {
+  proyecto: Proyecto;
+  idEmpleado: number;
+}
+
+export function InterfazSeguimientoTareasReparacion({
+  proyecto,
+  idEmpleado,
+}: SeguimientoTareasProps) {
+  const [noice, setNoice] = useState<{
+    type: "loading" | "success" | "error";
+    message: string;
+  } | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const form = useForm<FormValues>({
+    resolver: zodResolver(resultadosSchema),
+    defaultValues: {
+      idProyecto: proyecto?.idProyecto,
+      idEmpleado,
+      fecha: new Date(),
+      resultados: [],
+    },
   });
 
-  const pruebaSchema = z.object({
-    idTipoPrueba: z.number(),
-    especificaciones: z.array(especificacionSchema),
-  });
-
-  const resultadosSchema = z.object({
-    idProyecto: z.number(),
-    idEmpleado: z.number(),
-    fecha: z.date(),
-    resultados: z.array(pruebaSchema),
-  });
-
-  type ResultadosPruebaForm = {
-    idTipoPrueba: number;
-    especificaciones: {
-      idParametro: number;
-      resultado: number;
-    }[];
-  };
-
-  type FormValues = {
-    idProyecto: number;
-    idEmpleado: number;
-    fecha: Date;
-    resultados: ResultadosPruebaForm[];
-  };
-
-  interface SeguimientoTareasProps {
-    proyecto: Proyecto;
-    idEmpleado: number;
-  }
-
-  export function InterfazSeguimientoTareasReparacion({ proyecto, idEmpleado }: SeguimientoTareasProps) {
-    const [noice, setNoice] = useState<{ type: "loading" | "success" | "error"; message: string } | null>(null);
-    const [dialogOpen, setDialogOpen] = useState(false);
-
-    const form = useForm<FormValues>({
-      resolver: zodResolver(resultadosSchema),
-      defaultValues: {
-        idProyecto: proyecto?.idProyecto,
-        idEmpleado,
-        fecha: new Date(),
-        resultados: [],
-      },
-    });
-
-    useEffect(() => {
-      if (proyecto?.especificaciones) {
-        const formattedPruebas: ResultadosPruebaForm[] = proyecto.especificaciones.map((prueba) => ({
+  useEffect(() => {
+    if (proyecto?.especificaciones) {
+      const formattedPruebas: ResultadosPruebaForm[] =
+        proyecto.especificaciones.map((prueba) => ({
           idTipoPrueba: prueba.idTipoPrueba,
           especificaciones: prueba.parametros.map((parametro) => ({
             idParametro: parametro.idParametro,
@@ -69,112 +99,122 @@ import { ResultadosModal } from "@/components/ResultadosModal";
           })),
         }));
 
-        form.setValue("resultados", formattedPruebas);
-      }
-    }, [proyecto, form]);
+      form.setValue("resultados", formattedPruebas);
+    }
+  }, [proyecto, form]);
 
-    const onSubmit = async (data: FormValues) => {
-      setNoice({ type: "loading", message: "Registrando resultados..." });
+  const onSubmit = async (data: FormValues) => {
+    setNoice({ type: "loading", message: "Registrando resultados..." });
 
-      try {
-        console.log("Datos enviados a la API:", data);
+    try {
+      console.log("Datos enviados a la API:", data);
 
-        const res = await fetch("/api/proyecto/reparando", {
-          method: "POST",
-          body: JSON.stringify(data),
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+      const res = await fetch("/api/proyecto/reparando", {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
-        await res.json();
+      await res.json();
 
-        setNoice({
-          type: "success",
-          message: "Resultados registrados con éxito",
-        });
+      setNoice({
+        type: "success",
+        message: "Resultados registrados con éxito",
+      });
 
-        form.reset();
+      form.reset();
 
-        await new Promise<void>((resolve) => {
-          setTimeout(() => {
-            setNoice(null);
-            resolve();
-            window.location.reload();
-          }, 3000);
-        });
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 3000);
+      });
+    } catch (error) {
+      setNoice({
+        type: "error",
+        message: "Hubo un error al registrar los resultados.",
+      });
+      console.error(error);
+    }
+  };
 
-      } catch (error) {
-        setNoice({
-          type: "error",
-          message: "Hubo un error al registrar los resultados.",
-        });
-        console.error(error);
-      }
-    };
+  useEffect(() => {
+    console.log("Errores del formulario:", form.formState.errors);
+  }, [form.formState.errors]);
 
-    return (
-      <Form {...form}>
-        {noice && <Noice noice={noice} />}
+  return (
+    <Form {...form}>
+      {noice && <Noice noice={noice} />}
 
-        <Button onClick={() => setDialogOpen(true)} className="mb-4">
-          Ver Resultados Anteriores
+      <Button onClick={() => setDialogOpen(true)} className="mb-4">
+        Ver Resultados Anteriores
+      </Button>
+
+      <ResultadosModal
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        proyecto={proyecto}
+      />
+
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          console.log("Formulario antes del envío:", form.getValues());
+          form.handleSubmit(onSubmit)(event);
+        }}
+        className="w-full"
+      >
+        <FormField
+          control={form.control}
+          name="resultados"
+          render={({ field }) => (
+            <EspecificacionesList
+              especificaciones={field.value}
+              especificacionesOriginales={proyecto.especificaciones || []}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-2"
+              messageNothingAdded="No hay pruebas"
+              counterResult={(prueba_index, espec_index) => (
+                <FormField
+                  name={`resultados.${prueba_index}.especificaciones.${espec_index}.resultado`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <Counter
+                        {...field}
+                        className={`w-20 ${
+                          form.formState.errors.resultados?.[prueba_index]
+                            ?.especificaciones?.[espec_index]
+                            ? "border-red-500"
+                            : ""
+                        }`}
+                      />
+                    </FormItem>
+                  )}
+                />
+              )}
+              error={(index) =>
+                form.formState.errors.resultados?.[index]?.especificaciones
+                  ?.root && (
+                  <span className="text-red-500 text-lg">
+                    {
+                      form.formState.errors.resultados[index]?.especificaciones
+                        ?.root.message
+                    }
+                  </span>
+                )
+              }
+            />
+          )}
+        />
+
+        <Button type="submit" className="mt-4 w-full">
+          Registrar Resultados
         </Button>
-
-        <ResultadosModal open={dialogOpen} onClose={() => setDialogOpen(false)} proyecto={proyecto} />
-
-        <form onSubmit={(event) => {
-            event.preventDefault();
-            console.log("Formulario antes del envío:", form.getValues());
-            form.handleSubmit(onSubmit)(event);
-          }} className="w-full">
-        {form.watch("resultados").map((prueba, pruebaIndex) => {
-          const especificacionOriginal = proyecto.especificaciones?.find(
-            (spec) => spec.idTipoPrueba === prueba.idTipoPrueba
-          );
-
-          return (
-            <div key={prueba.idTipoPrueba} className="mb-6">
-              <h3 className="text-lg font-bold">{`Prueba: ${especificacionOriginal?.nombre || prueba.idTipoPrueba}`}</h3>
-
-              {prueba.especificaciones.map((especificacion, especIndex) => {
-                const parametroOriginal = especificacionOriginal?.parametros.find(
-                  (param) => param.idParametro === especificacion.idParametro
-                );
-
-                return (
-                  <div key={especificacion.idParametro} className="mb-4">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{`Parámetro: ${parametroOriginal?.nombre}`}</span>
-                      <span>{`Unidad: ${parametroOriginal?.unidad}`}</span>
-                      <span>{`Valores: ${parametroOriginal?.valorMinimo} - ${parametroOriginal?.valorMaximo}`}</span>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name={`resultados.${pruebaIndex}.especificaciones.${especIndex}.resultado`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <input
-                            {...field}
-                            type="number"
-                            className="w-16 text-center border border-gray-300 rounded"
-                            onChange={(e) => field.onChange(Number(e.target.value))} // Convertir a número
-                          />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-
-
-          <Button type="submit" className="mt-4 w-full">
-            Registrar Resultados
-          </Button>
-        </form>
-      </Form>
-    );
-  }
+      </form>
+    </Form>
+  );
+}

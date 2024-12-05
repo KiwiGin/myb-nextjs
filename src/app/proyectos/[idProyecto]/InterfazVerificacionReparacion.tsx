@@ -3,19 +3,44 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Proyecto } from "@/models/proyecto";
 import { Noice } from "@/components/Noice";
 import { ResultadosModal } from "@/components/ResultadosModal";
+import { EspecificacionesList } from "@/components/EspecificacionesList";
+import { Counter } from "@/components/Counter";
+import { Textarea } from "@/components/ui/textarea";
+import { Combobox } from "@/components/Combobox";
 
 const especificacionSchema = z.object({
   idParametro: z.number(),
-  resultado: z.number(), // El jefe ingresa el valor numérico
+  resultado: z
+    .preprocess((value) => {
+      if (value === "") {
+        return undefined;
+      }
+      return Number(value);
+    }, z.union([z.number(), z.undefined()]))
+    .refine((value) => typeof value !== "undefined", {
+      message: "No se puede dejar un resultado vacío",
+    }),
 });
 
 const pruebaSchema = z.object({
   idTipoPrueba: z.number(),
-  especificaciones: z.array(especificacionSchema),
+  especificaciones: z.array(especificacionSchema).superRefine((value, ctx) => {
+    const noResult = value.some(
+      (especificacion) => typeof especificacion.resultado === "undefined"
+    );
+    if (noResult) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "No se puede dejar un resultado vacío",
+        path: ["root"],
+      });
+      return z.NEVER;
+    }
+  }),
 });
 
 const feedbackSchema = z.object({
@@ -58,23 +83,26 @@ export function InterfazVerificacionReparacion({
     message: string;
   } | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  
+
   const form = useForm<FormValues>({
     resolver: zodResolver(feedbackSchema),
     defaultValues: {
       idProyecto: proyecto.idProyecto,
       idEmpleado,
-      idResultadoPruebaTecnico: Math.max(...proyecto!.resultados!.map(r => r.idResultadoPrueba)),
+      idResultadoPruebaTecnico: Math.max(
+        ...proyecto!.resultados!.map((r) => r.idResultadoPrueba)
+      ),
       fecha: new Date(),
       aprobado: true,
       comentario: "",
-      resultados: proyecto.especificaciones?.map((prueba) => ({
-        idTipoPrueba: prueba.idTipoPrueba,
-        especificaciones: prueba.parametros.map((parametro) => ({
-          idParametro: parametro.idParametro,
-          resultado: 0,
-        })),
-      })) || [],
+      resultados:
+        proyecto.especificaciones?.map((prueba) => ({
+          idTipoPrueba: prueba.idTipoPrueba,
+          especificaciones: prueba.parametros.map((parametro) => ({
+            idParametro: parametro.idParametro,
+            resultado: 0,
+          })),
+        })) || [],
     },
   });
 
@@ -86,7 +114,9 @@ export function InterfazVerificacionReparacion({
       prueba.especificaciones.forEach((especificacion) => {
         const parametroOriginal = proyecto.especificaciones
           ?.find((p) => p.idTipoPrueba === prueba.idTipoPrueba)
-          ?.parametros.find((p) => p.idParametro === especificacion.idParametro);
+          ?.parametros.find(
+            (p) => p.idParametro === especificacion.idParametro
+          );
 
         if (parametroOriginal) {
           const { valorMinimo, valorMaximo, nombre } = parametroOriginal;
@@ -134,9 +164,11 @@ export function InterfazVerificacionReparacion({
           window.location.reload();
         }, 2000);
       });
-
     } catch (error) {
-      setNoice({ type: "error", message: "Hubo un error al enviar el feedback." });
+      setNoice({
+        type: "error",
+        message: "Hubo un error al enviar el feedback.",
+      });
       console.error(error);
     }
   };
@@ -149,7 +181,11 @@ export function InterfazVerificacionReparacion({
         Ver Resultados Anteriores
       </Button>
 
-      <ResultadosModal open={dialogOpen} onClose={() => setDialogOpen(false)} proyecto={proyecto} />
+      <ResultadosModal
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        proyecto={proyecto}
+      />
 
       <form
         onSubmit={(event) => {
@@ -159,71 +195,90 @@ export function InterfazVerificacionReparacion({
         }}
         className="w-full"
       >
-        <h3 className="text-lg font-bold mb-4">Registrar Feedback</h3>
-
-        {form.watch("resultados").map((prueba, pruebaIndex) => {
-          const especificacionOriginal = proyecto.especificaciones?.find(
-            (spec) => spec.idTipoPrueba === prueba.idTipoPrueba
-          );
-
-          return (
-            <div key={prueba.idTipoPrueba} className="mb-6">
-              <h3 className="text-lg font-bold">{`Prueba: ${especificacionOriginal?.nombre}`}</h3>
-              {prueba.especificaciones.map((especificacion, especIndex) => {
-                const parametroOriginal = especificacionOriginal?.parametros.find(
-                  (param) => param.idParametro === especificacion.idParametro
-                );
-
-                return (
-                  <div key={especificacion.idParametro} className="mb-4">
-                    <div className="flex flex-col">
-                      <span className="font-medium">{`Parámetro: ${parametroOriginal?.nombre}`}</span>
-                      <span>{`Unidad: ${parametroOriginal?.unidad}`}</span>
-                      <span>{`Valores: ${parametroOriginal?.valorMinimo} - ${parametroOriginal?.valorMaximo}`}</span>
-                    </div>
-                    <FormField
-                      control={form.control}
-                      name={`resultados.${pruebaIndex}.especificaciones.${especIndex}.resultado`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <input
-                            {...field}
-                            type="number"
-                            className="w-16 text-center border border-gray-300 rounded"
-                            onChange={(e) => {
-                              field.onChange(Number(e.target.value));
-                              generateFeedback();
-                            }}
-                          />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
+        <FormField
+          control={form.control}
+          name="resultados"
+          render={({ field }) => (
+            <EspecificacionesList
+              especificaciones={field.value}
+              especificacionesOriginales={proyecto.especificaciones || []}
+              className="grid grid-cols-1 lg:grid-cols-2 gap-2"
+              messageNothingAdded="No hay pruebas"
+              counterResult={(prueba_index, espec_index) => (
+                <FormField
+                  name={`resultados.${prueba_index}.especificaciones.${espec_index}.resultado`}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <Counter
+                        {...field}
+                        onChange={(e) => {
+                          field.onChange(e.target.value);
+                          if (e.target.value !== "") generateFeedback();
+                        }}
+                        className={`w-20 ${
+                          form.formState.errors.resultados?.[prueba_index]
+                            ?.especificaciones?.[espec_index]
+                            ? "border-red-500"
+                            : ""
+                        }`}
+                      />
+                    </FormItem>
+                  )}
+                />
+              )}
+              error={(index) =>
+                form.formState.errors.resultados?.[index]?.especificaciones
+                  ?.root && (
+                  <span className="text-red-500 text-lg">
+                    {
+                      form.formState.errors.resultados[index]?.especificaciones
+                        ?.root.message
+                    }
+                  </span>
+                )
+              }
+            />
+          )}
+        />
 
         <div className="mb-4">
-          <label className="block font-medium">Comentario generado</label>
-          <textarea
-            {...form.register("comentario")}
-            className="w-full border border-gray-300 rounded"
-            rows={3}
+          <FormField
+            name="comentario"
+            control={form.control}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Comentario</FormLabel>
+                <Textarea
+                  {...field}
+                  placeholder="Ingresa un comentario..."
+                  className="min-h-20 max-h-32 overflow-y-auto border-2 rounded-lg w-full shadow-md"
+                />
+              </FormItem>
+            )}
           />
         </div>
-
-        <div className="mb-4">
-          <label className="block font-medium">Aprobado</label>
-          <select
-            {...form.register("aprobado")}
-            className="w-full border border-gray-300 rounded"
-          >
-            <option value="true">Sí</option>
-            <option value="false">No</option>
-          </select>
-        </div>
+        
+        <FormField
+          control={form.control}
+          name="aprobado"
+          render={({ field }) => (
+            <FormItem className="flex flex-col w-full">
+              <FormLabel htmlFor="idSupervisor">Aprobado</FormLabel>
+              <Combobox<string>
+                items={["Si", "No"]}
+                initialValue="Si"
+                getValue={(r) => r}
+                getLabel={(r) => r}
+                getRealValue={(r) => r}
+                onSelection={(r) => {
+                  field.onChange(r);
+                }}
+                itemName={"Supervisor"}
+              />
+            </FormItem>
+          )}
+        />
 
         <Button type="submit" className="mt-4 w-full">
           Enviar Feedback

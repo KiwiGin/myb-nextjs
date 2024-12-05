@@ -1,45 +1,43 @@
-import { TipoPruebaEspecificacion } from "@/models/tipoprueba";
+import { EspecificacionPrueba } from "@/models/especificacion";
 import React from "react";
 import { PruebasTable } from "./PruebasTable";
 
-interface EspecificacionesListProps<T extends TipoPruebaEspecificacion> {
-  pruebas: T[];
+type ResultadosForm = {
+  idTipoPrueba: number;
+  especificaciones: {
+    idParametro: number;
+    resultado: number;
+  }[];
+};
+
+interface EspecificacionesListProps {
+  especificaciones: ResultadosForm[];
+  especificacionesOriginales: EspecificacionPrueba[];
   messageNothingAdded: string;
   className?: string;
   counterResult: (prueba_index: number, espec_index: number) => React.ReactNode;
   error?: (index: number) => React.ReactNode;
-  rol: "tecnico" | "supervisor";
 }
 
-export function EspecificacionesList<T extends TipoPruebaEspecificacion>({
-  pruebas,
+export function EspecificacionesList({
+  especificaciones,
+  especificacionesOriginales,
   messageNothingAdded,
   className,
   counterResult,
   error,
-  rol,
-}: EspecificacionesListProps<T>) {
+}: EspecificacionesListProps) {
   return (
-    <PruebasTable<T>
-      pruebas={pruebas}
+    <PruebasTable
+      pruebas={especificaciones}
+      pruebasOriginales={especificacionesOriginales}
       className={className}
       messageNothingAdded={messageNothingAdded}
       columnas={
         <>
-          {rol === "supervisor" ? (
-            <>
-              <th scope="col" className="px-2 py-3">
-                Supervisor
-              </th>
-              <th scope="col" className="px-2 py-3">
-                Resultado Tecnico
-              </th>
-            </>
-          ) : (
-            <th scope="col" className="px-2 py-3">
-              Resultado
-            </th>
-          )}
+          <th scope="col" className="px-2 py-3">
+            Resultado
+          </th>
           <th scope="col" className="px-2 py-3">
             Valor Min.
           </th>
@@ -48,16 +46,13 @@ export function EspecificacionesList<T extends TipoPruebaEspecificacion>({
           </th>
         </>
       }
-      filas={(prueba_index, espec_index, espec) => (
+      filas={(prueba_index, espec_index, especificacion) => (
         <>
           <td className="px-2 min-w-16 py-4">
             {counterResult(prueba_index, espec_index)}
           </td>
-          {rol === "supervisor" && (
-            <td className="px-2 py-4">{espec.resultadoTecnico}</td>
-          )}
-          <td className="px-2 py-4">{espec.valorMinimo}</td>
-          <td className="px-2 py-4">{espec.valorMaximo}</td>
+          <td className="px-2 py-4">{especificacion.valorMinimo}</td>
+          <td className="px-2 py-4">{especificacion.valorMaximo}</td>
         </>
       )}
       error={error}
