@@ -15,10 +15,10 @@ SPRINT 3
 - [X] CUS-07 Seguimiento de Proyecto
 
 SPRINT 4
-- [ ] CUS-02 Asignación de Tareas
-- [ ] CUS-08 Seguimiento de Tareas
-- [ ] CUS-11 Verificación de reparación
-- [ ] CUS-12 Visualización de detalles
+- [X] CUS-02 Asignación de Tareas
+- [X] CUS-08 Seguimiento de Tareas
+- [X] CUS-11 Verificación de reparación
+- [X] CUS-12 Visualización de detalles
 
 SPRINT 5
 - [ ] CUS-10 Generar informe final de reparación
