@@ -1,3 +1,4 @@
+"use client";
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "./Modal";
@@ -5,11 +6,15 @@ import { Modal } from "./Modal";
 interface InformeSectionProps {
   informeLabel: string;
   handleGenerar: () => Promise<void>;
+  actualizarEtapa: () => Promise<void>;
+  children?: React.ReactNode;
 }
 
 export function InformeSection({
   informeLabel,
   handleGenerar,
+  actualizarEtapa,
+  children,  
 }: InformeSectionProps) {
   const [open, setOpen] = useState<boolean>(false);
   return (
@@ -29,13 +34,16 @@ export function InformeSection({
         onClose={() => {
           setOpen(false);
         }}
+        className="w-11/12 h-[90%]"
       >
-        <div className="flex flex-col gap-2 items-center max-h-80vh">
+        <div className="flex flex-col gap-2 items-center h-full w-full">
           <h1>{informeLabel}</h1>
+          {children}
           <Button
             className="w-2/3 lg:min-w-10 lg:max-w-full"
-            onClick={() => {
+            onClick={async () => {
               setOpen(false);
+              await actualizarEtapa();
             }}
           >
             Cerrar

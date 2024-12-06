@@ -80,7 +80,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
           (proyecto.idEtapaActual == 4 ? (
             <InterfazVerificacionReparacion proyecto={proyecto} idEmpleado={1} />
           ) : proyecto.idEtapaActual == 5 ? (
-            <InterfazGenerarCC idProyecto={proyecto.idProyecto || -1} />
+            <InterfazGenerarCC proyecto={proyecto}/>
           ) : null)
         )}
       </div>

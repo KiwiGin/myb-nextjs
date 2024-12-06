@@ -1,32 +1,20 @@
 import { InformeSection } from "@/components/InformeSection";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
+import { Proyecto } from "@/models/proyecto";
 import { useState } from "react";
+import {
+  Document,
+  PDFDownloadLink,
+  PDFViewer,
+} from "@react-pdf/renderer";
+import { Button } from "@/components/ui/button";
+import { InformeCC } from "@/components/InformeCC";
 
-export function InterfazGenerarCC({ idProyecto }: { idProyecto: number }) {
+export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
-  const generarInformeCC = async () => {
-    
-    const response = await fetch(`/api/proyecto/etapa`, {
-      method: "PUT",
-      body: JSON.stringify({
-        idProyecto: idProyecto,
-        idEtapa: 6,
-        fechaInicio: new Date(),
-      }),
-    });
-
-    if (!response.ok) throw new Error("Error al cambiar de etapa");
-    
-
-    // Simulación de llamada al backend
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 5000);
-    });
-  };
+  const generarInformeCC = async () => {};
 
   const handleGenerarCC = async () => {
     setNoice({
@@ -38,9 +26,48 @@ export function InterfazGenerarCC({ idProyecto }: { idProyecto: number }) {
     try {
       await generarInformeCC();
 
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+        }, 2000);
+      });
+    } catch {
+      setNoice({
+        type: "error",
+        message: "Error al generar el informe de Control de Calidad",
+      });
+    }
+  };
+
+  const handleActualizarEtapa = async () => {
+    setNoice({
+      type: "loading",
+      message: "Actualizando Etapa",
+      styleType: "modal",
+    });
+
+    try {
+      /* const response = await fetch(`/api/proyecto/etapa`, {
+        method: "PUT",
+        body: JSON.stringify({
+          idProyecto: idProyecto,
+          idEtapa: 6,
+          fechaInicio: new Date(),
+        }),
+      });
+
+      if (!response.ok) throw new Error("Error al cambiar de etapa"); */
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          resolve();
+        }, 5000);
+      });
+
       setNoice({
         type: "success",
-        message: "CC generado exitosamente",
+        message: "Etapa actualizada exitosamente",
         styleType: "modal",
       });
 
@@ -51,7 +78,10 @@ export function InterfazGenerarCC({ idProyecto }: { idProyecto: number }) {
         }, 2000);
       });
     } catch {
-      setNoice({ type: "error", message: "Error al generar CC" });
+      setNoice({
+        type: "error",
+        message: "Error al actualizar la etapa",
+      });
     }
   };
 
@@ -61,7 +91,32 @@ export function InterfazGenerarCC({ idProyecto }: { idProyecto: number }) {
       <InformeSection
         informeLabel="Control de Calidad"
         handleGenerar={handleGenerarCC}
-      />
+        actualizarEtapa={handleActualizarEtapa}
+      >
+        <>
+          <PDFViewer width="100%" height="100%" showToolbar>
+            <Document>
+              <InformeCC proyecto={proyecto} />
+            </Document>
+          </PDFViewer>
+          <GeneratePDF proyecto={proyecto} />
+        </>
+      </InformeSection>
     </div>
   );
 }
+
+const GeneratePDF = ({ proyecto }: { proyecto: Proyecto }) => (
+  <PDFDownloadLink
+    document={<InformeCC proyecto={proyecto} />}
+    fileName="informeCC.pdf"
+    style={{
+      width: "100%",
+      padding: "8px",
+      textAlign: "center",
+      alignItems: "center",
+    }}
+  >
+    <Button className="w-2/5">Descargar PDF</Button>
+  </PDFDownloadLink>
+);

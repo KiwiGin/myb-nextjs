@@ -57,6 +57,9 @@ export function InterfazGenerarVentas({ idProyecto }: { idProyecto: number }) {
       <InformeSection
         informeLabel="Informe de Ventas"
         handleGenerar={handleGenerarVentas}
+        actualizarEtapa={async () => {
+          // Actualizar etapa
+        }}
       />
     </div>
   );
