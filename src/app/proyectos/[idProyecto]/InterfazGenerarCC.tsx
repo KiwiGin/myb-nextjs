@@ -2,43 +2,17 @@ import { InformeSection } from "@/components/InformeSection";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import { Proyecto } from "@/models/proyecto";
-import { useState } from "react";
-import {
-  Document,
-  PDFDownloadLink,
-  PDFViewer,
-} from "@react-pdf/renderer";
+import { useEffect, useState } from "react";
+import { Document, PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
 import { Button } from "@/components/ui/button";
 import { InformeCC } from "@/components/InformeCC";
 
 export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
-  const generarInformeCC = async () => {};
-
-  const handleGenerarCC = async () => {
-    setNoice({
-      type: "loading",
-      message: "Generando informe de control de calidad",
-      styleType: "modal",
-    });
-
-    try {
-      await generarInformeCC();
-
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          setNoice(null);
-          resolve();
-        }, 2000);
-      });
-    } catch {
-      setNoice({
-        type: "error",
-        message: "Error al generar el informe de Control de Calidad",
-      });
-    }
-  };
+  useEffect(() => {
+    console.log(proyecto);
+  }, [proyecto]);
 
   const handleActualizarEtapa = async () => {
     setNoice({
@@ -90,7 +64,6 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
       {noice && <Noice noice={noice} />}
       <InformeSection
         informeLabel="Control de Calidad"
-        handleGenerar={handleGenerarCC}
         actualizarEtapa={handleActualizarEtapa}
       >
         <>

@@ -1,29 +1,26 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "./Modal";
 
 interface InformeSectionProps {
   informeLabel: string;
-  handleGenerar: () => Promise<void>;
   actualizarEtapa: () => Promise<void>;
   children?: React.ReactNode;
 }
 
 export function InformeSection({
   informeLabel,
-  handleGenerar,
   actualizarEtapa,
-  children,  
+  children,
 }: InformeSectionProps) {
   const [open, setOpen] = useState<boolean>(false);
+
   return (
     <>
       <Button
-        onClick={async () => {
-          handleGenerar().then(() => {
-            setOpen(true);
-          });
+        onClick={() => {
+          setOpen(true);
         }}
         className="w-2/3 lg:w-1/2 my-8"
       >

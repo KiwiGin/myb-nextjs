@@ -6,47 +6,39 @@ import { useState } from "react";
 export function InterfazGenerarVentas({ idProyecto }: { idProyecto: number }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
-  //LLAMADA AL BACKEND
-  const generarInformeVentas = async () => {
-    /* const response = await fetch(`/api/proyecto/${idProyecto}/generar-cc`, {
-        method: "POST",
-      }); 
-      */
-
-    // Simulación de llamada al backend
-    await new Promise<void>((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 5000);
-    });
-  };
-
-  const handleGenerarVentas = async () => {
+  const handleActualizarEtapa = async () => {
     setNoice({
       type: "loading",
-      message: "Generando informe de ventas",
+      message: "Actualizando Etapa",
       styleType: "modal",
     });
 
     try {
-      await generarInformeVentas();
-
-      setNoice({
-        type: "success",
-        message: "Informe de ventas generado",
-        styleType: "modal",
+      /* const response = await fetch(`/api/proyecto/etapa`, {
+        method: "PUT",
+        body: JSON.stringify({
+          idProyecto: idProyecto,
+          idEtapa: 6,
+          fechaInicio: new Date(),
+        }),
       });
+      if (!response.ok) throw new Error("Error al cambiar de etapa"); */
 
       await new Promise<void>((resolve) => {
         setTimeout(() => {
-          setNoice(null);
           resolve();
-        }, 3000);
+        }, 5000);
+      });
+
+      setNoice({
+        type: "success",
+        message: "Etapa actualizada exitosamente",
+        styleType: "modal",
       });
     } catch {
       setNoice({
         type: "error",
-        message: "Error al generar el informe de ventas",
+        message: "Error al actualizar la etapa",
       });
     }
   };
@@ -56,10 +48,7 @@ export function InterfazGenerarVentas({ idProyecto }: { idProyecto: number }) {
       {noice && <Noice noice={noice} />}
       <InformeSection
         informeLabel="Informe de Ventas"
-        handleGenerar={handleGenerarVentas}
-        actualizarEtapa={async () => {
-          // Actualizar etapa
-        }}
+        actualizarEtapa={handleActualizarEtapa}
       />
     </div>
   );
