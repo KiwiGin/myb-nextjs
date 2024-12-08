@@ -62,7 +62,7 @@ const proyectoSchema = z.object({
         z.object({
           idParametro: z.number(),
           nombre: z.string(),
-          unidad: z.string(),
+          unidades: z.string(),
           valorMaximo: z.number(),
           valorMinimo: z.number(),
         })
@@ -83,7 +83,7 @@ const proyectoSchema = z.object({
             z.object({
               idParametro: z.number(),
               nombre: z.string(),
-              unidad: z.string(),
+              unidades: z.string(),
               resultado: z.number(),
             })
           ),

@@ -375,7 +375,7 @@ begin
                    json_build_object(
                            'idTipoPrueba', sq.id_tipo_prueba,
                            'nombre', (select tp.nombre from tipo_prueba tp where tp.id_tipo_prueba = sq.id_tipo_prueba),
-                           'especificaciones', parametro_prueba
+                           'parametros', parametro_prueba
                    )
            )
     into v_especificaciones_json

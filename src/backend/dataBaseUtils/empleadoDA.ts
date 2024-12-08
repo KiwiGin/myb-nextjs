@@ -141,7 +141,6 @@ export async function obtenerTecnicosDisponibles(): Promise<Empleado[]> {
           return [];
       }
 
-      // La función almacenada devuelve un JSON con camelCase
       const empleados = res.rows[0].paobtenertecnicosdisponibles as Empleado[];
       return empleados || [];
   } catch (err) {

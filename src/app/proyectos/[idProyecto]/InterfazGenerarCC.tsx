@@ -48,16 +48,16 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
     });
 
     try {
-      /* const response = await fetch(`/api/proyecto/etapa`, {
+      const response = await fetch(`/api/proyecto/etapa`, {
         method: "PUT",
         body: JSON.stringify({
-          idProyecto: idProyecto,
+          idProyecto: proyecto.idProyecto,
           idEtapa: 6,
           fechaInicio: new Date(),
         }),
       });
 
-      if (!response.ok) throw new Error("Error al cambiar de etapa"); */
+      if (!response.ok) throw new Error("Error al cambiar de etapa");
 
       await new Promise<void>((resolve) => {
         setTimeout(() => {

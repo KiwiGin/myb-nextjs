@@ -156,7 +156,7 @@ const EspecificacionesInfo: React.FC<EspecificacionesInfoProps> = ({ especificac
                 {especificacion.parametros.map((parametro) => (
                   <li key={parametro.idParametro}>
                     <p>Parámetro: {parametro.nombre}</p>
-                    <p>Unidad: {parametro.unidad}</p>
+                    <p>Unidad: {parametro.unidades}</p>
                     <p>Rango: {parametro.valorMinimo} - {parametro.valorMaximo}</p>
                   </li>
                 ))}
