@@ -1,6 +1,6 @@
 import React from 'react';
 import { Proyecto } from '@/models/proyecto';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import ProyectoDetails from '@/components/ProyectDetails';
 
@@ -17,6 +17,8 @@ const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({ open, onClose
         <DialogHeader>
           <DialogTitle>Detalles del Proyecto</DialogTitle>
         </DialogHeader>
+        <DialogDescription>
+        </DialogDescription>
         <div>
           <ProyectoDetails proyecto={proyecto} />
         </div>

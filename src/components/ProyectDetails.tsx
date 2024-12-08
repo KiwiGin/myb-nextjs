@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Proyecto } from '@/models/proyecto';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Repuesto } from '@/models/repuesto';
 import { Empleado } from '@/models/empleado';
 import { Cliente } from '@/models/cliente';
@@ -22,10 +22,13 @@ const ProyectoDetalle: React.FC<ProyectoDetalleProps> = ({ proyecto } : Proyecto
     <Card>
       <CardHeader>
         <CardTitle>{proyecto.titulo}</CardTitle>
-        <p>{proyecto.descripcion}</p>
       </CardHeader>
       <CardContent>
-        <h2>Detalles del Proyecto</h2>
+        <CardDescription>
+          {proyecto.descripcion}
+          {/* <p>Fecha de Inicio: {proyecto.fechaInicio!.toLocaleDateString()}</p>
+          <p>Fecha de Fin: {proyecto.fechaFin!.toLocaleDateString()}</p> */}
+        </CardDescription>
         <p>Costo Total: ${proyecto.costoTotal?.toFixed(2) || 'No calculado'}</p>
         
         {/* Cliente */}
@@ -85,7 +88,7 @@ const EmpleadosInfo: React.FC<EmpleadosInfoProps> = ({ empleados }) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Empleados Involucrados</CardTitle>
+        <CardTitle>Empleados Actuales</CardTitle>
       </CardHeader>
       <CardContent>
         <ul>

@@ -388,6 +388,8 @@ export async function asignarEmpleadosAProyecto(data: {
           throw new Error('La lista de empleados no puede estar vacía.');
       }
 
+      console.log("Asignando empleados a proyecto:", JSON.stringify(data));
+
       // Ejecuta la función almacenada usando SELECT
       await pool.query(
           'SELECT paAsignarEmpleadosAProyecto($1, $2, $3)',
