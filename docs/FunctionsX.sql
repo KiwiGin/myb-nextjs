@@ -308,6 +308,7 @@ declare
     v_especificaciones_json   json;
     v_resultados_prueba_json  json;
     v_feedback_json           json;
+    v_empleados_actuales_ids  int[];
     v_empleados_actuales_json json;
     v_proyecto_json           json;
 begin
@@ -380,7 +381,7 @@ begin
                    json_build_object(
                            'idTipoPrueba', sq.id_tipo_prueba,
                            'nombre', (select tp.nombre from tipo_prueba tp where tp.id_tipo_prueba = sq.id_tipo_prueba),
-                           'parametros', parametro_prueba
+                           'especificaciones', parametro_prueba
                    )
            )
     into v_especificaciones_json
@@ -461,6 +462,27 @@ begin
                                             from resultado_prueba rp
                                             where rp.id_proyecto = p_id_proyecto);
 
+    select array(select case
+                            when p.id_etapa_actual = 3 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 3)
+                            when p.id_etapa_actual = 4 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 3)
+                            when p.id_etapa_actual = 7 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 7)
+                            end
+                 from proyecto p
+                 where p.id_proyecto = p_id_proyecto
+           )
+    into v_empleados_actuales_ids;
+
+    v_empleados_actuales_ids := array_remove(v_empleados_actuales_ids, null);
+
     select json_agg(
                    json_build_object(
                            'idEmpleado', e.id_empleado,
@@ -477,12 +499,7 @@ begin
            )
     into v_empleados_actuales_json
     from empleado e
-             join proyecto_etapa_empleado pee on e.id_empleado = pee.id_tecnico
-    where pee.id_etapa = (select pec.id_etapa
-                          from proyecto_etapas_cambio pec
-                          where pec.fecha_fin is null
-                            and pec.id_proyecto = p_id_proyecto)
-      and pee.id_proyecto = p_id_proyecto;
+    where e.id_empleado = any (v_empleados_actuales_ids);
 
     select json_build_object(
                    'idProyecto', p.id_proyecto,
