@@ -1,0 +1,876 @@
+---------------------- DROPS ---------------------
+
+drop function if exists paxRegistrarCliente(json);
+drop function if exists paxRegistrarEmpleado(json);
+drop function if exists paxObtenerClientes();
+drop function if exists paxObtenerPruebasConParametros();
+drop function if exists paxInsertarProyecto(json);
+drop function if exists paxRegistrarRepuesto(json);
+drop function if exists paxObtenerRepuestos();
+drop function if exists paxObtenerProyectos();
+drop function if exists paObtenerProyectosPorId(int);
+drop function if exists paCrearTipoPrueba(varchar);
+drop function if exists paxCrearParametro(json);
+drop function if exists paxCrearPruebaParametros(json);
+drop function if exists paxObtenerEmpleadosPorRol(varchar);
+drop function if exists paxObtenerRepuestosRequeridos();
+drop function if exists paxActualizarStock(json);
+drop function if exists paxObtenerClientesPorIds(json);
+drop function if exists paxObtenerEmpleadosPorIds(json);
+drop function if exists paxObtenerRepuestosPorIds(json);
+drop function if exists paxObtenerRepuestosPorProyecto(int);
+drop function if exists paxAgregarRepuestosRequeridos(json);
+drop function if exists paxAsignarRepuestosAProyecto(json);
+drop function if exists paxObtenerProyectoPorJefe(int);
+drop function if exists paxObtenerEtapaPorId(int);
+drop function if exists paxObtenerRepuestosFaltantesPorJefe(int);
+
+-------------------- FUNCTIONS -------------------
+
+-- paxRegistrarCliente : Registra un cliente en la base de datos
+create or replace function paxRegistrarCliente(
+    cliente_json json
+) returns int as
+$$
+declare
+    nuevo_cliente_id int;
+begin
+    insert into cliente(nombre,
+                        ruc,
+                        direccion,
+                        telefono,
+                        correo,
+                        documento_de_identidad,
+                        tipo_de_documento_de_identidad)
+    values ((cliente_json ->> 'nombre')::varchar,
+            (cliente_json ->> 'ruc')::varchar,
+            (cliente_json ->> 'direccion')::varchar,
+            (cliente_json ->> 'telefono')::varchar,
+            (cliente_json ->> 'correo')::varchar,
+            (cliente_json ->> 'documento_de_identidad')::varchar,
+            (cliente_json ->> 'tipo_de_documento_de_identidad')::varchar)
+    returning id_cliente into nuevo_cliente_id;
+    return nuevo_cliente_id;
+end;
+$$ language plpgsql;
+
+-- paxRegistrarEmpleado : Registra un empleado en la base de datos
+create or replace function paxRegistrarEmpleado(
+    empleado_json json
+) returns int as
+$$
+declare
+    nuevo_empleado_id int;
+begin
+    insert into empleado(usuario,
+                         password,
+                         nombre,
+                         apellido,
+                         correo,
+                         telefono,
+                         direccion,
+                         tipo_documento,
+                         documento_identidad,
+                         rol)
+    values ((empleado_json ->> 'usuario')::varchar,
+            (empleado_json ->> 'password')::varchar,
+            (empleado_json ->> 'nombre')::varchar,
+            (empleado_json ->> 'apellido')::varchar,
+            (empleado_json ->> 'correo')::varchar,
+            (empleado_json ->> 'telefono')::varchar,
+            (empleado_json ->> 'direccion')::varchar,
+            (empleado_json ->> 'tipo_documento')::varchar,
+            (empleado_json ->> 'documento_identidad')::varchar,
+            (empleado_json ->> 'rol')::varchar)
+    returning id_empleado into nuevo_empleado_id;
+    return nuevo_empleado_id;
+end;
+$$ language plpgsql;
+
+-- paxObtenerClientes : Obtiene la lista de clientes
+create or replace function paxObtenerClientes()
+    returns json as
+$$
+declare
+    clientes json;
+begin
+    select json_agg(json_build_object(
+            'idCliente', c.id_cliente,
+            'nombre', c.nombre,
+            'ruc', c.ruc,
+            'direccion', c.direccion,
+            'telefono', c.telefono,
+            'correo', c.correo,
+            'documentoDeIdentidad', c.documento_de_identidad,
+            'tipoDeDocumentoDeIdentidad', c.tipo_de_documento_de_identidad))
+    into clientes
+    from cliente c;
+    return clientes;
+end;
+$$ language plpgsql;
+
+-- paxObtenerPruebasConParametros: Obtiene la lista de pruebas con sus parámetros
+create or replace function paxObtenerPruebasConParametros()
+    returns json as
+$$
+declare
+    pruebas json;
+begin
+    with parametros_por_prueba as (select tp.id_tipo_prueba,
+                                          tp.nombre,
+                                          coalesce(
+                                                  json_agg(
+                                                          json_build_object(
+                                                                  'idParametro', p.id_parametro,
+                                                                  'unidades', p.unidades,
+                                                                  'nombre', p.nombre
+                                                          )
+                                                  ),
+                                                  '[]'::json
+                                          ) as parametro_info
+                                   from tipo_prueba tp
+                                            left join parametro p
+                                                      on tp.id_tipo_prueba = p.id_tipo_prueba
+                                   group by tp.id_tipo_prueba, tp.nombre)
+    select json_agg(
+                   json_build_object(
+                           'idTipoPrueba', p.id_tipo_prueba,
+                           'nombre', p.nombre,
+                           'parametros', p.parametro_info
+                   )
+           )
+    into pruebas
+    from parametros_por_prueba p;
+
+    return pruebas;
+end;
+$$ language plpgsql;
+
+-- paxInsertarProyecto : Registra un proyecto en la base de datos
+create or replace function paxInsertarProyecto(
+    proyecto_json json
+) returns int as
+$$
+declare
+    repuestos_array         json[];
+    costo_total_repuestos   decimal;
+    costo_unitario_repuesto decimal;
+    nuevo_costo_id          int;
+    nuevo_proyecto_id       int;
+    parametros_array        json[];
+    tipo_prueba_id          int;
+begin
+    select array(
+                   select json_array_elements(proyecto_json -> 'repuestos')
+           )
+    into repuestos_array;
+    for i in 1..array_length(repuestos_array, 1)
+        loop
+            select (r.precio * (repuestos_array[i] ->> 'cantidad')::int)
+            into costo_unitario_repuesto
+            from repuesto r
+            where r.id_repuesto = (repuestos_array[i] ->> 'idRepuesto')::int;
+            costo_total_repuestos := costo_total_repuestos + costo_unitario_repuesto;
+        end loop;
+
+    insert into costos(costo_mano_obra, costo_repuestos, costo_total)
+    values ((proyecto_json ->> 'costoManoDeObra')::decimal,
+            costo_total_repuestos,
+            (proyecto_json ->> 'costoManoDeObra')::decimal + costo_total_repuestos)
+    returning id_costo into nuevo_costo_id;
+    insert into proyecto(id_cliente,
+                         id_supervisor,
+                         id_jefe,
+                         id_etapa_actual,
+                         id_costo,
+                         titulo,
+                         descripcion,
+                         fechainicio,
+                         fechafin)
+    values ((proyecto_json ->> 'idCliente')::int,
+            (proyecto_json ->> 'idSupervisor')::int,
+            (proyecto_json ->> 'idJefe')::int,
+            1,
+            nuevo_costo_id,
+            (proyecto_json ->> 'titulo')::varchar,
+            (proyecto_json ->> 'descripcion')::text,
+            (proyecto_json ->> 'fechaInicio')::date,
+            (proyecto_json ->> 'fechaFin')::date)
+    returning id_proyecto into nuevo_proyecto_id;
+    select array(
+                   select json_array_elements(proyecto_json -> 'parametros')
+           )
+    into parametros_array;
+    for i in 1..array_length(parametros_array, 1)
+        loop
+            select tp.id_tipo_prueba
+            into tipo_prueba_id
+            from parametro p
+                     join tipo_prueba tp on p.id_tipo_prueba = tp.id_tipo_prueba
+            where p.id_parametro = (parametros_array[i] ->> 'idParametro')::int;
+            insert into proyecto_especificaciones_pruebas(id_proyecto,
+                                                          id_tipo_prueba,
+                                                          id_parametro,
+                                                          valor_maximo,
+                                                          valor_minimo)
+            values (nuevo_proyecto_id, tipo_prueba_id,
+                    (parametros_array[i] ->> 'idParametro')::int,
+                    (parametros_array[i] ->> 'valorMaximo')::decimal,
+                    (parametros_array[i] ->> 'valorMinimo')::decimal);
+        end loop;
+    for i in 1..array_length(repuestos_array, 1)
+        loop
+            insert into proyecto_repuestos_cantidad(id_proyecto,
+                                                    id_repuesto,
+                                                    cantidad)
+            values (nuevo_proyecto_id,
+                    (repuestos_array[i] ->> 'idRepuesto')::int,
+                    (repuestos_array[i] ->> 'cantidad')::int);
+        end loop;
+    insert into proyecto_etapas_cambio(id_proyecto, id_etapa, fecha_inicio, fecha_fin)
+    values (nuevo_proyecto_id, 1, (proyecto_json ->> 'fechaInicio')::date, null);
+    return nuevo_proyecto_id;
+end;
+$$ language plpgsql;
+
+-- paxRegistrarRepuesto : Registra un repuesto en la base de datos
+create or replace function paxRegistrarRepuesto(
+    repuesto_json json
+) returns int as
+$$
+declare
+    nuevo_repuesto_id int;
+begin
+    if (repuesto_json ->> 'stockActual')::int < 0 then
+        raise exception 'El stock actual no puede ser negativo';
+    end if;
+    insert into repuesto(nombre, precio, stock_disponible, stock_requerido, stock_asignado)
+    values ((repuesto_json ->> 'nombre')::varchar,
+            (repuesto_json ->> 'precio')::decimal,
+            (repuesto_json ->> 'stockActual')::int,
+            0,
+            0)
+    returning id_repuesto into nuevo_repuesto_id;
+    return nuevo_repuesto_id;
+end;
+$$ language plpgsql;
+
+-- paxObtenerRepuestos : Obtiene la lista de repuestos
+create or replace function paxObtenerRepuestos()
+    returns json as
+$$
+declare
+    repuestos json;
+begin
+    select json_agg(json_build_object(
+            'idRepuesto', r.id_repuesto,
+            'nombre', r.nombre,
+            'precio', r.precio,
+            'stockDisponible', r.stock_disponible,
+            'stockRequerido', r.stock_requerido,
+            'stockAsignado', r.stock_asignado,
+            'stockActual', r.stock_disponible + r.stock_asignado,
+            'linkImg', r.link_img))
+    into repuestos
+    from repuesto r;
+    return repuestos;
+end;
+$$ language plpgsql;
+
+-- paxObtenerProyectos : Obtiene la lista de proyectos
+create or replace function paxObtenerProyectos()
+    returns json as
+$$
+declare
+    proyectos json;
+begin
+    select json_agg(paobtenerproyectosporid(p.id_proyecto))
+    into proyectos
+    from proyecto p;
+    return proyectos;
+end;
+$$ language plpgsql;
+
+-- paObtenerProyectosPorId : Obtiene los proyectos por id
+create or replace function paObtenerProyectosPorId(p_id_proyecto int)
+    returns json as
+$$
+declare
+    v_cliente_json            json;
+    v_supervisor_json         json;
+    v_jefe_json               json;
+    v_repuestos_json          json;
+    v_especificaciones_json   json;
+    v_resultados_prueba_json  json;
+    v_feedback_json           json;
+    v_empleados_actuales_json json;
+    v_proyecto_json           json;
+begin
+    select json_build_object(
+                   'idCliente', c.id_cliente,
+                   'nombre', c.nombre,
+                   'ruc', c.ruc,
+                   'direccion', c.direccion,
+                   'telefono', c.telefono,
+                   'correo', c.correo,
+                   'documentoIdentidad', c.documento_de_identidad,
+                   'tipoDocumento', c.tipo_de_documento_de_identidad
+           )
+    into v_cliente_json
+    from cliente c
+             join proyecto p on c.id_cliente = p.id_cliente
+    where p.id_proyecto = p_id_proyecto;
+
+    select json_build_object(
+                   'idEmpleado', e.id_empleado,
+                   'usuario', e.usuario,
+                   'nombre', e.nombre,
+                   'apellido', e.apellido,
+                   'correo', e.correo,
+                   'telefono', e.telefono,
+                   'direccion', e.direccion,
+                   'documentoIdentidad', e.documento_identidad,
+                   'tipoDocumento', e.tipo_documento,
+                   'rol', e.rol
+           )
+    into v_supervisor_json
+    from empleado e
+    where e.id_empleado = (select p.id_supervisor from proyecto p where p.id_proyecto = p_id_proyecto);
+
+    select json_build_object(
+                   'idEmpleado', e.id_empleado,
+                   'usuario', e.usuario,
+                   'nombre', e.nombre,
+                   'apellido', e.apellido,
+                   'correo', e.correo,
+                   'telefono', e.telefono,
+                   'direccion', e.direccion,
+                   'documentoIdentidad', e.documento_identidad,
+                   'tipoDocumento', e.tipo_documento,
+                   'rol', e.rol
+           )
+    into v_jefe_json
+    from empleado e
+    where e.id_empleado = (select p.id_jefe from proyecto p where p.id_proyecto = p_id_proyecto);
+
+    select json_agg(
+                   json_build_object(
+                           'idRepuesto', r.id_repuesto,
+                           'nombre', r.nombre,
+                           'descripcion', r.descripcion,
+                           'precio', r.precio,
+                           'linkImg', r.link_img,
+                           'stockDisponible', r.stock_disponible,
+                           'stockAsignado', r.stock_asignado,
+                           'stockRequerido', r.stock_requerido,
+                           'cantidad', prc.cantidad
+                   )
+           )
+    into v_repuestos_json
+    from repuesto r
+             join proyecto_repuestos_cantidad prc on r.id_repuesto = prc.id_repuesto
+    where prc.id_proyecto = p_id_proyecto;
+
+    select json_agg(
+                   json_build_object(
+                           'idTipoPrueba', sq.id_tipo_prueba,
+                           'nombre', (select tp.nombre from tipo_prueba tp where tp.id_tipo_prueba = sq.id_tipo_prueba),
+                           'especificaciones', parametro_prueba
+                   )
+           )
+    into v_especificaciones_json
+    from (select pep.id_tipo_prueba,
+                 json_agg(
+                         json_build_object(
+                                 'idParametro', p.id_parametro,
+                                 'nombre', p.nombre,
+                                 'unidades', p.unidades,
+                                 'valorMaximo', pep.valor_maximo,
+                                 'valorMinimo', pep.valor_minimo
+                         )
+                 ) as parametro_prueba
+          from proyecto_especificaciones_pruebas pep
+                   join parametro p on pep.id_parametro = p.id_parametro
+          where pep.id_proyecto = p_id_proyecto
+          group by pep.id_tipo_prueba) as sq;
+
+
+    select json_agg(
+                   json_build_object(
+                           'idResultadoPrueba', sq2.id_resultado_prueba,
+                           'idProyecto', sq2.id_proyecto,
+                           'idEmpleado', sq2.id_empleado,
+                           'idTipoPrueba', sq2.id_tipo_prueba,
+                           'fecha', sq2.fecha,
+                           'resultados', resultados
+                   )
+           )
+    into v_resultados_prueba_json
+    from (select sq.id_tipo_prueba,
+                 sq.id_resultado_prueba,
+                 sq.id_proyecto,
+                 sq.id_empleado,
+                 sq.fecha,
+                 json_agg(
+                         json_build_object(
+                                 'idTipoPrueba', sq.id_tipo_prueba,
+                                 'resultadosParametros', resultados_parametros
+                         )
+                 ) as resultados
+          from (select prp.id_tipo_prueba,
+                       prp.id_resultado_prueba,
+                       rp.id_proyecto,
+                       rp.fecha,
+                       rp.id_empleado,
+                       json_agg(
+                               json_build_object(
+                                       'idParametro', p.id_parametro,
+                                       'nombre', p.nombre,
+                                       'unidades', p.unidades,
+                                       'resultado', prp.valor
+                               )
+                       ) as resultados_parametros
+                from parametro p
+                         join prueba_parametro_resultado prp on p.id_parametro = prp.id_parametro
+                         join resultado_prueba rp on prp.id_resultado_prueba = rp.id_resultado_prueba
+                where rp.id_proyecto = p_id_proyecto
+                group by prp.id_tipo_prueba, prp.id_resultado_prueba, rp.id_proyecto, rp.fecha, rp.id_empleado) as sq
+          group by sq.id_tipo_prueba, sq.id_resultado_prueba, sq.id_proyecto, sq.id_empleado, sq.fecha) as sq2;
+
+
+    select json_agg(
+                   json_build_object(
+                           'idFeedback', f.id_feedback,
+                           'idResultadoPruebaTecnico', f.id_resultado_prueba_tecnico,
+                           'idResultadoPruebaSupervisor', f.id_resultado_prueba_supervisor,
+                           'aprobado', f.aprobado,
+                           'comentario', f.comentario
+                   )
+           )
+    into v_feedback_json
+    from feedback f
+    where f.id_resultado_prueba_supervisor in (select rp.id_resultado_prueba
+                                               from resultado_prueba rp
+                                               where rp.id_proyecto = p_id_proyecto)
+       or f.id_resultado_prueba_tecnico in (select rp.id_resultado_prueba
+                                            from resultado_prueba rp
+                                            where rp.id_proyecto = p_id_proyecto);
+
+    select json_agg(
+                   json_build_object(
+                           'idEmpleado', e.id_empleado,
+                           'usuario', e.usuario,
+                           'nombre', e.nombre,
+                           'apellido', e.apellido,
+                           'correo', e.correo,
+                           'telefono', e.telefono,
+                           'direccion', e.direccion,
+                           'documentoIdentidad', e.documento_identidad,
+                           'tipoDocumento', e.tipo_documento,
+                           'rol', e.rol
+                   )
+           )
+    into v_empleados_actuales_json
+    from empleado e
+             join proyecto_etapa_empleado pee on e.id_empleado = pee.id_tecnico
+    where pee.id_etapa = (select pec.id_etapa
+                          from proyecto_etapas_cambio pec
+                          where pec.fecha_fin is null
+                            and pec.id_proyecto = p_id_proyecto)
+      and pee.id_proyecto = p_id_proyecto;
+
+    select json_build_object(
+                   'idProyecto', p.id_proyecto,
+                   'titulo', p.titulo,
+                   'descripcion', p.descripcion,
+                   'fechaInicio', p.fechaInicio,
+                   'fechaFin', p.fechaFin,
+                   'costoManoObra', c.costo_mano_obra,
+                   'costoRepuestos', c.costo_repuestos,
+                   'costoTotal', c.costo_total,
+                   'idEtapaActual', p.id_etapa_actual,
+                   'etapaActual', (select e.nombre from etapa e where e.id_etapa = p.id_etapa_actual),
+                   'cliente', v_cliente_json,
+                   'supervisor', v_supervisor_json,
+                   'jefe', v_jefe_json,
+                   'repuestos', v_repuestos_json,
+                   'especificaciones', v_especificaciones_json,
+                   'resultados', v_resultados_prueba_json,
+                   'feedbacks', v_feedback_json,
+                   'empleadosActuales', v_empleados_actuales_json
+           )
+    into v_proyecto_json
+    from proyecto p
+             join costos c on p.id_costo = c.id_costo
+    where id_proyecto = p_id_proyecto;
+    return v_proyecto_json;
+end;
+$$ language plpgsql;
+
+-- paCrearTipoPrueba : Crea un tipo de prueba
+create or replace function paCrearTipoPrueba(
+    nombre_prueba varchar
+) returns int as
+$$
+declare
+    nuevo_tipo_prueba_id int;
+begin
+    insert into tipo_prueba(nombre)
+    values (nombre_prueba)
+    returning id_tipo_prueba into nuevo_tipo_prueba_id;
+    return nuevo_tipo_prueba_id;
+end;
+$$ language plpgsql;
+
+-- paxCrearParametro : Crea un parametro
+create or replace function paxCrearParametro(
+    parametro_json json
+) returns int as
+$$
+declare
+    nuevo_parametro_id int;
+begin
+    insert into parametro(id_tipo_prueba, unidades, nombre)
+    values ((parametro_json ->> 'idTipoPrueba')::int,
+            (parametro_json ->> 'unidades')::varchar,
+            (parametro_json ->> 'nombre')::varchar)
+    returning id_parametro into nuevo_parametro_id;
+    return nuevo_parametro_id;
+end;
+$$ language plpgsql;
+
+-- paxCrearPruebaParametros : Crea un tipo de prueba junto a sus parámetros
+create or replace function paxCrearPruebaParametros(
+    prueba_parametros_json json
+) returns int as
+$$
+declare
+    nuevo_tipo_prueba_id int;
+    repuestos_array      json[];
+    repuesto_json        json;
+begin
+    nuevo_tipo_prueba_id := paCrearTipoPrueba((prueba_parametros_json ->> 'nombre')::varchar);
+    select array(
+                   select json_array_elements(prueba_parametros_json -> 'parametros')
+           )
+    into repuestos_array;
+    for i in 1..array_length(repuestos_array, 1)
+        loop
+            repuesto_json := json_build_object(
+                    'idTipoPrueba', nuevo_tipo_prueba_id,
+                    'unidades', (repuestos_array[i] ->> 'unidades')::varchar,
+                    'nombre', (repuestos_array[i] ->> 'nombre')::varchar);
+            perform paxcrearparametro(repuesto_json);
+        end loop;
+    return nuevo_tipo_prueba_id;
+end;
+$$ language plpgsql;
+
+-- paxObtenerEmpleadosPorRol : Obtiene la lista de empleados por rol
+create or replace function paxObtenerEmpleadosPorRol(
+    rol_empleado varchar
+) returns json as
+$$
+declare
+    empleados json;
+begin
+    select json_agg(json_build_object(
+            'idEmpleado', e.id_empleado,
+            'usuario', e.usuario,
+            'nombre', e.nombre,
+            'apellido', e.apellido,
+            'correo', e.correo,
+            'telefono', e.telefono,
+            'direccion', e.direccion,
+            'documentoIdentidad', e.documento_identidad,
+            'tipoDocumento', e.tipo_documento,
+            'rol', e.rol))
+    into empleados
+    from empleado e
+    where e.rol = rol_empleado;
+    return empleados;
+end;
+$$ language plpgsql;
+
+-- paxObtenerRepuestosRequeridos : Obtiene la lista de repuestos requeridos
+create or replace function paxObtenerRepuestosRequeridos()
+    returns json as
+$$
+declare
+    repuestos json;
+begin
+    select json_agg(json_build_object(
+            'idRepuesto', r.id_repuesto,
+            'nombre', r.nombre,
+            'descripcion', r.descripcion,
+            'precio', r.precio,
+            'linkImg', r.link_img,
+            'stockDisponible', r.stock_disponible,
+            'stockRequerido', r.stock_requerido,
+            'stockAsignado', r.stock_asignado))
+    into repuestos
+    from repuesto r
+    where r.stock_requerido < 0;
+    return repuestos;
+end;
+$$ language plpgsql;
+
+-- paxActualizarStock : Actualiza el stock de un repuesto
+create or replace function paxActualizarStock(
+    repuesto_json json
+) returns int as
+$$
+declare
+    repuesto_id int;
+begin
+    update repuesto
+    set stock_disponible = stock_disponible + (repuesto_json ->> 'stockAgregado')::int,
+        stock_requerido  = stock_requerido + (repuesto_json ->> 'stockAgregado')::int
+    where id_repuesto = (repuesto_json ->> 'idRepuesto')::int
+    returning id_repuesto into repuesto_id;
+    return repuesto_id;
+end;
+$$ language plpgsql;
+
+-- paxObtenerClientesPorIds : Obtiene los clientes por ids
+create or replace function paxObtenerClientesPorIds(
+    ids_clientes json
+) returns json as
+$$
+declare
+    clientes json;
+    ids      int[];
+begin
+    select array(
+                   select json_array_elements_text(ids_clientes)
+           )
+    into ids;
+    select json_agg(json_build_object(
+            'idCliente', c.id_cliente,
+            'nombre', c.nombre,
+            'ruc', c.ruc,
+            'direccion', c.direccion,
+            'telefono', c.telefono,
+            'correo', c.correo,
+            'documentoDeIdentidad', c.documento_de_identidad,
+            'tipoDeDocumentoDeIdentidad', c.tipo_de_documento_de_identidad))
+    into clientes
+    from cliente c
+    where c.id_cliente = any (ids);
+    return clientes;
+end;
+$$ language plpgsql;
+
+-- paxObtenerEmpleadosPorIds : Obtiene los empleados por ids
+create or replace function paxObtenerEmpleadosPorIds(
+    ids_empleados json
+) returns json as
+$$
+declare
+    empleados json;
+begin
+    select json_agg(json_build_object(
+            'idEmpleado', e.id_empleado,
+            'usuario', e.usuario,
+            'nombre', e.nombre,
+            'apellido', e.apellido,
+            'correo', e.correo,
+            'telefono', e.telefono,
+            'direccion', e.direccion,
+            'documentoIdentidad', e.documento_identidad,
+            'tipoDocumento', e.tipo_documento,
+            'rol', e.rol))
+    into empleados
+    from empleado e
+    where e.id_empleado = any ((select array(select json_array_elements_text(ids_empleados)))::int[]);
+    return empleados;
+end;
+$$ language plpgsql;
+
+-- paxObtenerRepuestosPorIds : Obtiene los repuestos por ids
+create or replace function paxObtenerRepuestosPorIds(
+    ids_repuestos json
+) returns json as
+$$
+declare
+    repuestos json;
+begin
+    select json_agg(json_build_object(
+            'idRepuesto', r.id_repuesto,
+            'nombre', r.nombre,
+            'descripcion', r.descripcion,
+            'precio', r.precio,
+            'linkImg', r.link_img,
+            'stockDisponible', r.stock_disponible,
+            'stockRequerido', r.stock_requerido,
+            'stockAsignado', r.stock_asignado))
+    into repuestos
+    from repuesto r
+    where r.id_repuesto = any ((select array(select json_array_elements_text(ids_repuestos)))::int[]);
+    return repuestos;
+end;
+$$ language plpgsql;
+
+-- paxObtenerRepuestosPorProyecto : Obtiene los repuestos por proyecto
+create or replace function paxObtenerRepuestosPorProyecto(
+    id_proyecto_r int
+) returns json as
+$$
+declare
+    repuestos json;
+begin
+    select json_agg(json_build_object(
+            'idRepuesto', r.id_repuesto,
+            'nombre', r.nombre,
+            'descripcion', r.descripcion,
+            'precio', r.precio,
+            'linkImg', r.link_img,
+            'stockDisponible', r.stock_disponible,
+            'stockRequerido', r.stock_requerido,
+            'stockAsignado', r.stock_asignado,
+            'cantidad', prc.cantidad))
+    into repuestos
+    from repuesto r
+             join proyecto_repuestos_cantidad prc on r.id_repuesto = prc.id_repuesto
+    where prc.id_proyecto = id_proyecto_r;
+    return repuestos;
+end;
+$$ language plpgsql;
+
+-- paxAgregarRepuestosRequeridos : Agrega repuestos requeridos
+create or replace function paxAgregarRepuestosRequeridos(
+    repuestos_requeridos json
+) returns void as
+$$
+declare
+    repuestos_array json[];
+begin
+    select array(
+                   select json_array_elements(repuestos_requeridos)
+           )
+    into repuestos_array;
+    for i in 1..array_length(repuestos_array, 1)
+        loop
+            if (repuestos_array[i] ->> 'stockRequerido')::int < 0 then
+                raise exception 'El stock requerido no puede ser negativo';
+            end if;
+            update repuesto
+            set stock_requerido = stock_requerido - (repuestos_array[i] ->> 'stockRequerido')::int
+            where id_repuesto = (repuestos_array[i] ->> 'idRepuesto')::int;
+        end loop;
+end;
+$$ language plpgsql;
+
+-- paxAsignarRepuestosAProyecto : Asigna repuestos a un proyecto
+create or replace function paxAsignarRepuestosAProyecto(
+    repuestos_asignados json
+) returns void as
+$$
+declare
+    repuestos_array json[];
+begin
+    select array(
+                   select json_array_elements(repuestos_asignados)
+           )
+    into repuestos_array;
+    for i in 1..array_length(repuestos_array, 1)
+        loop
+            if (repuestos_array[i] ->> 'stockAsignado')::int < 0 then
+                raise exception 'El stock asignado no puede ser negativo';
+            end if;
+            update repuesto
+            set stock_asignado   = stock_asignado + (repuestos_array[i] ->> 'stockAsignado')::int,
+                stock_disponible = stock_disponible - (repuestos_array[i] ->> 'stockAsignado')::int
+            where id_repuesto = (repuestos_array[i] ->> 'idRepuesto')::int;
+        end loop;
+    -- deberia cambiar de etapa?
+end;
+$$ language plpgsql;
+
+-- paxObtenerProyectoPorJefe : Obtiene los proyectos por jefe
+create or replace function paxObtenerProyectoPorJefe(
+    id_jefe_p int
+) returns json as
+$$
+declare
+begin
+    return (select json_agg(paobtenerproyectosporid(p.id_proyecto))
+            from proyecto p
+            where p.id_jefe = id_jefe_p);
+end;
+$$ language plpgsql;
+
+-- paxObtenerEtapaPorId : Obtiene la etapa por id
+create or replace function paxObtenerEtapaPorId(
+    id_etapa_p int
+) returns json as
+$$
+declare
+    etapa json;
+begin
+    select json_build_object(
+                   'idEtapa', e.id_etapa,
+                   'nombre', e.nombre
+           )
+    into etapa
+    from etapa e
+    where e.id_etapa = id_etapa_p;
+    return etapa;
+end;
+$$ language plpgsql;
+
+-- paxObtenerRepuestosFaltantesPorJefe : Obtiene los repuestos faltantes de los proyectos de un jefe
+create or replace function paxObtenerRepuestosFaltantesPorJefe(
+    id_jefe_p int
+) returns json as
+$$
+declare
+    repuestos json;
+begin
+    select json_agg(json_build_object(
+            'idRepuesto', r.id_repuesto,
+            'nombre', r.nombre,
+            'descripcion', r.descripcion,
+            'precio', r.precio,
+            'linkImg', r.link_img,
+            'stockDisponible', r.stock_disponible,
+            'stockRequerido', r.stock_requerido,
+            'stockAsignado', r.stock_asignado,
+            'cantidad', prc.cantidad))
+    into repuestos
+    from repuesto r
+             join proyecto_repuestos_cantidad prc on r.id_repuesto = prc.id_repuesto
+             join proyecto p on prc.id_proyecto = p.id_proyecto
+    where p.id_jefe = id_jefe_p
+      and r.stock_requerido < 0
+    group by r.id_repuesto;
+    return repuestos;
+end;
+$$ language plpgsql;
+
+-------------------- COMMENTS --------------------
+
+comment on function paxRegistrarCliente(json) is 'Registra un cliente en la base de datos';
+comment on function paxRegistrarEmpleado(json) is 'Registra un empleado en la base de datos';
+comment on function paxObtenerClientes() is 'Obtiene la lista de clientes';
+comment on function paxObtenerPruebasConParametros() is 'Obtiene la lista de pruebas con sus parametros';
+comment on function paxInsertarProyecto(json) is 'Registra un proyecto en la base de datos';
+comment on function paxRegistrarRepuesto(json) is 'Registra un repuesto en la base de datos';
+comment on function paxObtenerRepuestos() is 'Obtiene la lista de repuestos';
+comment on function paxObtenerProyectos() is 'Obtiene la lista de proyectos';
+comment on function paObtenerProyectosPorId(int) is 'Obtiene los proyectos por id';
+comment on function paCrearTipoPrueba(varchar) is 'Crea un tipo de prueba';
+comment on function paxCrearParametro(json) is 'Crea un parametro';
+comment on function paxCrearPruebaParametros(json) is 'Crea un tipo de prueba junto a sus parametros';
+comment on function paxObtenerEmpleadosPorRol(varchar) is 'Obtiene la lista de empleados por rol';
+comment on function paxObtenerRepuestosRequeridos() is 'Obtiene la lista de repuestos requeridos';
+comment on function paxActualizarStock(json) is 'Actualiza el stock de un repuesto';
+comment on function paxObtenerClientesPorIds(json) is 'Obtiene los clientes por ids';
+comment on function paxObtenerEmpleadosPorIds(json) is 'Obtiene los empleados por ids';
+comment on function paxObtenerRepuestosPorIds(json) is 'Obtiene los repuestos por ids';
+comment on function paxObtenerRepuestosPorProyecto(int) is 'Obtiene los repuestos por proyecto';
+comment on function paxAgregarRepuestosRequeridos(json) is 'Agrega repuestos requeridos';
+comment on function paxAsignarRepuestosAProyecto(json) is 'Asigna repuestos a un proyecto';
+comment on function paxObtenerProyectoPorJefe(int) is 'Obtiene los proyectos por jefe';
+comment on function paxObtenerEtapaPorId(int) is 'Obtiene la etapa por id';
+comment on function paxObtenerRepuestosFaltantesPorJefe(int) is 'Obtiene los repuestos faltantes de los proyectos de un jefe';
