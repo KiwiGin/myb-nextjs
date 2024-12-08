@@ -24,6 +24,11 @@ drop function if exists paxAsignarRepuestosAProyecto(json);
 drop function if exists paxObtenerProyectoPorJefe(int);
 drop function if exists paxObtenerEtapaPorId(int);
 drop function if exists paxObtenerRepuestosFaltantesPorJefe(int);
+drop function if exists paObtenerTecnicosDisponibles();
+drop function if exists paAsignarEmpleadosAProyecto(int, int[], date);
+drop function if exists paCambiarEtapaProyecto(int, int, date);
+drop function if exists paObtenerProyectosPorTecnico(int);
+drop function if exists paRegistrarFeedback(json);
 
 -------------------- FUNCTIONS -------------------
 
@@ -848,6 +853,234 @@ begin
 end;
 $$ language plpgsql;
 
+-- paObtenerTecnicosDisponibles : Obtiene los técnicos disponibles
+create or replace function paObtenerTecnicosDisponibles()
+    returns json
+as
+$$
+declare
+    tecnicos_ids int[];
+    tecnicos     json;
+begin
+    select array(select case
+                            when p.id_etapa_actual = 3 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 3)
+                            when p.id_etapa_actual = 4 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 3)
+                            when p.id_etapa_actual = 7 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 7)
+                            end
+                 from proyecto p)
+    into tecnicos_ids;
+
+    tecnicos_ids := array_remove(tecnicos_ids, null);
+
+    select json_agg(json_build_object(
+            'idEmpleado', e.id_empleado,
+            'usuario', e.usuario,
+            'nombre', e.nombre,
+            'apellido', e.apellido,
+            'correo', e.correo,
+            'telefono', e.telefono,
+            'direccion', e.direccion,
+            'documentoIdentidad', e.documento_identidad,
+            'tipoDocumento', e.tipo_documento,
+            'rol', e.rol))
+    into tecnicos
+    from empleado e
+    where e.rol = 'tecnico'
+      and e.id_empleado != all (tecnicos_ids);
+
+    raise notice '%', tecnicos;
+
+    return tecnicos;
+end;
+$$ language plpgsql;
+
+-- paAsignarEmpleadosAProyecto : Asigna empleados a un proyecto
+create or replace function paAsignarEmpleadosAProyecto(
+    p_idProyecto int,
+    p_idEmpleados int[],
+    p_fechaAsignacion date
+) returns void as
+$$
+declare
+    v_ids_tecnicos_libres int[];
+    v_id_etapa_prev       int;
+begin
+    select array(select case
+                            when p.id_etapa_actual = 3 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 3)
+                            when p.id_etapa_actual = 4 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 3)
+                            when p.id_etapa_actual = 7 then (select pee2.id_tecnico
+                                                             from proyecto_etapa_empleado pee2
+                                                             where pee2.id_proyecto = p.id_proyecto
+                                                               and pee2.id_etapa = 7)
+                            end
+                 from proyecto p)
+    into v_ids_tecnicos_libres;
+    v_ids_tecnicos_libres := array_remove(v_ids_tecnicos_libres, null);
+
+    IF array_length(p_idEmpleados, 1) IS NULL THEN
+        RAISE EXCEPTION 'La lista de empleados no puede estar vacía.';
+    END IF;
+    IF NOT p_idEmpleados <@ v_ids_tecnicos_libres THEN
+        RAISE EXCEPTION 'No se puede asignar a un técnico que no está disponible';
+    END IF;
+    for i in 1..array_length(p_idEmpleados, 1)
+        loop
+            INSERT INTO proyecto_etapa_empleado (id_proyecto, id_etapa, id_tecnico)
+            VALUES (p_idProyecto, 3, p_idEmpleados[i]);
+        end loop;
+    select p.id_etapa_actual into v_id_etapa_prev from proyecto p where p.id_proyecto = p_idProyecto;
+    if v_id_etapa_prev = 2 then
+        call paCambiarEtapaProyecto(p_idProyecto, 3, p_fechaAsignacion);
+    else
+        if v_id_etapa_prev = 6 then
+            call paCambiarEtapaProyecto(p_idProyecto, 7, p_fechaAsignacion);
+        end if;
+    end if;
+end;
+$$ language plpgsql;
+
+-- paCambiarEtapaProyecto : Cambia la etapa de un proyecto
+create or replace function paCambiarEtapaProyecto(
+    p_id_proyecto int,
+    p_id_etapa int,
+    p_fecha_inicio date
+)
+    returns void as
+$$
+declare
+    v_id_etapa_prev int;
+begin
+    select pec.id_etapa
+    into v_id_etapa_prev
+    from proyecto_etapas_cambio pec
+    where pec.id_proyecto = p_id_proyecto
+      and pec.fecha_fin is null;
+    update proyecto_etapas_cambio pec
+    set fecha_fin = p_fecha_inicio
+    where pec.id_proyecto = p_id_proyecto
+      and pec.id_etapa = v_id_etapa_prev;
+    insert into proyecto_etapas_cambio (id_proyecto, id_etapa, fecha_inicio)
+    values (p_id_proyecto, p_id_etapa, p_fecha_inicio);
+    update proyecto
+    set id_etapa_actual = p_id_etapa
+    where id_proyecto = p_id_proyecto;
+end;
+$$ language plpgsql;
+
+-- paObtenerProyectoPorTecnico : Obtiene los proyectos por tecnico
+create or replace function paObtenerProyectoPorTecnico(p_id_empleado int)
+    returns json as
+$$
+declare
+    v_ids_proyecto  int;
+    v_proyecto_json json;
+begin
+    select pee.id_proyecto
+    into v_ids_proyecto
+    from proyecto_etapa_empleado pee
+    where pee.id_tecnico = p_id_empleado
+    limit 1;
+    select * into v_proyecto_json from paObtenerProyectosPorId(v_ids_proyecto);
+    return v_proyecto_json;
+end;
+$$ language plpgsql;
+
+-- paRegistrarResultados : Registra los resultados de una prueba
+create or replace function paRegistrarResultados(
+    p_registro_json json
+)
+    returns int as
+$$
+declare
+    v_resultados          json[];
+    v_especificaciones    json[];
+    v_resultado_prueba_id int;
+    v_etapa_previa        int;
+begin
+    insert into resultado_prueba (id_proyecto, id_empleado, fecha)
+    values ((p_registro_json ->> 'idProyecto')::integer, (p_registro_json ->> 'idEmpleado')::integer,
+            (p_registro_json ->> 'fecha')::date)
+    returning id_resultado_prueba into v_resultado_prueba_id;
+    select array(
+                   select json_array_elements(p_registro_json -> 'resultados')
+           )
+    into v_resultados;
+    for i in 1..array_length(v_resultados, 1)
+        loop
+            select array(
+                           select json_array_elements(v_resultados[i] -> 'especificaciones')
+                   )
+            into v_especificaciones;
+            for j in 1..array_length(v_especificaciones, 1)
+                loop
+                    insert into prueba_parametro_resultado (id_resultado_prueba, id_tipo_prueba, id_parametro, valor)
+                    values (v_resultado_prueba_id, (v_resultados[i] ->> 'idTipoPrueba')::int,
+                            (v_especificaciones[j] ->> 'idParametro')::int,
+                            (v_especificaciones[j] ->> 'resultado')::numeric);
+                end loop;
+        end loop;
+    select p.id_etapa_actual
+    into v_etapa_previa
+    from proyecto p
+    where p.id_proyecto = (p_registro_json ->> 'idProyecto')::int;
+    if v_etapa_previa = 3 then
+        call paCambiarEtapaProyecto((p_registro_json ->> 'idProyecto')::int, 4, (p_registro_json ->> 'fecha')::date);
+    end if;
+    return v_resultado_prueba_id;
+end;
+$$ language plpgsql;
+
+-- paRegistrarFeedback : Registra un feedback
+create or replace function paRegistrarFeedback(
+    p_feedback_json json
+) returns int
+as
+$$
+declare
+    v_resultados                     json;
+    v_resultado_prueba_supervisor_id int;
+    v_feedback_id                    int;
+    v_etapa_previa                   int;
+begin
+    select json_build_object(
+                   'idProyecto', p_feedback_json ->> 'idProyecto',
+                   'idEmpleado', p_feedback_json ->> 'idEmpleado',
+                   'fecha', p_feedback_json ->> 'fecha',
+                   'resultados', p_feedback_json -> 'resultados'
+           )
+    into v_resultados;
+    select * into v_resultado_prueba_supervisor_id from paRegistrarResultados(v_resultados);
+    insert into feedback (id_resultado_prueba_tecnico, id_resultado_prueba_supervisor, aprobado, comentario)
+    values (p_feedback_json ->> 'idResultadoPruebaTecnico', v_resultado_prueba_supervisor_id,
+            p_feedback_json ->> 'aprobado', p_feedback_json ->> 'comentario')
+    returning id_feedback into v_feedback_id;
+    select p.id_proyecto into v_etapa_previa from proyecto p where p.id_proyecto = p_feedback_json ->> 'idProyecto';
+    if v_etapa_previa = 4 and p_feedback_json ->> 'aprobado'::bool then
+        call paCambiarEtapaProyecto(p_feedback_json ->> 'idProyecto', 5, p_feedback_json ->> 'fecha');
+    else
+        if v_etapa_previa = 4 and not p_feedback_json ->> 'aprobado'::bool then
+            call paCambiarEtapaProyecto(p_feedback_json ->> 'idProyecto', 3, p_feedback_json ->> 'fecha');
+        end if;
+    end if;
+    return v_feedback_id;
+end;
+$$ language plpgsql;
+
 -------------------- COMMENTS --------------------
 
 comment on function paxRegistrarCliente(json) is 'Registra un cliente en la base de datos';
@@ -874,3 +1107,8 @@ comment on function paxAsignarRepuestosAProyecto(json) is 'Asigna repuestos a un
 comment on function paxObtenerProyectoPorJefe(int) is 'Obtiene los proyectos por jefe';
 comment on function paxObtenerEtapaPorId(int) is 'Obtiene la etapa por id';
 comment on function paxObtenerRepuestosFaltantesPorJefe(int) is 'Obtiene los repuestos faltantes de los proyectos de un jefe';
+comment on function paObtenerTecnicosDisponibles() is 'Obtiene los técnicos disponibles';
+comment on function paAsignarEmpleadosAProyecto(int, int[], date) is 'Asigna empleados a un proyecto';
+comment on function paCambiarEtapaProyecto(int, int, date) is 'Cambia la etapa de un proyecto';
+comment on function paObtenerProyectoPorTecnico(int) is 'Obtiene los proyectos por tecnico';
+comment on function paRegistrarResultados(json) is 'Registra los resultados de una prueba';
