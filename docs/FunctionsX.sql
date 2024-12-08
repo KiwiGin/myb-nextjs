@@ -381,7 +381,7 @@ begin
                    json_build_object(
                            'idTipoPrueba', sq.id_tipo_prueba,
                            'nombre', (select tp.nombre from tipo_prueba tp where tp.id_tipo_prueba = sq.id_tipo_prueba),
-                           'especificaciones', parametro_prueba
+                           'parametros', parametro_prueba
                    )
            )
     into v_especificaciones_json
@@ -928,7 +928,7 @@ create or replace function paAsignarEmpleadosAProyecto(
 ) returns void as
 $$
 declare
-    v_ids_tecnicos_libres int[];
+    v_tecnicos_ocupados int[];
     v_id_etapa_prev       int;
 begin
     select array(select case
@@ -946,13 +946,13 @@ begin
                                                                and pee2.id_etapa = 7)
                             end
                  from proyecto p)
-    into v_ids_tecnicos_libres;
-    v_ids_tecnicos_libres := array_remove(v_ids_tecnicos_libres, null);
+    into v_tecnicos_ocupados;
+    v_tecnicos_ocupados := array_remove(v_tecnicos_ocupados, null);
 
     IF array_length(p_idEmpleados, 1) IS NULL THEN
         RAISE EXCEPTION 'La lista de empleados no puede estar vacía.';
     END IF;
-    IF NOT p_idEmpleados <@ v_ids_tecnicos_libres THEN
+    IF p_idEmpleados && v_tecnicos_ocupados THEN
         RAISE EXCEPTION 'No se puede asignar a un técnico que no está disponible';
     END IF;
     for i in 1..array_length(p_idEmpleados, 1)
@@ -962,10 +962,10 @@ begin
         end loop;
     select p.id_etapa_actual into v_id_etapa_prev from proyecto p where p.id_proyecto = p_idProyecto;
     if v_id_etapa_prev = 2 then
-        call paCambiarEtapaProyecto(p_idProyecto, 3, p_fechaAsignacion);
+        perform  paCambiarEtapaProyecto(p_idProyecto, 3, p_fechaAsignacion);
     else
         if v_id_etapa_prev = 6 then
-            call paCambiarEtapaProyecto(p_idProyecto, 7, p_fechaAsignacion);
+            perform paCambiarEtapaProyecto(p_idProyecto, 7, p_fechaAsignacion);
         end if;
     end if;
 end;
@@ -1056,7 +1056,7 @@ begin
     from proyecto p
     where p.id_proyecto = (p_registro_json ->> 'idProyecto')::int;
     if v_etapa_previa = 3 then
-        call paCambiarEtapaProyecto((p_registro_json ->> 'idProyecto')::int, 4, (p_registro_json ->> 'fecha')::date);
+        perform paCambiarEtapaProyecto((p_registro_json ->> 'idProyecto')::int, 4, (p_registro_json ->> 'fecha')::date);
     end if;
     return v_resultado_prueba_id;
 end;
@@ -1088,10 +1088,10 @@ begin
     returning id_feedback into v_feedback_id;
     select p.id_proyecto into v_etapa_previa from proyecto p where p.id_proyecto = p_feedback_json ->> 'idProyecto';
     if v_etapa_previa = 4 and p_feedback_json ->> 'aprobado'::bool then
-        call paCambiarEtapaProyecto(p_feedback_json ->> 'idProyecto', 5, p_feedback_json ->> 'fecha');
+        perform paCambiarEtapaProyecto(p_feedback_json ->> 'idProyecto', 5, p_feedback_json ->> 'fecha');
     else
         if v_etapa_previa = 4 and not p_feedback_json ->> 'aprobado'::bool then
-            call paCambiarEtapaProyecto(p_feedback_json ->> 'idProyecto', 3, p_feedback_json ->> 'fecha');
+            perform paCambiarEtapaProyecto(p_feedback_json ->> 'idProyecto', 3, p_feedback_json ->> 'fecha');
         end if;
     end if;
     return v_feedback_id;
