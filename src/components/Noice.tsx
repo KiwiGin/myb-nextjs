@@ -12,7 +12,7 @@ export function Noice({ noice }: NoiceProps) {
     return (
       <div
         className={cn(
-          "fixed z-[100] right-0 top-0 w-lvw h-lvh flex items-center justify-center bg-white",
+          "fixed z-[100] inset-0 flex items-center justify-center bg-white",
           noice.styleType === "modal" && "bg-black bg-opacity-50"
         )}
       >

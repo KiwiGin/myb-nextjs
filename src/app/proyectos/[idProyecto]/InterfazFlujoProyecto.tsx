@@ -22,7 +22,6 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   });
 
   useEffect(() => {
-    // fetch from GET /api/proyecto/por-id/:idProyecto
     const fetchProyecto = async () => {
       try {
         const response = await fetch(`/api/proyecto/por-id/${idProyecto}`);

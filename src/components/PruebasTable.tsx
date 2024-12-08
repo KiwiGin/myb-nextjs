@@ -85,7 +85,7 @@ export function PruebasTable({
                                   scope="row"
                                   className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"
                                 >
-                                  {`${parametroOriginal?.nombre}( ${parametroOriginal?.unidad} )`}
+                                  {`${parametroOriginal?.nombre}( ${parametroOriginal?.unidades} )`}
                                 </th>
                                 {filas(
                                   prueba_index,

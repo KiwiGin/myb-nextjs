@@ -556,7 +556,7 @@ export function InterfazRegistroProyecto() {
               name="idCliente"
               render={({ field }) => (
                 <FormItem className="flex flex-col w-full">
-                  <FormLabel htmlFor="idCliente">Clientes</FormLabel>
+                  <FormLabel htmlFor="idCliente">Cliente</FormLabel>
                   <Combobox<Cliente>
                     items={clientes}
                     getValue={(r) => {
@@ -582,12 +582,12 @@ export function InterfazRegistroProyecto() {
               name="idSupervisor"
               render={({ field }) => (
                 <FormItem className="flex flex-col w-full">
-                  <FormLabel htmlFor="idSupervisor">Supervisores</FormLabel>
+                  <FormLabel htmlFor="idSupervisor">Supervisor</FormLabel>
                   <Combobox<Empleado>
                     items={supervisores}
                     getValue={(r) => {
                       if (r && typeof r !== "string" && "idEmpleado" in r) {
-                        return r.idEmpleado.toString();
+                        return r.idEmpleado!.toString();
                       }
                     }}
                     getLabel={(r) => r.nombre}
@@ -608,12 +608,12 @@ export function InterfazRegistroProyecto() {
               name="idJefe"
               render={({ field }) => (
                 <FormItem className="flex flex-col w-full">
-                  <FormLabel htmlFor="idJefe">Jefes</FormLabel>
+                  <FormLabel htmlFor="idJefe">Jefe</FormLabel>
                   <Combobox<Empleado>
                     items={jefes}
                     getValue={(r) => {
                       if (r && typeof r !== "string" && "idEmpleado" in r) {
-                        return r.idEmpleado.toString();
+                        return r.idEmpleado!.toString();
                       }
                     }}
                     getLabel={(r) => r.nombre}

@@ -49,7 +49,7 @@ export function ResultadosModal({ open, onClose, proyecto }: { open: boolean, on
                         <div className="ml-4">
                           {prueba.resultadosParametros.map((parametro, index) => (
                             <p key={index}>
-                              {parametro.nombre}: {parametro.resultado} {parametro.unidad} -{" "}
+                              {parametro.nombre}: {parametro.resultado} {parametro.unidades} -{" "}
                               {proyecto.especificaciones
                                 ?.filter((e) => e.idTipoPrueba === prueba.idTipoPrueba)[0]
                                 ?.parametros.filter((p) => p.idParametro === parametro.idParametro)[0]?.valorMinimo}{" "}
@@ -94,7 +94,7 @@ export function ResultadosModal({ open, onClose, proyecto }: { open: boolean, on
                             <div className="ml-4">
                               {prueba.resultadosParametros.map((parametro, index) => (
                                 <p key={index}>
-                                  {parametro.nombre}: {parametro.resultado} {parametro.unidad}
+                                  {parametro.nombre}: {parametro.resultado} {parametro.unidades}
                                 </p>
                               ))}
                             </div>

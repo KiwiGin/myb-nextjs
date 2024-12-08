@@ -110,7 +110,7 @@ const getRoute = (path: string) => {
     case "/registroEmpleado":
       return (
         <a
-          href="/"
+          href="/registroEmpleado"
           className="p-4 flex justify-center items-center bg-black text-white rounded-lg hover:bg-black hover:scale-105 transition duration-300 ease-in-out"
         >
           Registrar Empleados

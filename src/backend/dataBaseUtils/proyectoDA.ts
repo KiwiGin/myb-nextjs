@@ -1,6 +1,5 @@
 import { pool } from '../clientConnection';
 import { Proyecto } from '@/models/proyecto';
-import { EspecificacionPrueba } from '@/models/especificacion';
 import { Repuesto } from '@/models/repuesto';
 import { Cliente } from '@/models/cliente';
 import { Empleado } from '@/models/empleado';
@@ -185,7 +184,7 @@ export async function obtenerRepuestosPorProyecto(idProyecto: number): Promise<R
 // Cambiar la etapa de un proyecto
 export async function cambiarEtapaProyecto(idProyecto: number, idEtapa: number, fechaInicio: Date) {
   try {
-    await pool.query('CALL paCambiarEtapaProyecto($1, $2, $3)', [idProyecto, idEtapa, fechaInicio]);
+    await pool.query('SELECT paCambiarEtapaProyecto($1, $2, $3)', [idProyecto, idEtapa, fechaInicio]);
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al cambiar etapa de proyecto:', err.stack);
@@ -301,118 +300,6 @@ export async function obtenerEtapaPorId(idEtapa: number): Promise<string> {
   }
 }
 
-const parseParametros = (parametrosString: string) => {
-  const trimmedString = parametrosString.slice(1, -1);
-
-  const regex = /\{([^}]*)\}|"([^"]*)"/g;
-  const matches = [];
-  let match;
-
-  while ((match = regex.exec(trimmedString)) !== null) {
-    matches.push(match[1] || match[2]);
-  }
-
-  const parametros = matches.map((group) => group.split(",").map((item) => item.trim()));
-
-  return parametros;
-};
-
-// export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Proyecto> {
-//   try {
-//     const res = await pool.query('SELECT * FROM paObtenerDatosProyectoPorId($1)', [idProyecto]);
-
-//     const proyecto = res.rows[0];
-
-//     const especificaciones: EspecificacionPrueba[] = [];
-//     const repuestos: Repuesto[] = [];
-
-//     const parametrosString = proyecto.info_parametros;
-
-//     const parametros = parseParametros(parametrosString);
-    
-//     const idParametros = parametros[0].map(Number);
-//     const nombresParametros = parametros[1];
-//     const unidades = parametros[2];
-//     const valoresMaximos = parametros[3].map(Number);
-//     const valoresMinimos = parametros[4].map(Number);
-
-//     for (let i = 0; i < idParametros.length; i++) {
-//       especificaciones.push({
-//         idParametro: idParametros[i],
-//         nombre: nombresParametros[i],
-//         unidad: unidades[i],
-//         valorMaximo: valoresMaximos[i],
-//         valorMinimo: valoresMinimos[i],
-//       });
-//     }
-
-//     const res_1 = await pool.query('SELECT * FROM paObtenerRepuestosPorProyecto($1)', [idProyecto]);
-//     res_1.rows.forEach((repuesto: {
-//       id_repuesto: number,
-//       nombre: string,
-//       descripcion: string,
-//       precio: number,
-//       link_img: string,
-//       stock_disponible: number,
-//       stock_asignado: number,
-//       stock_requerido: number,
-//       cantidad: number
-//     }) => {
-//       repuestos.push({
-//         idRepuesto: repuesto.id_repuesto,
-//         nombre: repuesto.nombre,
-//         descripcion: repuesto.descripcion,
-//         precio: repuesto.precio,
-//         linkImg: repuesto.link_img,
-//         stockDisponible: repuesto.stock_disponible,
-//         stockAsignado: repuesto.stock_asignado,
-//         stockRequerido: repuesto.stock_requerido,
-//         cantidad: repuesto.cantidad
-//       });
-//     });
-
-//     const cliente = await obtenerClientesPorIds([proyecto.id_cliente]);
-//     const supervisor = await obtenerEmpleadosPorIds([proyecto.id_supervisor]);
-//     const jefe = await obtenerEmpleadosPorIds([proyecto.id_jefe]);
-//     const empleadosActuales = await obtenerEmpleadosPorIds(proyecto.ids_empleados_actuales);
-//     const etapaActual = await obtenerEtapaPorId(proyecto.id_etapa_actual);
-
-//     return {
-//       idProyecto: proyecto.id_proyecto,
-//       titulo: proyecto.titulo,
-//       descripcion: proyecto.descripcion,
-//       fechaInicio: proyecto.fecha_inicio,
-//       fechaFin: proyecto.fecha_fin,
-//       costoManoObra: proyecto.costo_mano_obra,
-//       costoRepuestos: proyecto.costo_repuestos,
-//       costoTotal: proyecto.costo_total,
-
-//       idCliente: proyecto.id_cliente,
-//       idSupervisor: proyecto.id_supervisor,
-//       idJefe: proyecto.id_jefe,
-//       idEtapaActual: proyecto.id_etapa_actual,
-
-//       cliente: cliente[0] as Cliente,
-//       supervisor: supervisor[0] as Empleado,
-//       jefe: jefe[0] as Empleado,
-//       etapaActual: etapaActual,
-
-//       repuestos: repuestos as Repuesto[],
-//       especificaciones: especificaciones as EspecificacionPrueba[],
-
-//       empleadosActuales: empleadosActuales as Empleado[]
-//     } as Proyecto;
-//   }
-//   catch (err) {
-//     if (err instanceof Error) {
-//       console.error('Error executing query', err.stack);
-//     } else {
-//       console.error('Error executing query', err);
-//     }
-//     throw err;
-//   }
-// }
-
 export async function obtenerProyectosPorJefe(idJefe: number): Promise<Proyecto[]> {
   try {
     const res = await pool.query('SELECT * FROM paObtenerProyectoPorJefe($1)', [idJefe]);
@@ -501,9 +388,11 @@ export async function asignarEmpleadosAProyecto(data: {
           throw new Error('La lista de empleados no puede estar vacía.');
       }
 
-      // Ejecuta el procedimiento almacenado
+      console.log("Asignando empleados a proyecto:", JSON.stringify(data));
+
+      // Ejecuta la función almacenada usando SELECT
       await pool.query(
-          'CALL paAsignarEmpleadosAProyecto($1, $2, $3)',
+          'SELECT paAsignarEmpleadosAProyecto($1, $2, $3)',
           [idProyecto, idEmpleados, fechaAsignacion]
       );
   } catch (err) {
@@ -516,6 +405,7 @@ export async function asignarEmpleadosAProyecto(data: {
       }
   }
 }
+
 
 export async function registrarResultados(jsonData : {
   idProyecto: number;

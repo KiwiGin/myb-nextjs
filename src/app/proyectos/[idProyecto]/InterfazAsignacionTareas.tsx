@@ -185,7 +185,7 @@ export function InterfazAsignacionTareas({
 
                   <div className="overflow-y-auto w-full">
                     <EmpleadosList
-                      messageNothingAdded="No hay repuestos"
+                      messageNothingAdded="No hay empleados disponibles"
                       empleados={field.value}
                       className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 "
                       selector={(index, item) => (
@@ -194,7 +194,7 @@ export function InterfazAsignacionTareas({
                           name={`empleados.${index}.checked`}
                           render={({ field }) => (
                             <Switch
-                              id={item.idEmpleado.toString()}
+                              id={item.idEmpleado!.toString()}
                               checked={field.value}
                               onClick={() => {
                                 field.onChange(!field.value);

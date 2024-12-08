@@ -132,7 +132,7 @@ export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
                       {prueba.resultadosParametros.map((parametro, index) => (
                         <Text style={styles.baseText} key={index}>
                           {parametro.nombre}: {parametro.resultado}{" "}
-                          {parametro.unidad} -{" "}
+                          {parametro.unidades} -{" "}
                           {
                             proyecto.especificaciones
                               ?.filter(
@@ -200,7 +200,7 @@ export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
                             (parametro, index) => (
                               <Text style={styles.baseText} key={index}>
                                 {parametro.nombre}: {parametro.resultado}{" "}
-                                {parametro.unidad}
+                                {parametro.unidades}
                               </Text>
                             )
                           )}

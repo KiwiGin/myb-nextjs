@@ -141,7 +141,6 @@ export async function obtenerTecnicosDisponibles(): Promise<Empleado[]> {
           return [];
       }
 
-      // La función almacenada devuelve un JSON con camelCase
       const empleados = res.rows[0].paobtenertecnicosdisponibles as Empleado[];
       return empleados || [];
   } catch (err) {
@@ -151,5 +150,42 @@ export async function obtenerTecnicosDisponibles(): Promise<Empleado[]> {
           console.error('Error desconocido al obtener técnicos disponibles:', err);
       }
       return [];
+  }
+}
+
+export async function registrarEmpleado(empleado: Empleado): Promise<number> {
+
+  const jsonData = {
+    usuario: empleado.usuario,
+    password: empleado.password,
+    nombre: empleado.nombre,
+    apellido: empleado.apellido,
+    correo: empleado.correo,
+    telefono: empleado.telefono,
+    direccion: empleado.direccion,
+    tipo_documento: empleado.tipoDocumento,
+    documento_identidad: empleado.documentoIdentidad,
+    rol: empleado.rol
+  }
+
+  try {
+    console.log("Registrando empleado en la base de datos:", JSON.stringify(jsonData));
+
+    // Ejecutar el procedimiento almacenado con el JSON
+    const res = await pool.query(
+      `SELECT paxregistrarempleado($1::json) AS id_empleado`,
+      [JSON.stringify(jsonData)]
+    );
+
+    // Devolver el ID del empleado creado
+    return res.rows[0].id_empleado;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("Error al registrar empleado:", err.message);
+      throw new Error(`Error al registrar empleado: ${err.message}`);
+    } else {
+      console.error("Error desconocido al registrar empleado:", err);
+      throw new Error("Error desconocido al registrar empleado.");
+    }
   }
 }

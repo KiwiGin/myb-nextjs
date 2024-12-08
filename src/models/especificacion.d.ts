@@ -7,7 +7,7 @@ export interface EspecificacionPrueba {
 export interface ParametroPrueba {
   idParametro: number;
   nombre: string;
-  unidad: string;
+  unidades: string;
   valorMaximo: number;
   valorMinimo: number;
 }

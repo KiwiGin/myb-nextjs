@@ -43,7 +43,7 @@ export function InformeSection({
               await actualizarEtapa();
             }}
           >
-            Cerrar
+            Actualizar Etapa
           </Button>
         </div>
       </Modal>

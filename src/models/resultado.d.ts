@@ -14,6 +14,6 @@ export type Resultado = {
 export type ResultadoParametro = {
   idParametro: number;
   nombre: string;
-  unidad: string;
+  unidades: string;
   resultado: number;
 }
