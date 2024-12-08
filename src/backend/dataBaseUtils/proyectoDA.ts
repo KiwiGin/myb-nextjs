@@ -1,6 +1,6 @@
 import { pool } from '../clientConnection';
 import { Proyecto } from '@/models/proyecto';
-import { EspecificacionPrueba } from '@/models/especificacion';
+// import { EspecificacionPrueba } from '@/models/especificacion';
 import { Repuesto } from '@/models/repuesto';
 import { Cliente } from '@/models/cliente';
 import { Empleado } from '@/models/empleado';
@@ -301,21 +301,21 @@ export async function obtenerEtapaPorId(idEtapa: number): Promise<string> {
   }
 }
 
-const parseParametros = (parametrosString: string) => {
-  const trimmedString = parametrosString.slice(1, -1);
+// const parseParametros = (parametrosString: string) => {
+//   const trimmedString = parametrosString.slice(1, -1);
 
-  const regex = /\{([^}]*)\}|"([^"]*)"/g;
-  const matches = [];
-  let match;
+//   const regex = /\{([^}]*)\}|"([^"]*)"/g;
+//   const matches = [];
+//   let match;
 
-  while ((match = regex.exec(trimmedString)) !== null) {
-    matches.push(match[1] || match[2]);
-  }
+//   while ((match = regex.exec(trimmedString)) !== null) {
+//     matches.push(match[1] || match[2]);
+//   }
 
-  const parametros = matches.map((group) => group.split(",").map((item) => item.trim()));
+//   const parametros = matches.map((group) => group.split(",").map((item) => item.trim()));
 
-  return parametros;
-};
+//   return parametros;
+// };
 
 // export async function obtenerDatosProyectoPorId(idProyecto: number): Promise<Proyecto> {
 //   try {
