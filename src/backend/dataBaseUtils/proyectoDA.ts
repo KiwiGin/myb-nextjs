@@ -184,7 +184,7 @@ export async function obtenerRepuestosPorProyecto(idProyecto: number): Promise<R
 // Cambiar la etapa de un proyecto
 export async function cambiarEtapaProyecto(idProyecto: number, idEtapa: number, fechaInicio: Date) {
   try {
-    await pool.query('CALL paCambiarEtapaProyecto($1, $2, $3)', [idProyecto, idEtapa, fechaInicio]);
+    await pool.query('SELECT paCambiarEtapaProyecto($1, $2, $3)', [idProyecto, idEtapa, fechaInicio]);
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al cambiar etapa de proyecto:', err.stack);
@@ -388,9 +388,9 @@ export async function asignarEmpleadosAProyecto(data: {
           throw new Error('La lista de empleados no puede estar vacía.');
       }
 
-      // Ejecuta el procedimiento almacenado
+      // Ejecuta la función almacenada usando SELECT
       await pool.query(
-          'CALL paAsignarEmpleadosAProyecto($1, $2, $3)',
+          'SELECT paAsignarEmpleadosAProyecto($1, $2, $3)',
           [idProyecto, idEmpleados, fechaAsignacion]
       );
   } catch (err) {
@@ -403,6 +403,7 @@ export async function asignarEmpleadosAProyecto(data: {
       }
   }
 }
+
 
 export async function registrarResultados(jsonData : {
   idProyecto: number;
