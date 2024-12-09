@@ -214,7 +214,6 @@ export async function obtenerEmpleadosPorIds(idsEmpleados: number[]): Promise<Em
 
     return res.rows.map((empleado: {
       id_empleado: number,
-      usuario: string,
       password: string,
       nombre: string,
       apellido: string,
@@ -228,7 +227,6 @@ export async function obtenerEmpleadosPorIds(idsEmpleados: number[]): Promise<Em
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
-        usuario: empleado.usuario,
         password: empleado.password,
         nombre: empleado.nombre,
         apellido: empleado.apellido,

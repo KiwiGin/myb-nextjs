@@ -7,7 +7,6 @@ export async function paObtenerEmpleadosPorRol(p_rol: string): Promise<Empleado[
 
     const empleados = res.rows.map((empleado: {
       id_empleado: number,
-      usuario: string,
       password: string,
       nombre: string,
       apellido: string,
@@ -21,7 +20,6 @@ export async function paObtenerEmpleadosPorRol(p_rol: string): Promise<Empleado[
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
-        usuario: empleado.usuario,
         password: empleado.password,
         nombre: empleado.nombre,
         apellido: empleado.apellido,
@@ -52,7 +50,6 @@ export async function paObtenerEmpleados(): Promise<Empleado[]> {
 
     const empleados = res.rows.map((empleado: {
       id_empleado: number,
-      usuario: string,
       password: string,
       nombre: string,
       apellido: string,
@@ -66,7 +63,6 @@ export async function paObtenerEmpleados(): Promise<Empleado[]> {
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
-        usuario: empleado.usuario,
         password: empleado.password,
         nombre: empleado.nombre,
         apellido: empleado.apellido,
@@ -97,7 +93,6 @@ export async function obtenerEmpleadosPorIds(ids: number[]): Promise<Empleado[]>
 
     const empleados = res.rows.map((empleado: {
       id_empleado: number,
-      usuario: string,
       password: string,
       nombre: string,
       apellido: string,
@@ -111,7 +106,6 @@ export async function obtenerEmpleadosPorIds(ids: number[]): Promise<Empleado[]>
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
-        usuario: empleado.usuario,
         password: empleado.password,
         nombre: empleado.nombre,
         apellido: empleado.apellido,
@@ -162,7 +156,6 @@ export async function obtenerTecnicosDisponibles(): Promise<Empleado[]> {
 export async function registrarEmpleado(empleado: Empleado): Promise<number> {
 
   const jsonData = {
-    usuario: empleado.usuario,
     password: empleado.password,
     nombre: empleado.nombre,
     apellido: empleado.apellido,

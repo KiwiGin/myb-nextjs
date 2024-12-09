@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
     try {
       // Leer los datos del cuerpo de la solicitud
       const jsonData: Empleado = await req.json();
-      console.log("Datos recibidos para registrar empleado:", jsonData);
   
       // Llamar a la función para registrar empleado
       const idEmpleado = await registrarEmpleado(jsonData);

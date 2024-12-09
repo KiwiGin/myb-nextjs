@@ -8,7 +8,6 @@ export async function GET(request: NextRequest, { params }: { params: { projectI
   try {
     // Ejecuta la función para obtener datos de proyecto por id
     const proyecto: Proyecto = await obtenerProyectoPorId(Number(projectId));
-    console.log("API - Proyecto obtenido:", proyecto);
 
     // Retorna los datos de proyecto como JSON
     return NextResponse.json(proyecto);

@@ -43,7 +43,6 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
           ...data,
         });
         setNoice(null);
-        console.log("proy: ", data);
       } catch (error) {
         if (error instanceof MyBError)
           setNoice({ type: "error", message: error.message });

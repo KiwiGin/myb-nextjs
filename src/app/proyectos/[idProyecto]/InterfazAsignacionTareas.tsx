@@ -16,7 +16,6 @@ import { z } from "zod";
 
 const empleadoSchema = z.object({
   idEmpleado: z.number(),
-  usuario: z.string(),
   nombre: z.string(),
   apellido: z.string(),
   correo: z.string(),

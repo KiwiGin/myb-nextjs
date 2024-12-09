@@ -104,7 +104,6 @@ export const CLIENTES = [
 export const EMPLEADOS = [
   {
     idEmpleado: 1,
-    usuario: "juanperez",
     password: "password123",
     nombre: "Juan",
     apellido: "Pérez",
@@ -117,7 +116,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 2,
-    usuario: "mariagomez",
     password: "password456",
     nombre: "María",
     apellido: "Gómez",
@@ -130,7 +128,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 3,
-    usuario: "carlosmartinez",
     password: "password789",
     nombre: "Carlos",
     apellido: "Martínez",
@@ -143,7 +140,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 4,
-    usuario: "anarodriguez",
     password: "password012",
     nombre: "Ana",
     apellido: "Rodríguez",
@@ -156,7 +152,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 5,
-    usuario: "luisfernandez",
     password: "password345",
     nombre: "Luis",
     apellido: "Fernández",
@@ -169,7 +164,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 6,
-    usuario: "elenarodriguez",
     password: "password678",
     nombre: "Elena",
     apellido: "Rodríguez",
@@ -182,7 +176,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 7,
-    usuario: "pedrosanchez",
     password: "password901",
     nombre: "Pedro",
     apellido: "Sánchez",
@@ -195,7 +188,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 8,
-    usuario: "luciatorres",
     password: "password234",
     nombre: "Lucía",
     apellido: "Torres",
@@ -208,7 +200,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 9,
-    usuario: "joselopez",
     password: "password567",
     nombre: "José",
     apellido: "López",
@@ -221,7 +212,6 @@ export const EMPLEADOS = [
   },
   {
     idEmpleado: 10,
-    usuario: "patriciadiaz",
     password: "password890",
     nombre: "Patricia",
     apellido: "Díaz",

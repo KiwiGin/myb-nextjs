@@ -412,7 +412,6 @@ export function InterfazRegistroProyecto() {
       }
 
       const data = await res.json();
-      console.log("Proyecto registrado:", data);
 
       form.reset();
 
