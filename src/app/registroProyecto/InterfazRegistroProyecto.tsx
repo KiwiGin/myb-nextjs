@@ -597,7 +597,7 @@ export function InterfazRegistroProyecto() {
                         return r.idEmpleado!.toString();
                       }
                     }}
-                    getLabel={(r) => r.nombre}
+                    getLabel={(r) => r.nombre + " " + r.apellido}
                     getRealValue={(r) => r}
                     onSelection={(r) => {
                       field.onChange(r.idEmpleado);
@@ -608,32 +608,6 @@ export function InterfazRegistroProyecto() {
                 </FormItem>
               )}
             />
-
-            {/* Select para Jefe */}
-            {/*<FormField
-              control={form.control}
-              name="idJefe"
-              render={({ field }) => (
-                <FormItem className="flex flex-col w-full">
-                  <FormLabel htmlFor="idJefe">Jefe</FormLabel>
-                  <Combobox<Empleado>
-                    items={jefes}
-                    getValue={(r) => {
-                      if (r && typeof r !== "string" && "idEmpleado" in r) {
-                        return r.idEmpleado!.toString();
-                      }
-                    }}
-                    getLabel={(r) => r.nombre}
-                    getRealValue={(r) => r}
-                    onSelection={(r) => {
-                      field.onChange(r.idEmpleado);
-                    }}
-                    itemName={"Jefe"}
-                  />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />*/}
           </div>
 
           {/* Costo de Mano de Obra */}

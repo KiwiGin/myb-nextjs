@@ -106,6 +106,12 @@ const proyectoSchema = z.object({
     z.object({
       idEmpleado: z.number(),
       nombre: z.string(),
+      apellido: z.string(),
+      correo: z.string(),
+      telefono: z.string(),
+      direccion: z.string(),
+      rol: z.string(),
+      linkImg: z.string().optional(),
     })
   ).nullable(),
 })
@@ -192,7 +198,7 @@ export function InterfazSeguimientoTareas() {
         <Noice noice={noice} />
       ) : proyecto ? (
         <>
-          <ProyectoHeader proyecto={proyecto} />
+          <ProyectoHeader proyecto={proyecto} showSeeDetailsBtn={true} />
           <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
           {proyecto.idEtapaActual == 3 ? (
             <InterfazSeguimientoTareasReparacion
