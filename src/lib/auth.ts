@@ -75,7 +75,6 @@ export const authorizedRoutes = {
     "/proyeccionRepuestos",
     "/proyectos",
     "/registroCliente",
-    "/registroEmpleado",
     "/registroRepuesto",
     "/registroProyecto",
     "/registroPrueba",
