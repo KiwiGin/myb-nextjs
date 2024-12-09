@@ -223,7 +223,8 @@ export async function obtenerEmpleadosPorIds(idsEmpleados: number[]): Promise<Em
       direccion: string,
       tipo_documento: string,
       documento_identidad: string,
-      rol: string
+      rol: string,
+      link_img: string
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
@@ -236,7 +237,8 @@ export async function obtenerEmpleadosPorIds(idsEmpleados: number[]): Promise<Em
         direccion: empleado.direccion,
         tipoDocumento: empleado.tipo_documento,
         documentoIdentidad: empleado.documento_identidad,
-        rol: empleado.rol
+        rol: empleado.rol,
+        linkImg: empleado.link_img
       } as Empleado;
     });
   }

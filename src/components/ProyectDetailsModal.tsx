@@ -13,7 +13,7 @@ interface ProjectDetailsModalProps {
 const ProjectDetailsModal: React.FC<ProjectDetailsModalProps> = ({ open, onClose, proyecto }) => {
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-h-[80vh] min-w-[80vw] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Detalles del Proyecto</DialogTitle>
         </DialogHeader>

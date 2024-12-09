@@ -25,6 +25,7 @@ const empleadoSchema = z.object({
   documentoIdentidad: z.string(),
   tipoDocumento: z.string(),
   rol: z.string(),
+  linkImg: z.string(),
   checked: z.boolean(),
 });
 

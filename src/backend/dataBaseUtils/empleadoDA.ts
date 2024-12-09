@@ -16,7 +16,8 @@ export async function paObtenerEmpleadosPorRol(p_rol: string): Promise<Empleado[
       direccion: string,
       tipo_documento: string,
       documento_identidad: string,
-      rol: string
+      rol: string,
+      link_img: string
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
@@ -29,7 +30,8 @@ export async function paObtenerEmpleadosPorRol(p_rol: string): Promise<Empleado[
         direccion: empleado.direccion,
         documentoIdentidad: empleado.documento_identidad,
         tipoDocumento: empleado.tipo_documento,
-        rol: empleado.rol
+        rol: empleado.rol,
+        linkImg: empleado.link_img
       };
     });
     return empleados;
@@ -59,7 +61,8 @@ export async function paObtenerEmpleados(): Promise<Empleado[]> {
       direccion: string,
       tipo_documento: string,
       documento_identidad: string,
-      rol: string
+      rol: string,
+      link_img: string
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
@@ -72,7 +75,8 @@ export async function paObtenerEmpleados(): Promise<Empleado[]> {
         direccion: empleado.direccion,
         documentoIdentidad: empleado.documento_identidad,
         tipoDocumento: empleado.tipo_documento,
-        rol: empleado.rol
+        rol: empleado.rol,
+        linkImg: empleado.link_img
       };
     });
     return empleados;
@@ -102,7 +106,8 @@ export async function obtenerEmpleadosPorIds(ids: number[]): Promise<Empleado[]>
       direccion: string,
       tipo_documento: string,
       documento_identidad: string,
-      rol: string
+      rol: string,
+      link_img: string
     }) => {
       return {
         idEmpleado: empleado.id_empleado,
@@ -115,7 +120,8 @@ export async function obtenerEmpleadosPorIds(ids: number[]): Promise<Empleado[]>
         direccion: empleado.direccion,
         documentoIdentidad: empleado.documento_identidad,
         tipoDocumento: empleado.tipo_documento,
-        rol: empleado.rol
+        rol: empleado.rol,
+        linkImg: empleado.link_img
       } as Empleado;
     });
     return empleados;
@@ -165,7 +171,8 @@ export async function registrarEmpleado(empleado: Empleado): Promise<number> {
     direccion: empleado.direccion,
     tipo_documento: empleado.tipoDocumento,
     documento_identidad: empleado.documentoIdentidad,
-    rol: empleado.rol
+    rol: empleado.rol,
+    link_img: empleado.linkImg
   }
 
   try {

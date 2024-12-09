@@ -1,4 +1,5 @@
 import { EmpleadoForm } from "@/models/empleado";
+import Image from "next/image";
 
 interface EmpleadoListProps<T extends EmpleadoForm> {
   messageNothingAdded: string;
@@ -21,22 +22,32 @@ export function EmpleadosList<T extends EmpleadoForm>({
         <p className="w-full text-center">{messageNothingAdded}</p>
       ) : (
         empleados.map((item, index) => (
-          <div key={item.idEmpleado} className="pt-2 w-full">
-            <div className="flex rounded-md border justify-between">
-              <div className="flex-col items-center space-x-4 p-4 max-h-32 w-full">
-                <div className="w-full flex flex-row items-center">
-                  <p className="text-lg font-medium leading-none">{`${item.nombre} ${item.apellido}`}</p>
-                  <div className={"gap-4 min-w-14 ml-auto"}>
-                    {selector && selector(index, item as T)}
-                  </div>
-                </div>
-                <div className="flex-1 space-y-1 overflow-x-auto w-full">
-                  <p className="text-base text-muted-foreground">
-                    {item.correo}
-                  </p>
-                </div>
+          <div key={item.idEmpleado} className="pt-4 w-full">
+            <div className="flex rounded-md border shadow-sm justify-between items-center p-4 bg-white">
+              {/* Imagen */}
+              <div className="w-16 h-16 rounded-full overflow-hidden relative bg-gray-200 border border-gray-300 shadow">
+                <Image
+                  src={item.linkImg!}
+                  alt={`Foto de ${item.nombre}`}
+                  fill
+                  className="object-cover"
+                />
               </div>
+              {/* Información del empleado */}
+              <div className="flex-1 flex flex-col pl-4">
+                <p className="text-lg font-medium leading-none text-gray-800">
+                  {`${item.nombre} ${item.apellido}`}
+                </p>
+                <p className="text-sm text-gray-600">{item.correo}</p>
+              </div>
+              {/* Selector opcional */}
+              {selector && (
+                <div className="ml-auto">
+                  {selector(index, item as T)}
+                </div>
+              )}
             </div>
+            {/* Mensaje de error */}
             {error && error(index)}
           </div>
         ))
