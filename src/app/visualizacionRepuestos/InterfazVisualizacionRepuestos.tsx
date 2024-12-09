@@ -126,7 +126,7 @@ export function InterfazVisualizacionRepuestos() {
           setNoice(null);
           resolve();
           window.location.reload();
-        }, 5000);
+        }, 2000);
       });
     } catch (error) {
       console.error("Error en el envío de datos:", error);

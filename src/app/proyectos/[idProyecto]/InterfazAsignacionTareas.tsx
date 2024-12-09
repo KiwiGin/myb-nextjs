@@ -145,7 +145,7 @@ export function InterfazAsignacionTareas({
           setNoice(null);
           resolve();
           window.location.reload();
-        }, 3000);
+        }, 2000);
       });
     } catch (error) {
       if (error instanceof MyBError)

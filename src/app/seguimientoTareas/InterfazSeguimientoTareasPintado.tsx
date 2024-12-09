@@ -35,12 +35,6 @@ export function InterfazSeguimientoTareasPintado({
   
       if (!response.ok) throw new Error("Error al cambiar de etapa");
 
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 2000);
-      });
-
       setNoice({
         type: "success",
         message: "Tarea de pintado y embalado completada con éxito",
