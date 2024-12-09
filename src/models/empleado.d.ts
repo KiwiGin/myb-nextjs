@@ -1,6 +1,5 @@
 export interface Empleado {
   idEmpleado?: number;
-  usuario?: string;
   password?: string;
   nombre: string;
   apellido?: string;

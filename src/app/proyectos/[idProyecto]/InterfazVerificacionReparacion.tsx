@@ -190,7 +190,6 @@ export function InterfazVerificacionReparacion({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          console.log("Formulario antes del envío:", form.getValues());
           form.handleSubmit(onSubmit)(event);
         }}
         className="w-full mb-6"

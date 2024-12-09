@@ -16,7 +16,6 @@ import { z } from "zod";
 
 const empleadoSchema = z.object({
   idEmpleado: z.number(),
-  usuario: z.string(),
   nombre: z.string(),
   apellido: z.string(),
   correo: z.string(),
@@ -90,10 +89,6 @@ export function InterfazAsignacionTareas({
     fetchTecnicosDisponibles();
   }, [form]);
 
-  useEffect(() => {
-    console.log(form.formState.errors.empleados);
-  }, [form.formState.errors.empleados]);
-
   const asignarTareas = async () => {
     const data = {
       idProyecto: proyecto.idProyecto,
@@ -126,11 +121,6 @@ export function InterfazAsignacionTareas({
         .filter((empleado) => empleado.checked)
         .map((empleado) => empleado.idEmpleado);
       const { idProyecto, idEtapaActual } = proyecto;
-      console.log({
-        idProyecto,
-        idEtapaActual,
-        empleados,
-      });
 
       await asignarTareas();
 

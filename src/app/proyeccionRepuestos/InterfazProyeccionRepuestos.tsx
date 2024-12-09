@@ -145,11 +145,6 @@ export function InterfazProyeccionRepuestos() {
     }
   };
 
-  useEffect(() => {
-    console.log("Errors");
-    console.log(form.formState.errors.repuestos?.[0]?.quantity);
-  }, [form.formState.errors]);
-
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}

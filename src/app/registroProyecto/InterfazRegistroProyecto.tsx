@@ -412,7 +412,6 @@ export function InterfazRegistroProyecto() {
       }
 
       const data = await res.json();
-      console.log("Proyecto registrado:", data);
 
       form.reset();
 
@@ -437,11 +436,6 @@ export function InterfazRegistroProyecto() {
       console.error("Error al registrar el proyecto:", error);
     }
   };
-
-  useEffect(() => {
-    console.log("Errors");
-    console.log(form.formState.errors.repuestos);
-  }, [form.formState.errors]);
 
   return (
     <div className="p-4 max-w-lg mx-auto">

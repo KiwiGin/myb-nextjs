@@ -137,11 +137,6 @@ export function InterfazVisualizacionRepuestos() {
     }
   };
 
-  useEffect(() => {
-    console.log("Errors");
-    console.log(form.formState.errors.repuestos);
-  }, [form.formState.errors]);
-
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}

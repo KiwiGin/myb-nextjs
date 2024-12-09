@@ -20,7 +20,6 @@ export async function registrarTipoPrueba(tipoPrueba: TipoPrueba): Promise<{ idT
 export async function registrarParametro(parametro: Parametro) {
     try {
         await pool.query('CALL paCrearParametro($1, $2, $3)', [parametro.nombre, parametro.unidades, parametro.idTipoPrueba]);
-        console.log('Parametro insertado exitosamente');
     } catch (err) {
         if (err instanceof Error) {
             console.error('Error al insertar parametro:', err.stack);

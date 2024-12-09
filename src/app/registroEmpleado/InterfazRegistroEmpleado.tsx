@@ -15,7 +15,6 @@ import { ImageLoader } from "@/components/ImageComponents/ImageLoader";
 
 // Definir el esquema de validación con zod
 const empleadoSchema = z.object({
-  usuario: z.string().min(1, { message: "El usuario es requerido" }),
   password: z
     .string()
     .min(6, { message: "La contraseña debe tener al menos 6 caracteres" }),
@@ -115,19 +114,6 @@ export function InterfazRegistroEmpleado() {
       <h2 className="text-lg font-semibold mb-4">Registro de Empleado</h2>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="mb-4">
-          <Label htmlFor="usuario">Usuario</Label>
-          <Input
-            id="usuario"
-            type="text"
-            placeholder="Usuario"
-            {...register("usuario")}
-          />
-          {errors.usuario && (
-            <p className="text-red-500">{errors.usuario.message}</p>
-          )}
-        </div>
-
         <div className="mb-4">
           <Label htmlFor="password">Contraseña</Label>
           <Input

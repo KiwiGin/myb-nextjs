@@ -19,7 +19,6 @@ export async function POST(req: NextRequest) {
     const result = await uploadImage(blob);
     // Debe enviar el repuesto con la imagen como un url
     repuesto.linkImg = result?.downloadURL || '';
-    // console.log(repuesto);
     await registrarRepuesto(repuesto);
     return NextResponse.json({ message: 'Repuesto insertado exitosamente' });
 }

@@ -43,7 +43,6 @@ export async function registrarRepuesto(repuesto: Repuesto) {
       'CALL paRegistrarRepuesto($1, $2, $3, $4, $5)', 
       [repuesto.nombre, repuesto.precio, repuesto.descripcion, repuesto.linkImg || null, repuesto.stockActual || 0]
     );
-    console.log('Repuesto insertado exitosamente');
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al insertar repuesto:', err.stack);
@@ -58,7 +57,6 @@ export async function registrarRepuesto(repuesto: Repuesto) {
 export async function actualizarStockRepuesto(cantidadObtenida: number, idRepuesto: number) {
   try {
     await pool.query('CALL paActualizarStock($1, $2)', [idRepuesto, cantidadObtenida]);
-    console.log('Repuesto actualizado exitosamente');
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al actualizar repuesto:', err.stack);
@@ -76,7 +74,6 @@ export async function actualizarStockRepuestos(repuestos: { idRepuesto: number, 
     for (const repuesto of repuestos) {
       await pool.query('CALL paActualizarStock($1, $2)', [repuesto.idRepuesto, repuesto.cantidadObtenida]);
     }
-    console.log('Repuestos actualizados exitosamente');
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al actualizar repuestos:', err.stack);
@@ -129,7 +126,6 @@ export async function agregarRepuestosSolicitados(repuestos: { idRepuesto: numbe
     const idsRepuestos = repuestos.map(repuesto => repuesto.idRepuesto);
     const cantidades = repuestos.map(repuesto => repuesto.cantidadSolicitada);
     await pool.query('CALL paAgregarRepuestosSolicitados($1, $2)', [idsRepuestos, cantidades]);
-    console.log('Repuestos solicitados agregados exitosamente');
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al agregar repuestos solicitados:', err.stack);

@@ -18,7 +18,6 @@ export async function POST(req: NextRequest) {
       }[]
   };
   const jsonData : ResultadosPruebaForm = await req.json();
-  console.log("jsonData", jsonData);
   await registrarFeedback(jsonData);
   return NextResponse.json({ message: 'Resultados registrados exitosamente' });
 }

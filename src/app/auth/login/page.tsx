@@ -60,8 +60,6 @@ export default function Page() {
           type: "error",
           message: "Ocurrió un error inesperado",
         });
-
-      console.log(error);
     }
   };
 
