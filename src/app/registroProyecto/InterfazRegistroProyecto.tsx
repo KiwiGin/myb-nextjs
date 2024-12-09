@@ -154,6 +154,8 @@ const proyectoSchema = z.object({
 export type RegistroProyecto = z.infer<typeof proyectoSchema>;
 
 export function InterfazRegistroProyecto() {
+  const idJefeLogueado = 1;
+
   const form = useForm<RegistroProyecto>({
     resolver: zodResolver(proyectoSchema),
     defaultValues: {
@@ -163,7 +165,7 @@ export function InterfazRegistroProyecto() {
       fechaFin: new Date(),
       idCliente: -1,
       idSupervisor: -1,
-      idJefe: -1,
+      idJefe: idJefeLogueado,
       idEtapaActual: 1,
       costoManoObra: 0,
       repuestos: [],
@@ -183,7 +185,7 @@ export function InterfazRegistroProyecto() {
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [supervisores, setSupervisores] = useState<Empleado[]>([]);
-  const [jefes, setJefes] = useState<Empleado[]>([]);
+  //const [jefes, setJefes] = useState<Empleado[]>([]);
   const [repuestos, setRepuestos] = useState<RepuestoForm[]>([]);
   const [pruebas, setPruebas] = useState<TipoPruebaForms[]>([]);
   const [openRepuestos, setOpenRepuestos] = useState(false);
@@ -222,7 +224,7 @@ export function InterfazRegistroProyecto() {
     setSupervisores(data);
   };
 
-  const fetchJefes = async () => {
+  /* const fetchJefes = async () => {
     setNoice({
       type: "loading",
       message: "Cargando datos de jefes...",
@@ -235,7 +237,7 @@ export function InterfazRegistroProyecto() {
     const data = await res.json();
     setJefes(data);
   };
-
+ */
   const fetchRepuestos = async () => {
     setNoice({
       type: "loading",
@@ -300,7 +302,7 @@ export function InterfazRegistroProyecto() {
         await Promise.all([
           fetchClientes(),
           fetchSupervisores(),
-          fetchJefes(),
+          //fetchJefes(),
           fetchRepuestos(),
           fetchPruebas(),
         ]);
@@ -608,7 +610,7 @@ export function InterfazRegistroProyecto() {
             />
 
             {/* Select para Jefe */}
-            <FormField
+            {/*<FormField
               control={form.control}
               name="idJefe"
               render={({ field }) => (
@@ -631,7 +633,7 @@ export function InterfazRegistroProyecto() {
                   <FormMessage />
                 </FormItem>
               )}
-            />
+            />*/}
           </div>
 
           {/* Costo de Mano de Obra */}
