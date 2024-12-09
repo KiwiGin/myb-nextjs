@@ -20,12 +20,6 @@ const clienteSchema = z.object({
   direccion: z.string().min(1, { message: "La dirección es requerida" }),
   telefono: z.string().min(7, { message: "El teléfono es requerido" }),
   correo: z.string().email({ message: "Correo electrónico inválido" }),
-  documentoDeIdentidad: z
-    .string()
-    .min(1, { message: "El documento de identidad es requerido" }),
-  tipoDeDocumento: z
-    .string()
-    .min(1, { message: "El tipo de documento es requerido" }),
 });
 
 // Tipos derivados del esquema
@@ -149,34 +143,6 @@ export function InterfazRegistroCliente() {
           />
           {errors.correo && (
             <p className="text-red-500">{errors.correo.message}</p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <Label htmlFor="documentoDeIdentidad">Documento de Identidad</Label>
-          <Input
-            id="documentoDeIdentidad"
-            type="text"
-            placeholder="Documento de identidad"
-            {...register("documentoDeIdentidad")}
-          />
-          {errors.documentoDeIdentidad && (
-            <p className="text-red-500">
-              {errors.documentoDeIdentidad.message}
-            </p>
-          )}
-        </div>
-
-        <div className="mb-4">
-          <Label htmlFor="tipoDeDocumento">Tipo de Documento</Label>
-          <Input
-            id="tipoDeDocumento"
-            type="text"
-            placeholder="Tipo de documento"
-            {...register("tipoDeDocumento")}
-          />
-          {errors.tipoDeDocumento && (
-            <p className="text-red-500">{errors.tipoDeDocumento.message}</p>
           )}
         </div>
 

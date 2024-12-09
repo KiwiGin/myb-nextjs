@@ -12,8 +12,6 @@ export async function obtenerClientes(): Promise<Cliente[]> {
       direccion: string,
       telefono: string,
       correo: string,
-      documento_de_identidad: string,
-      tipo_de_documento_de_identidad: string
     }) => {
       return {
         idCliente: cliente.id_cliente,
@@ -22,8 +20,6 @@ export async function obtenerClientes(): Promise<Cliente[]> {
         direccion: cliente.direccion,
         telefono: cliente.telefono,
         correo: cliente.correo,
-        documentoIdentidad: cliente.documento_de_identidad,
-        tipoDocumento: cliente.tipo_de_documento_de_identidad
       };
     });
     return clientes;
@@ -39,7 +35,7 @@ export async function obtenerClientes(): Promise<Cliente[]> {
 
 export async function insertarCliente(cliente: Cliente) {
   try {
-    await pool.query('CALL paCrearCliente($1, $2, $3, $4, $5, $6, $7)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo, cliente.documentoIdentidad, cliente.tipoDocumento]);
+    await pool.query('CALL paCrearCliente($1, $2, $3, $4, $5)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo]);
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al insertar cliente:', err.stack);
@@ -61,8 +57,6 @@ export async function obtenerClientesPorIds(ids: number[]): Promise<Cliente[]> {
       direccion: string,
       telefono: string,
       correo: string,
-      documento_de_identidad: string,
-      tipo_de_documento_de_identidad: string
     }) => {
       return {
         idCliente: cliente.id_cliente,
@@ -71,8 +65,6 @@ export async function obtenerClientesPorIds(ids: number[]): Promise<Cliente[]> {
         direccion: cliente.direccion,
         telefono: cliente.telefono,
         correo: cliente.correo,
-        documentoIdentidad: cliente.documento_de_identidad,
-        tipoDocumento: cliente.tipo_de_documento_de_identidad
       } as Cliente;
     });
     return clientes;

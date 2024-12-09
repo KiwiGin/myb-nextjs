@@ -261,8 +261,6 @@ export async function obtenerClientesPorIds(idsClientes: number[]): Promise<Clie
       direccion: string,
       telefono: string,
       correo: string,
-      documento_de_identidad: string,
-      tipo_de_documento_de_identidad: string
     }) => {
       return {
         idCliente: cliente.id_cliente,
@@ -271,8 +269,6 @@ export async function obtenerClientesPorIds(idsClientes: number[]): Promise<Clie
         direccion: cliente.direccion,
         telefono: cliente.telefono,
         correo: cliente.correo,
-        documentoIdentidad: cliente.documento_de_identidad,
-        tipoDocumento: cliente.tipo_de_documento_de_identidad
       } as Cliente;
     });
   }
