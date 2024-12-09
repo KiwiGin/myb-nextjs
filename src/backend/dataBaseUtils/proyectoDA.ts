@@ -388,8 +388,6 @@ export async function asignarEmpleadosAProyecto(data: {
           throw new Error('La lista de empleados no puede estar vacía.');
       }
 
-      console.log("Asignando empleados a proyecto:", JSON.stringify(data));
-
       // Ejecuta la función almacenada usando SELECT
       await pool.query(
           'SELECT paAsignarEmpleadosAProyecto($1, $2, $3)',
@@ -420,8 +418,6 @@ export async function registrarResultados(jsonData : {
   }[];
 }) {
   try {
-
-      console.log('Registrando resultados db:', JSON.stringify(jsonData));
 
       // Ejecutar el procedimiento almacenado con el JSON
       const res = await pool.query(
@@ -458,8 +454,6 @@ export async function registrarFeedback(jsonData: {
     }[]
 }) {
   try {
-      console.log('Registrando feedback db:', JSON.stringify(jsonData));
-
       // Ejecutar el procedimiento almacenado con el JSON
       const res = await pool.query(
           `SELECT paregistrarfeedback($1::json) AS id_feedback`,

@@ -40,7 +40,6 @@ export async function obtenerClientes(): Promise<Cliente[]> {
 export async function insertarCliente(cliente: Cliente) {
   try {
     await pool.query('CALL paCrearCliente($1, $2, $3, $4, $5, $6, $7)', [cliente.nombre, cliente.ruc, cliente.direccion, cliente.telefono, cliente.correo, cliente.documentoIdentidad, cliente.tipoDocumento]);
-    console.log('Cliente insertado exitosamente');
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al insertar cliente:', err.stack);

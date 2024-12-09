@@ -107,8 +107,6 @@ export function InterfazSeguimientoTareasReparacion({
     setNoice({ type: "loading", message: "Registrando resultados..." });
 
     try {
-      console.log("Datos enviados a la API:", data);
-
       const res = await fetch("/api/proyecto/reparando", {
         method: "POST",
         body: JSON.stringify(data),
@@ -142,10 +140,6 @@ export function InterfazSeguimientoTareasReparacion({
     }
   };
 
-  useEffect(() => {
-    console.log("Errores del formulario:", form.formState.errors);
-  }, [form.formState.errors]);
-
   return (
     <Form {...form}>
       {noice && <Noice noice={noice} />}
@@ -163,7 +157,6 @@ export function InterfazSeguimientoTareasReparacion({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          console.log("Formulario antes del envío:", form.getValues());
           form.handleSubmit(onSubmit)(event);
         }}
         className="w-full"

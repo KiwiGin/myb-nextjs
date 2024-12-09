@@ -89,10 +89,6 @@ export function InterfazAsignacionTareas({
     fetchTecnicosDisponibles();
   }, [form]);
 
-  useEffect(() => {
-    console.log(form.formState.errors.empleados);
-  }, [form.formState.errors.empleados]);
-
   const asignarTareas = async () => {
     const data = {
       idProyecto: proyecto.idProyecto,
@@ -125,11 +121,6 @@ export function InterfazAsignacionTareas({
         .filter((empleado) => empleado.checked)
         .map((empleado) => empleado.idEmpleado);
       const { idProyecto, idEtapaActual } = proyecto;
-      console.log({
-        idProyecto,
-        idEtapaActual,
-        empleados,
-      });
 
       await asignarTareas();
 

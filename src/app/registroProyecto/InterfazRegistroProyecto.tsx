@@ -437,11 +437,6 @@ export function InterfazRegistroProyecto() {
     }
   };
 
-  useEffect(() => {
-    console.log("Errors");
-    console.log(form.formState.errors.repuestos);
-  }, [form.formState.errors]);
-
   return (
     <div className="p-4 max-w-lg mx-auto">
       {noice && <Noice noice={noice} />}
