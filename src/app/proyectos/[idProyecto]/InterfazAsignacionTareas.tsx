@@ -25,6 +25,7 @@ const empleadoSchema = z.object({
   documentoIdentidad: z.string(),
   tipoDocumento: z.string(),
   rol: z.string(),
+  linkImg: z.string(),
   checked: z.boolean(),
 });
 
@@ -145,7 +146,7 @@ export function InterfazAsignacionTareas({
           setNoice(null);
           resolve();
           window.location.reload();
-        }, 3000);
+        }, 2000);
       });
     } catch (error) {
       if (error instanceof MyBError)

@@ -10,6 +10,7 @@ export interface Empleado {
   tipoDocumento?: string;
   documentoIdentidad?: string;
   rol?: string;
+  linkImg?: string;
 }
 
 export interface EmpleadoForm extends Omit<Empleado, "password"> {

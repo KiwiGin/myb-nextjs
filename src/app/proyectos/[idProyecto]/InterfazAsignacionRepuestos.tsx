@@ -149,14 +149,16 @@ export function InterfazAsignacionRepuestos({
               repuestos={repuestos}
               className="w-full"
             />
-            <Button
-              onClick={() => {
-                pedirRepuestos();
-                setIsDialogOpen(false);
-              }}
-            >
+            {available === "No disponibles" && (
+              <Button
+                onClick={() => {
+                  pedirRepuestos();
+                  setIsDialogOpen(false);
+                }}
+              >
               Pedir repuestos
             </Button>
+            )}
           </div>
         </Modal>
       </div>

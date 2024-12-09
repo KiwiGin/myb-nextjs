@@ -94,7 +94,24 @@ const EmpleadosInfo: React.FC<EmpleadosInfoProps> = ({ empleados }) => {
         <ul>
           {empleados.map((empleado) => (
             <li key={empleado.idEmpleado}>
-              {empleado.nombre} {empleado.apellido} - {empleado.rol || 'Sin rol'}
+            <div className="flex rounded-md border shadow-sm justify-between items-center p-4 bg-white">
+              {/* Imagen */}
+              <div className="w-16 h-16 rounded-full overflow-hidden relative bg-gray-200 border border-gray-300 shadow">
+                <Image
+                  src={empleado.linkImg!}
+                  alt={`Foto de ${empleado.nombre}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              {/* Información del empleado */}
+              <div className="flex-1 flex flex-col pl-4">
+                <p className="text-lg font-medium leading-none text-gray-800">
+                  {`${empleado.nombre} ${empleado.apellido}`}
+                </p>
+                <p className="text-sm text-gray-600">{empleado.correo}</p>
+              </div>
+            </div>
             </li>
           ))}
         </ul>

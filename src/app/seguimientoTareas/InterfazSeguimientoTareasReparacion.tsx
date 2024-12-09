@@ -131,7 +131,7 @@ export function InterfazSeguimientoTareasReparacion({
           setNoice(null);
           resolve();
           window.location.reload();
-        }, 3000);
+        }, 2000);
       });
     } catch (error) {
       setNoice({

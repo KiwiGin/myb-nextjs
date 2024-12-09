@@ -30,12 +30,6 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
 
       if (!response.ok) throw new MyBError("Error al cambiar de etapa");
 
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 5000);
-      });
-
       setNoice({
         type: "success",
         message: "Etapa actualizada exitosamente",

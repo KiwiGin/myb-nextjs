@@ -29,12 +29,6 @@ export function InterfazGenerarVentas({ proyecto }: { proyecto: Proyecto }) {
       });
       if (!response.ok) throw new MyBError("Error al cambiar de etapa");
 
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 5000);
-      });
-
       setNoice({
         type: "success",
         message: "Etapa actualizada exitosamente",
@@ -46,7 +40,7 @@ export function InterfazGenerarVentas({ proyecto }: { proyecto: Proyecto }) {
           setNoice(null);
           resolve();
           window.location.reload();
-        }, 5000);
+        }, 2000);
       });
     } catch (error) {
       if (error instanceof MyBError)
