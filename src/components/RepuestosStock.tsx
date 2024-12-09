@@ -10,7 +10,7 @@ interface RepuestosStockProps {
   setOpen: (open: boolean) => void;
   repuestos: RepuestoForm[];
   handleSelectRepuesto: (prueba: RepuestoForm) => void;
-  handleUnselectRepuesto: (prueba: RepuestoForm, index: number) => void;
+  handleUnselectRepuesto: (prueba: RepuestoForm) => void;
 }
 
 export function RepuestosStock({
@@ -44,7 +44,7 @@ export function RepuestosStock({
                   if (!item.checked) {
                     handleSelectRepuesto(item);
                   } else {
-                    handleUnselectRepuesto(item, index);
+                    handleUnselectRepuesto(item);
                   }
                 }}
               />

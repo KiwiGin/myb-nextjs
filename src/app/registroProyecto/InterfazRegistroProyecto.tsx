@@ -324,13 +324,18 @@ export function InterfazRegistroProyecto() {
     repuestoField.append({ ...repuesto, checked: true, quantity: 1 });
   };
 
-  const handleUnselectRepuesto = (repuesto: RepuestoForm, index: number) => {
+  const handleUnselectRepuesto = (repuesto: RepuestoForm) => {
     setRepuestos((prev) =>
       prev.map((r) =>
         r.idRepuesto === repuesto.idRepuesto ? { ...r, checked: false } : r
       )
     );
-    repuestoField.remove(index);
+
+    const repuesto_to_remove = repuestoField.fields.findIndex(
+      (r) => r.idRepuesto === repuesto.idRepuesto
+    );
+
+    repuestoField.remove(repuesto_to_remove);
   };
 
   const handleSelectPrueba = (prueba: TipoPruebaForms) => {
@@ -694,7 +699,7 @@ export function InterfazRegistroProyecto() {
                     <Button
                       className="absolute right-0 top-0 z-50"
                       onClick={() => {
-                        handleUnselectRepuesto(item, index);
+                        handleUnselectRepuesto(item);
                       }}
                       type="button"
                     >
