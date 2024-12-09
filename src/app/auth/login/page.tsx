@@ -18,7 +18,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const loginSchema = z.object({
-  username: z.string().min(1, { message: "El usuario es requerido" }),
+  correo: z.string().min(1, { message: "El correo es requerido" }),
   password: z.string().min(1, { message: "La contraseña es requerida" }),
 });
 
@@ -30,24 +30,24 @@ export default function Page() {
   const form = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      username: "",
+      correo: "",
       password: "",
     },
   });
 
   const onSubmit = async (data: LoginData) => {
     try {
-      const { username, password } = data;
+      const { correo, password } = data;
       await signIn("credentials", {
-        username,
+        correo,
         password,
         redirect: true,
       });
     } catch (error) {
       if (error instanceof MyBError) {
         if (error.message === "user_not_found") {
-          form.setError("username", {
-            message: "Usuario o contraseña no encontrados",
+          form.setError("correo", {
+            message: "Correo o contraseña no encontrados",
           });
           return;
         }
@@ -80,11 +80,11 @@ export default function Page() {
 
             <h1 className="text-2xl font-bold text-center">Iniciar Sesión</h1>
             <FormField
-              name="username"
+              name="correo"
               control={form.control}
               render={({ field }) => (
                 <FormItem className="w-1/2 md:w-2/3">
-                  <FormLabel>Usuario</FormLabel>
+                  <FormLabel>Correo</FormLabel>
                   <Input {...field} />
                   <FormMessage />
                 </FormItem>

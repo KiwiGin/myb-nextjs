@@ -16,13 +16,22 @@ export function ProyectosList({
       {proyectos.map((proyecto) => (
         <Card
           key={proyecto.idProyecto}
-          className="p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 hover:cursor-pointer"
+          className="p-4 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 hover:shadow-md transition-shadow duration-200 hover:cursor-pointer flex flex-col justify-between h-full"
           onClick={() => {
             router.push(`/proyectos/${proyecto.idProyecto}`);
           }}
         >
-          <ProyectoHeader proyecto={proyecto} />
-          <CardDescription>{proyecto.descripcion}</CardDescription>
+          <div>
+            <ProyectoHeader proyecto={proyecto} showSeeDetailsBtn={false} />
+          </div>
+          <CardDescription className="mt-auto">
+            <div className="text-lg">
+              {proyecto.descripcion}
+            </div>
+            <div className="flex justify-end">
+              {proyecto.etapaActual}
+            </div>
+          </CardDescription>
         </Card>
       ))}
     </div>

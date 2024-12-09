@@ -4,8 +4,8 @@ import MyBError from "@/lib/mybError";
 
 import { USUARIOS } from "@/models/MOCKUPS";
 
-const getUserByUsername = async (username: string) => {
-  return USUARIOS.find((user) => user.username === username);
+const getUserByCorreo = async (correo: string) => {
+  return USUARIOS.find((user) => user.correo === correo);
 };
 
 export const authOptions: NextAuthOptions = {
@@ -23,7 +23,7 @@ export const authOptions: NextAuthOptions = {
           password: string;
         };
 
-        const user = await getUserByUsername(correo);
+        const user = await getUserByCorreo(correo);
 
         if (!user) {
           throw new MyBError("user_not_found");
@@ -36,8 +36,8 @@ export const authOptions: NextAuthOptions = {
         }
  */
         return {
-          id: user.idUsuario,
-          correo: user.username,
+          id: user.idEmpleado,
+          correo: user.correo,
           created_at: new Date().toISOString(),
           rol: user.rol as "admin" | "jefe" | "supervisor" | "tecnico",
         };
@@ -75,6 +75,7 @@ export const authorizedRoutes = {
     "/proyeccionRepuestos",
     "/proyectos",
     "/registroCliente",
+    "/registroEmpleado",
     "/registroRepuesto",
     "/registroProyecto",
     "/registroPrueba",
@@ -85,6 +86,7 @@ export const authorizedRoutes = {
     "/proyeccionRepuestos",
     "/proyectos",
     "/registroCliente",
+    "/registroEmpleado",
     "/registroRepuesto",
     "/registroProyecto",
     "/registroPrueba",

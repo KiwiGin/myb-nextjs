@@ -8,6 +8,7 @@ import Image from 'next/image';
 import { EspecificacionPrueba } from '@/models/especificacion';
 import { Button } from './ui/button';
 import { ResultadosModal } from './ResultadosModal';
+import { EmpleadoPictureCard } from './EmpleadoPictureCard';
 
 
 interface ProyectoDetalleProps {
@@ -96,14 +97,7 @@ const EmpleadosInfo: React.FC<EmpleadosInfoProps> = ({ empleados }) => {
             <li key={empleado.idEmpleado}>
             <div className="flex rounded-md border shadow-sm justify-between items-center p-4 bg-white">
               {/* Imagen */}
-              <div className="w-16 h-16 rounded-full overflow-hidden relative bg-gray-200 border border-gray-300 shadow">
-                <Image
-                  src={empleado.linkImg!}
-                  alt={`Foto de ${empleado.nombre}`}
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              <EmpleadoPictureCard empleado={empleado} />
               {/* Información del empleado */}
               <div className="flex-1 flex flex-col pl-4">
                 <p className="text-lg font-medium leading-none text-gray-800">

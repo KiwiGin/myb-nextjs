@@ -291,7 +291,7 @@ export async function obtenerClientesPorIds(idsClientes: number[]): Promise<Clie
 export async function obtenerEtapaPorId(idEtapa: number): Promise<string> {
   try {
     const res = await pool.query('SELECT * FROM paObtenerEtapaPorId($1)', [idEtapa]);
-    return res.rows[0].nombre;
+    return res.rows[0].nombre_etapa;
   } catch (err) {
     if (err instanceof Error) {
       console.error('Error al obtener etapa por id:', err.stack);
@@ -325,7 +325,7 @@ export async function obtenerProyectosPorJefe(idJefe: number): Promise<Proyecto[
         obtenerEmpleadosPorIds([proyecto.id_supervisor]),
         obtenerEmpleadosPorIds([proyecto.id_jefe]),
         obtenerEmpleadosPorIds(proyecto.ids_empleados_actuales),
-        obtenerEtapaPorId(proyecto.id_etapa_actual)
+        obtenerEtapaPorId(Number(proyecto.id_etapa_actual))
       ]);
 
       return {

@@ -10,6 +10,7 @@ export interface Empleado {
   tipoDocumento?: string;
   documentoIdentidad?: string;
   rol?: string;
+  imgBase64?: string;
   linkImg?: string;
 }
 

@@ -13,6 +13,8 @@ import { Noice } from "@/components/Noice";
 import MyBError from "@/lib/mybError";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { InterfazReparando } from "./InterfazReparando";
+import { InterfazPintadoYEmbalado } from "./InterfazPintadoYEmbalado";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
@@ -80,7 +82,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
         </Button>
       </div>
 
-      <ProyectoHeader proyecto={proyecto} />
+      <ProyectoHeader proyecto={proyecto} showSeeDetailsBtn={true} />
       <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
       <div className="w-full">
         {empleadoRol == "jefe" ? (
@@ -110,6 +112,11 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
             <InterfazGenerarCC proyecto={proyecto} />
           ) : null)
         )}
+        {proyecto.idEtapaActual == 3 ? (
+          <InterfazReparando proyecto={proyecto}/>
+        ) : proyecto.idEtapaActual == 7 ? (
+          <InterfazPintadoYEmbalado proyecto={proyecto}/>
+        ) : null}
       </div>
     </div>
   );

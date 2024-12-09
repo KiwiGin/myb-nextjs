@@ -3,33 +3,42 @@ import { Proyecto } from "@/models/proyecto";
 import { useState } from "react";
 import ProjectDetailsModal from "./ProyectDetailsModal";
 import { Button } from "./ui/button";
+import { EmpleadoPictureCard } from "./EmpleadoPictureCard";
 
-export function ProyectoHeader({ proyecto }: { proyecto: Proyecto }) {
+export function ProyectoHeader({
+  proyecto,
+  showSeeDetailsBtn,
+}: {
+  proyecto: Proyecto;
+  showSeeDetailsBtn: boolean;
+}) {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <div className="flex flex-row justify-between items-center w-full">
+    <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
       <ProjectDetailsModal
         open={dialogOpen}
         onClose={() => setDialogOpen(false)}
         proyecto={proyecto}
       />
-      <div className="flex flex-col gap-4 items-start w-3/4">
-        <div className="flex flex-row space-x-4">
+      {/* Título y detalles del proyecto */}
+      <div className="flex flex-col gap-2 w-full md:w-auto">
+        <div className="flex flex-row items-center justify-between gap-4">
           <h1 className="font-bold text-3xl">{proyecto.titulo}</h1>
-          <Button onClick={() => setDialogOpen(true)}>Ver Detalles</Button>
+          {showSeeDetailsBtn && (
+            <Button onClick={() => setDialogOpen(true)}>Ver Detalles</Button>
+          )}
         </div>
-        <h4 className="text-xl">{proyecto.cliente?.nombre}</h4>
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <h4 className="text-xl">{proyecto.cliente?.nombre}</h4>
+        </div>
       </div>
-      {/* <div className="flex gap-2 h-20 self-start">
-        {proyecto.empleados?.map((empleado) => (
-          <PictureCard
-            key={empleado.nombre}
-            name={empleado.nombre}
-            imageSrc={empleado.profilePic}
-          />
+      {/* Empleados actuales */}
+      <div className="flex gap-2 flex-wrap md:flex-nowrap h-auto md:h-20">
+        {proyecto.empleadosActuales?.map((empleado) => (
+          <EmpleadoPictureCard key={empleado.idEmpleado} empleado={empleado} />
         ))}
-      </div> */}
+      </div>
     </div>
   );
 }

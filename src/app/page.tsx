@@ -84,7 +84,7 @@ export default function Home() {
             } absolute -left-12 z-10 text-base bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
           >
             <div className="w-full flex flex-col py-4 px-6">
-              <h1 className="font-semibold">Nombre</h1>
+              <h1 className="font-semibold">Correo</h1>
               <p className="font-thin">{session?.user.correo}</p>
               <h1 className="font-semibold mt-4">Rol</h1>
               <p className="font-thin">{session?.user.rol}</p>
