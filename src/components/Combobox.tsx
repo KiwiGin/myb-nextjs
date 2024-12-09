@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
 
 import { cn } from "@/lib/utils";
@@ -25,6 +25,7 @@ interface ComboboxProps<T> {
   itemName: string;
   onSelection?: (value: T) => void;
   initialValue?: T | undefined;
+  originalValue?: string;
 }
 
 export function Combobox<T>({
@@ -34,6 +35,7 @@ export function Combobox<T>({
   getRealValue,
   itemName,
   onSelection,
+  originalValue,
   initialValue = undefined,
 }: ComboboxProps<T>) {
   const [open, setOpen] = useState(false);
@@ -48,6 +50,12 @@ export function Combobox<T>({
     }
     return null;
   };
+
+  useEffect(() => {
+    if (originalValue) {
+      setValue(originalValue);
+    }
+  }, [originalValue]);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

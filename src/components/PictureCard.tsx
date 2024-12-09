@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Image, { ImageProps } from "next/image";
+import { cn } from "@/lib/utils";
 
 interface PictureCardProps extends React.HTMLAttributes<HTMLDivElement> {
   imageSrc: string; // Fuente de la imagen
@@ -17,14 +18,18 @@ export function PictureCard({
   return (
     <div
       key={name}
-      className={`${props.className} h-full flex flex-col justify-center items-center`}
+      className={cn(
+        "flex flex-col justify-center items-center",
+        props.className
+      )}
+      {...props}
     >
       <Image
         src={imageSrc}
         alt={name}
         width={400}
         height={400}
-        className="h-full w-auto object-contain"
+        className="h-full w-auto object-contain mx-auto my-auto"
       />
     </div>
   );

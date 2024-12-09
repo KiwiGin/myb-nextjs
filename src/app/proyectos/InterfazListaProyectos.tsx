@@ -31,9 +31,14 @@ export function InterfazListaProyectos() {
   }, []);
 
   return (
-    <div className="p-4">
+    <div className="p-4 h-dvh">
       {noice && <Noice noice={noice} />}
-      <ProyectosList proyectos={proyectos} />
+      <div className="w-full py-2 flex flex-row items-center justify-center h-[8%]">
+        <h1 className="text-3xl font-bold">Mis Proyectos</h1>
+      </div>
+      <div className="p-2 h-[92%] overflow-y-scroll">
+        <ProyectosList proyectos={proyectos} />
+      </div>
     </div>
   );
 }

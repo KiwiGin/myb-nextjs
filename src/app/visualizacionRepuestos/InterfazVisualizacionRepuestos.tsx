@@ -1,13 +1,15 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { Controller, set, useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { RepuestosList } from "@/components/RepuestosList";
 import { Button } from "@/components/ui/button";
 import { Repuesto } from "@/models/repuesto";
 import { Switch } from "@/components/ui/switch";
 import { Counter } from "@/components/Counter";
+import { NoiceType } from "@/models/noice";
+import { Noice } from "@/components/Noice";
 
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z
@@ -37,6 +39,11 @@ const proyeccionSchema = z.object({
 export type ProyeccionData = z.infer<typeof proyeccionSchema>;
 
 export function InterfazVisualizacionRepuestos() {
+  const [noice, setNoice] = useState<NoiceType | null>({
+    type: "loading",
+    message: "Cargando repuestos solicitados...",
+  });
+
   const form = useForm<z.infer<typeof proyeccionSchema>>({
     resolver: zodResolver(proyeccionSchema),
     defaultValues: {
@@ -72,14 +79,24 @@ export function InterfazVisualizacionRepuestos() {
             quantity: repuesto.stockRequerido,
           }))
         );
+        setNoice(null);
       } catch (error) {
         console.error("Error fetching repuestos:", error);
+        setNoice({
+          type: "error",
+          message: "Error al obtener los repuestos requeridos",
+        });
       }
     }
     fetchRepuestos();
   }, [form]);
 
   const onSubmit = async (data: ProyeccionData) => {
+    setNoice({
+      type: "loading",
+      message: "Actualizando repuestos...",
+    });
+
     const selectedRepuestos = data.repuestos
       .filter((repuesto) => repuesto.checked)
       .map((repuesto) => ({
@@ -98,9 +115,25 @@ export function InterfazVisualizacionRepuestos() {
       if (!response.ok) {
         throw new Error("Error al actualizar los repuestos");
       }
-      console.log("Repuestos actualizados correctamente");
+
+      setNoice({
+        type: "success",
+        message: "Repuestos actualizados exitosamente",
+      });
+
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          setNoice(null);
+          resolve();
+          window.location.reload();
+        }, 5000);
+      });
     } catch (error) {
       console.error("Error en el envío de datos:", error);
+      setNoice({
+        type: "error",
+        message: "Error al actualizar los repuestos",
+      });
     }
   };
 
@@ -114,13 +147,14 @@ export function InterfazVisualizacionRepuestos() {
       onSubmit={form.handleSubmit(onSubmit)}
       className="p-4 flex-1 justify-center"
     >
-      <h1 className="mb-4 text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
+      {noice && <Noice noice={noice} />}
+      <h1 className="mb-4 text-center text-3xl font-extrabold leading-none tracking-tight text-gray-900 md:text-4xl lg:text-5xl dark:text-white">
         Visualización de repuestos requeridos
       </h1>
       <RepuestosList
         repuestos={repuestoField.fields}
         className="grid lg:grid-cols-2 gap-4"
-        messageNothingAdded="No hay repuestos seleccionados"
+        messageNothingAdded="No hay repuestos solicitados"
         counter={(index) => (
           <Controller
             name={`repuestos.${index}.quantity`}
@@ -128,7 +162,7 @@ export function InterfazVisualizacionRepuestos() {
             render={({ field }) => (
               <Counter
                 {...field}
-                className={`w-1/2 ${
+                className={`w-full ${
                   form.formState.errors.repuestos?.[index]?.quantity
                     ? "border-red-500"
                     : ""
@@ -155,9 +189,11 @@ export function InterfazVisualizacionRepuestos() {
           />
         )}
       />
-      <div className="w-full flex justify-center">
-        <Button type="submit">Marcar como obtenidos</Button>
-      </div>
+      {repuestoField.fields.length > 0 && (
+        <div className="w-full flex justify-center my-5">
+          <Button type="submit">Marcar como obtenidos</Button>
+        </div>
+      )}
     </form>
   );
 }

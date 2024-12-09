@@ -193,7 +193,7 @@ export function InterfazVerificacionReparacion({
           console.log("Formulario antes del envío:", form.getValues());
           form.handleSubmit(onSubmit)(event);
         }}
-        className="w-full"
+        className="w-full mb-6"
       >
         <FormField
           control={form.control}
@@ -258,7 +258,7 @@ export function InterfazVerificacionReparacion({
             )}
           />
         </div>
-        
+
         <FormField
           control={form.control}
           name="aprobado"
@@ -267,12 +267,13 @@ export function InterfazVerificacionReparacion({
               <FormLabel htmlFor="idSupervisor">Aprobado</FormLabel>
               <Combobox<string>
                 items={["Si", "No"]}
-                initialValue="Si"
+                initialValue={"Si"}
                 getValue={(r) => r}
                 getLabel={(r) => r}
                 getRealValue={(r) => r}
+                originalValue={field.value ? "Si" : "No"}
                 onSelection={(r) => {
-                  field.onChange(r);
+                  field.onChange(r === "Si");
                 }}
                 itemName={"Supervisor"}
               />

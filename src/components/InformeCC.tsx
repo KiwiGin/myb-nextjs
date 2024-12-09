@@ -1,4 +1,4 @@
-import { Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Page, Text, View, Document, StyleSheet } from "@react-pdf/renderer";
 import { Proyecto } from "@/models/proyecto";
 import { ResultadoPrueba } from "@/models/resultado";
 import { useState } from "react";
@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
     padding: 2,
     borderWidth: 2,
     borderRadius: 4,
+    width: "100%",
   },
   rejected: {
     borderColor: "red",
@@ -53,6 +54,19 @@ const styles = StyleSheet.create({
 });
 
 export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        <Text style={styles.title}>
+          Informe de Control de Calidad para el Proyecto: {proyecto.titulo}
+        </Text>
+        <ContentCC proyecto={proyecto} />
+      </Page>
+    </Document>
+  );
+};
+
+export const ContentCC = ({ proyecto }: { proyecto: Proyecto }) => {
   const [resultadosAnteriores] = useState<ResultadoPrueba[]>(
     proyecto?.resultados || []
   );
@@ -67,10 +81,7 @@ export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
   );
 
   return (
-    <Page size="A4" style={styles.page}>
-      <Text style={styles.title}>
-        Informe de Control de Calidad para el Proyecto: {proyecto.titulo}
-      </Text>
+    <View style={{ flexDirection: "column", gap: 10 }}>
       {resultadosFiltrados.length > 0 ? (
         resultadosFiltrados
           .toSorted((a, b) => b.idResultadoPrueba - a.idResultadoPrueba)
@@ -106,17 +117,15 @@ export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
             }
 
             return (
-              <View key={index} style={containerStyle}>
+              <View key={index} style={containerStyle} wrap={false}>
                 <Text style={styles.baseText}>
                   Fecha: {new Date(resultado.fecha).toLocaleDateString()}
                 </Text>
                 <Text style={styles.baseText}>
                   Empleado:{" "}
-                  {
-                    proyecto.empleadosActuales?.find(
-                      (e) => e.idEmpleado === resultado.idEmpleado
-                    )?.nombre
-                  }
+                  {proyecto.empleadosActuales?.find(
+                    (e) => e.idEmpleado === resultado.idEmpleado
+                  )?.nombre || "Desconocido"}
                 </Text>
                 {resultado.resultados.map((prueba, index) => (
                   <View key={index} style={{ marginBottom: 8 }}>
@@ -215,6 +224,6 @@ export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
       ) : (
         <Text>No hay resultados anteriores disponibles.</Text>
       )}
-    </Page>
+    </View>
   );
 };

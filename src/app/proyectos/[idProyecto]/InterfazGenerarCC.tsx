@@ -2,17 +2,13 @@ import { InformeSection } from "@/components/InformeSection";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import { Proyecto } from "@/models/proyecto";
-import { useEffect, useState } from "react";
-import { Document, PDFDownloadLink, PDFViewer } from "@react-pdf/renderer";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { PDFViewer } from "@react-pdf/renderer";
 import { InformeCC } from "@/components/InformeCC";
+import { GeneratePDF } from "@/components/GeneratePDF";
 
 export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);
-
-  useEffect(() => {
-    console.log(proyecto);
-  }, [proyecto]);
 
   const handleActualizarEtapa = async () => {
     setNoice({
@@ -49,6 +45,7 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
         setTimeout(() => {
           setNoice(null);
           resolve();
+          window.location.reload();
         }, 2000);
       });
     } catch {
@@ -68,28 +65,14 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
       >
         <>
           <PDFViewer width="100%" height="100%" showToolbar>
-            <Document>
-              <InformeCC proyecto={proyecto} />
-            </Document>
+            <InformeCC proyecto={proyecto} />
           </PDFViewer>
-          <GeneratePDF proyecto={proyecto} />
+          <GeneratePDF
+            Documento={() => <InformeCC proyecto={proyecto} />}
+            pdfName={`Informe de Control de Calidad - ${proyecto.titulo}.pdf`}
+          />
         </>
       </InformeSection>
     </div>
   );
 }
-
-const GeneratePDF = ({ proyecto }: { proyecto: Proyecto }) => (
-  <PDFDownloadLink
-    document={<InformeCC proyecto={proyecto} />}
-    fileName="informeCC.pdf"
-    style={{
-      width: "100%",
-      padding: "8px",
-      textAlign: "center",
-      alignItems: "center",
-    }}
-  >
-    <Button className="w-2/5">Descargar PDF</Button>
-  </PDFDownloadLink>
-);

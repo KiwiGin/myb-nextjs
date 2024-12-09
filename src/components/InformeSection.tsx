@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Modal } from "./Modal";
 
@@ -43,7 +43,9 @@ export function InformeSection({
               await actualizarEtapa();
             }}
           >
-            Actualizar Etapa
+            {informeLabel === "Informe de Ventas"
+              ? "Cerrar Proyecto"
+              : "Actualizar Etapa"}
           </Button>
         </div>
       </Modal>

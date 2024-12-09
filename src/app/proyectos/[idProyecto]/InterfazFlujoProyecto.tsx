@@ -12,10 +12,12 @@ import { NoiceType } from "@/models/noice";
 import { Noice } from "@/components/Noice";
 import MyBError from "@/lib/mybError";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
   const [empleadoRol, setEmpleadoRol] = useState<"jefe" | "supervisor">("jefe");
+  const router = useRouter();
   const [noice, setNoice] = useState<NoiceType | null>({
     type: "loading",
     message: "Cargando proyecto...",
@@ -26,9 +28,18 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
       try {
         const response = await fetch(`/api/proyecto/por-id/${idProyecto}`);
         if (!response.ok) throw new Error("Error al cargar el proyecto");
-        const data: Proyecto = await response.json();
+
+        const gettedProyecto = await response.json();
+
+        const data: Proyecto = {
+          ...gettedProyecto,
+          fechaInicio: new Date(`${gettedProyecto.fechaInicio}T00:00:00`),
+          fechaFin: new Date(`${gettedProyecto.fechaFin}T00:00:00`),
+        };
         /* setProyecto(data); */
-        setProyecto({ ...data });
+        setProyecto({
+          ...data,
+        });
         setNoice(null);
         console.log("proy: ", data);
       } catch (error) {
@@ -47,14 +58,28 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
 
   return (
     <div className="flex flex-col items-center pt-10 px-20 gap-3">
-
-    {/* Switch beetween Jefe y Supervisor */}
-    <Button onClick={() => setEmpleadoRol(empleadoRol === "jefe" ? "supervisor" : "jefe")}
-    className="fixed top-5 right-5 z-50 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg">
-      {empleadoRol === "jefe" ? "Jefe" : "Supervisor"}
-    </Button>
+      {/* Switch beetween Jefe y Supervisor */}
+      <Button
+        onClick={() =>
+          setEmpleadoRol(empleadoRol === "jefe" ? "supervisor" : "jefe")
+        }
+        className="fixed top-5 right-5 z-50 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg"
+      >
+        {empleadoRol === "jefe" ? "Jefe" : "Supervisor"}
+      </Button>
 
       {noice && <Noice noice={noice} />}
+      <div className="w-full">
+        <Button
+          onClick={() => {
+            router.back();
+          }}
+          variant={"outline"}
+        >
+          Otros Proyectos
+        </Button>
+      </div>
+
       <ProyectoHeader proyecto={proyecto} />
       <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
       <div className="w-full">
@@ -72,14 +97,17 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
               proyecto={proyecto}
             />
           ) : proyecto.idEtapaActual == 8 ? (
-            <InterfazGenerarVentas idProyecto={proyecto.idProyecto || -1} />
+            <InterfazGenerarVentas proyecto={proyecto} />
           ) : null
         ) : (
           empleadoRol === "supervisor" &&
           (proyecto.idEtapaActual == 4 ? (
-            <InterfazVerificacionReparacion proyecto={proyecto} idEmpleado={1} />
+            <InterfazVerificacionReparacion
+              proyecto={proyecto}
+              idEmpleado={1}
+            />
           ) : proyecto.idEtapaActual == 5 ? (
-            <InterfazGenerarCC proyecto={proyecto}/>
+            <InterfazGenerarCC proyecto={proyecto} />
           ) : null)
         )}
       </div>
