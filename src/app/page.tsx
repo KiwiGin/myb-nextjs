@@ -72,7 +72,7 @@ export default function Home() {
           >
             <PictureCard
               imageSrc="https://avatar.iran.liara.run/username?username=Chupapi+300"
-              title={session?.user.username}
+              title={session?.user.correo}
               name="Usuario"
               className="w-16 h-16 hover:scale-110 transition duration-300 ease-in-out"
             />
@@ -84,8 +84,8 @@ export default function Home() {
             } absolute -left-12 z-10 text-base bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
           >
             <div className="w-full flex flex-col py-4 px-6">
-              <h1 className="font-semibold">Nombre</h1>
-              <p className="font-thin">{session?.user.username}</p>
+              <h1 className="font-semibold">Correo</h1>
+              <p className="font-thin">{session?.user.correo}</p>
               <h1 className="font-semibold mt-4">Rol</h1>
               <p className="font-thin">{session?.user.rol}</p>
             </div>

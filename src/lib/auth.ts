@@ -4,8 +4,8 @@ import MyBError from "@/lib/mybError";
 
 import { USUARIOS } from "@/models/MOCKUPS";
 
-const getUserByUsername = async (username: string) => {
-  return USUARIOS.find((user) => user.username === username);
+const getUserByCorreo = async (correo: string) => {
+  return USUARIOS.find((user) => user.correo === correo);
 };
 
 export const authOptions: NextAuthOptions = {
@@ -14,16 +14,16 @@ export const authOptions: NextAuthOptions = {
       type: "credentials",
       name: "Credentials",
       credentials: {
-        username: {},
+        correo: {},
         password: {},
       },
       async authorize(credentials) {
-        const { username, password } = credentials as {
-          username: string;
+        const { correo, password } = credentials as {
+          correo: string;
           password: string;
         };
 
-        const user = await getUserByUsername(username);
+        const user = await getUserByCorreo(correo);
 
         if (!user) {
           throw new MyBError("user_not_found");
@@ -36,8 +36,8 @@ export const authOptions: NextAuthOptions = {
         }
  */
         return {
-          id: user.idUsuario,
-          username: user.username,
+          id: user.idEmpleado,
+          correo: user.correo,
           created_at: new Date().toISOString(),
           rol: user.rol as "admin" | "jefe" | "supervisor" | "tecnico",
         };
@@ -49,7 +49,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.user = user as {
           id: number;
-          username: string;
+          correo: string;
           created_at: string | null;
           rol: "admin" | "jefe" | "supervisor" | "tecnico";
         };
@@ -75,6 +75,7 @@ export const authorizedRoutes = {
     "/proyeccionRepuestos",
     "/proyectos",
     "/registroCliente",
+    "/registroEmpleado",
     "/registroRepuesto",
     "/registroProyecto",
     "/registroPrueba",
@@ -85,6 +86,7 @@ export const authorizedRoutes = {
     "/proyeccionRepuestos",
     "/proyectos",
     "/registroCliente",
+    "/registroEmpleado",
     "/registroRepuesto",
     "/registroProyecto",
     "/registroPrueba",

@@ -27,6 +27,7 @@ import { RepuestosStock } from "@/components/RepuestosStock";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import MyBError from "@/lib/mybError";
+import { useSession } from "next-auth/react";
 
 const repuestoSchema = z
   .object({
@@ -196,6 +197,8 @@ export function InterfazRegistroProyecto() {
     message: "Cargando datos del proyecto...",
   });
 
+  const { data: session, status } = useSession();
+
   const fetchClientes = async () => {
     setNoice({
       type: "loading",
@@ -224,20 +227,6 @@ export function InterfazRegistroProyecto() {
     setSupervisores(data);
   };
 
-  /* const fetchJefes = async () => {
-    setNoice({
-      type: "loading",
-      message: "Cargando datos de jefes...",
-    });
-
-    const res = await fetch("/api/empleado/por-rol/jefe");
-
-    if (!res.ok) throw new MyBError("Error en la carga de datos de jefes");
-
-    const data = await res.json();
-    setJefes(data);
-  };
- */
   const fetchRepuestos = async () => {
     setNoice({
       type: "loading",
@@ -297,12 +286,12 @@ export function InterfazRegistroProyecto() {
   };
 
   useEffect(() => {
+    if (status === "loading") return;
     const fetchData = async () => {
       try {
         await Promise.all([
           fetchClientes(),
           fetchSupervisores(),
-          //fetchJefes(),
           fetchRepuestos(),
           fetchPruebas(),
         ]);
@@ -315,7 +304,7 @@ export function InterfazRegistroProyecto() {
       }
     };
     fetchData();
-  }, []);
+  }, [status]);
 
   const handleSelectRepuesto = (repuesto: RepuestoForm) => {
     setRepuestos((prev) =>
@@ -376,7 +365,8 @@ export function InterfazRegistroProyecto() {
     });
 
     try {
-      console.log(proy);
+      if (status === "loading") throw new MyBError("No se ha iniciado sesión");
+
       const parametros = proy.pruebas.flatMap((prueba) => {
         if (prueba.checked) {
           return prueba.parametros.map((parametro) => parametro);
@@ -391,7 +381,7 @@ export function InterfazRegistroProyecto() {
         fechaFin: proy.fechaFin,
         idCliente: proy.idCliente,
         idSupervisor: proy.idSupervisor,
-        idJefe: proy.idJefe,
+        idJefe: session?.user.id,
         idEtapaActual: proy.idEtapaActual,
         costoManoObra: Number(proy.costoManoObra),
         idRepuestos: proy.repuestos

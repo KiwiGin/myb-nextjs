@@ -4,6 +4,7 @@ import { Proyecto } from "@/models/proyecto";
 import { ProyectosList } from "@/components/ProyectosList";
 import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
+import { useSession } from "next-auth/react";
 
 export function InterfazListaProyectos() {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
@@ -17,14 +18,13 @@ export function InterfazListaProyectos() {
   const [clientesSeleccionados, setClientesSeleccionados] = useState<string[]>([]);
   const [showEtapas, setShowEtapas] = useState(false);
   const [showClientes, setShowClientes] = useState(false);
-
-  const empleadoId = 1;
-  const rol = "jefe";
+  const { data: session, status } = useSession();
 
   useEffect(() => {
+    if (status === "loading") return;
+    const APIEndPoint = session!.user.rol === "jefe" ? `/api/proyecto/por-jefe/${session!.user.id}` : session!.user.rol === "supervisor" ? `/api/proyecto/por-supervisor/${session!.user.id}` : ""
     const fetchProyectos = async () => {
       try {
-        const APIEndPoint = rol === "jefe" ? `/api/proyecto/por-jefe/${empleadoId}` : rol === "supervisor" ? `/api/proyecto/por-supervisor/${empleadoId}` : "";
         const response = await fetch(APIEndPoint);
         if (!response.ok) throw new Error("Error al cargar proyectos");
         const data: Proyecto[] = await response.json();
@@ -37,7 +37,7 @@ export function InterfazListaProyectos() {
     };
 
     fetchProyectos();
-  }, []);
+  }, [status, session]);
 
   useEffect(() => {
     const filtrarProyectos = () => {

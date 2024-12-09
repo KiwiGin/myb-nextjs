@@ -5,8 +5,8 @@
 
 ## /registroProyecto
 
-- [ ] (F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
-- [ ] (F) FIX: Al deseleccionar y volver a seleccionar un repuesto este se agrega 2 veces
+- [ ] (A)(F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
+- [X] (F) FIX: Al deseleccionar y volver a seleccionar un repuesto este se agrega 2 veces
 
 ## /proyectos
 
@@ -19,7 +19,7 @@
 
 ## /seguimientoTareas (Reparando)
 
-- [ ] (F) Validar que los resultados del técnico estén dentro de los parámetros establecidos
+- [ ] (A)(F) Validar que los resultados del técnico estén dentro de los parámetros establecidos
 
 ## /proyectos/proyectoId/ (Generando informe de ventas)
 
@@ -37,7 +37,7 @@
 
 ## /registroEmpleado
 
-- [ ] (F)(B) Agregar subida de imagen del empleados
+- [ ] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
 
 ## /registroCliente
 
@@ -66,6 +66,7 @@
 ## General
 
 - [ ] Agreglar el manejo de las fechas
+- [ ] Add sesion handlers in Interfaces
 
 ---
 
@@ -73,16 +74,15 @@
 
 ## /registroProyecto
 
-- [ ] (F) (Opcional) Auto ajustar width de selectores (Cliente)
+- [ ] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
 - [X] (F) (Opcional) Mostrar nombre completo de Supervisor
-- [ ] (F) (Opcional) Ocultar scrollbar en selección de repuestos
-- [ ] (F) (Opcional) Redirigir a home después de registrar el proyecto
+- [ ] (A)(F) (Opcional) Ocultar scrollbar en selección de repuestos
+- [ ] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
 
-## /registroRepuesto
+## /registroRepuesto y /registroEmpleado
 
-- [ ] (F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
+- [ ] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
 
 ## /proyeccionRepuestos
 
 - [ ] (F)(B) (Opcional) Mostrar 2 secciones: repuestos disponibles, repuestos requeridos (solo se puede pedir en esta última)
-

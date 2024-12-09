@@ -22,6 +22,9 @@ const proyectoSchema = z.object({
   idEtapaActual: z.number(),
   etapaActual: z.string(),
 
+  fechaInicio: z.date(),
+  fechaFin: z.date(),
+
   cliente: z.object({
     idCliente: z.number(),
     nombre: z.string(),
@@ -130,9 +133,14 @@ export function InterfazSeguimientoTareas() {
   const fetchTareas = async () => {
     try {
       const res = await fetch(`/api/proyecto/por-id/${idProyectoMock}`);
-      const data = await res.json();
+      let data = await res.json();
 
-      console.log("data", data);
+      data = {
+        ...data,
+        fechaInicio: new Date(`${data.fechaInicio}T00:00:00`),
+        fechaFin: new Date(`${data.fechaFin}T00:00:00`),
+      }
+
       const parsedData = proyectoSchema.safeParse(data);
 
       if (parsedData.success) {
