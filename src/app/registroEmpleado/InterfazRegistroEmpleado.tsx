@@ -19,7 +19,7 @@ const empleadoSchema = z.object({
   nombre: z.string().min(1, { message: "El nombre es requerido" }),
   apellido: z.string().min(1, { message: "El apellido es requerido" }),
   correo: z.string().email({ message: "Correo electrónico inválido" }),
-  telefono: z.string().min(7, { message: "El teléfono es requerido" }),
+  telefono: z.string().min(9, { message: "El teléfono es requerido" }),
   direccion: z.string().min(1, { message: "La dirección es requerida" }),
   tipoDocumento: z.string().min(1, { message: "El tipo de documento es requerido" }),
   documentoIdentidad: z.string().min(1, { message: "El documento de identidad es requerido" }),

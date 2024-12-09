@@ -2,6 +2,7 @@ import { GeneratePDF } from "@/components/GeneratePDF";
 import { InformeSection } from "@/components/InformeSection";
 import { InformeVentas } from "@/components/InformeVentas";
 import { Noice } from "@/components/Noice";
+import MyBError from "@/lib/mybError";
 import { NoiceType } from "@/models/noice";
 import { Proyecto } from "@/models/proyecto";
 import { PDFViewer } from "@react-pdf/renderer";
@@ -26,7 +27,7 @@ export function InterfazGenerarVentas({ proyecto }: { proyecto: Proyecto }) {
           fechaInicio: new Date(),
         }),
       });
-      if (!response.ok) throw new Error("Error al cambiar de etapa");
+      if (!response.ok) throw new MyBError("Error al cambiar de etapa");
 
       await new Promise<void>((resolve) => {
         setTimeout(() => {
@@ -47,11 +48,14 @@ export function InterfazGenerarVentas({ proyecto }: { proyecto: Proyecto }) {
           window.location.reload();
         }, 5000);
       });
-    } catch {
-      setNoice({
-        type: "error",
-        message: "Error al actualizar la etapa",
-      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else
+        setNoice({
+          type: "error",
+          message: "Error al actualizar la etapa",
+        });
     }
   };
 

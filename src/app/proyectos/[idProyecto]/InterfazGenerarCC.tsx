@@ -6,6 +6,7 @@ import { useState } from "react";
 import { PDFViewer } from "@react-pdf/renderer";
 import { InformeCC } from "@/components/InformeCC";
 import { GeneratePDF } from "@/components/GeneratePDF";
+import MyBError from "@/lib/mybError";
 
 export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
   const [noice, setNoice] = useState<NoiceType | null>(null);
@@ -27,7 +28,7 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
         }),
       });
 
-      if (!response.ok) throw new Error("Error al cambiar de etapa");
+      if (!response.ok) throw new MyBError("Error al cambiar de etapa");
 
       await new Promise<void>((resolve) => {
         setTimeout(() => {
@@ -48,11 +49,14 @@ export function InterfazGenerarCC({ proyecto }: { proyecto: Proyecto }) {
           window.location.reload();
         }, 2000);
       });
-    } catch {
-      setNoice({
-        type: "error",
-        message: "Error al actualizar la etapa",
-      });
+    } catch (error) {
+      if (error instanceof MyBError)
+        setNoice({ type: "error", message: error.message });
+      else
+        setNoice({
+          type: "error",
+          message: "Error al actualizar la etapa",
+        });
     }
   };
 
