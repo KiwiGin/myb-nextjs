@@ -10,8 +10,8 @@ interface ModalProps {
 export function Modal({ isOpen, onClose, children, className }: ModalProps) {
   const modalRef = useRef<HTMLDivElement | null>(null);
   useEffect(() => {
-    if(onClose === undefined) return;
-    
+    if (onClose === undefined) return;
+
     const handleClickOutside = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();
@@ -30,6 +30,20 @@ export function Modal({ isOpen, onClose, children, className }: ModalProps) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen, onClose]);
+
+  useEffect(() => {
+    // Añadir o eliminar clase `overflow-hidden` al body
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    // Cleanup: eliminar clase al desmontar
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (

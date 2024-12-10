@@ -11,6 +11,7 @@ import { z } from "zod";
 import { NoiceType } from "@/models/noice";
 import MyBError from "@/lib/mybError";
 import { Noice } from "@/components/Noice";
+import { useRouter } from "next/navigation";
 
 // Esquema de validación con Zod
 const repuestoSchema = z.object({
@@ -34,7 +35,7 @@ export function InterfazRegistroRepuesto() {
     imgBase64: "",
     stockActual: 0,
   });
-
+  const router = useRouter();
   const [errors, setErrors] = useState<{ [key: string]: string } | null>(null);
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
@@ -96,7 +97,7 @@ export function InterfazRegistroRepuesto() {
         setTimeout(() => {
           setNoice(null);
           resolve();
-          window.location.reload();
+          router.replace("/");  
         }, 2000);
       });
     } catch (error) {

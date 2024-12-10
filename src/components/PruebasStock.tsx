@@ -29,7 +29,7 @@ export default function PruebasStock({
       </div>
 
       <div
-        className="overflow-y-scroll flex-col items-center"
+        className="overflow-y-auto flex-col items-center"
         style={{ maxHeight: "80vh", maxWidth: "75vw" }}
       >
         <PruebasList

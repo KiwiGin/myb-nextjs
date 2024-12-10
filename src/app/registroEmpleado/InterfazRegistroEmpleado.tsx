@@ -12,6 +12,7 @@ import { NoiceType } from "@/models/noice";
 import { Noice } from "@/components/Noice";
 import MyBError from "@/lib/mybError";
 import { ImageLoader } from "@/components/ImageComponents/ImageLoader";
+import { useRouter } from "next/navigation";
 
 // Definir el esquema de validación con zod
 const empleadoSchema = z.object({
@@ -43,11 +44,12 @@ type EmpleadoFormData = z.infer<typeof empleadoSchema>;
 
 export function InterfazRegistroEmpleado() {
   const [noice, setNoice] = useState<NoiceType | null>(null);
-
+  const router = useRouter();
   // Configuración de react-hook-form con zod
   const {
     register,
     setValue,
+    reset,
     handleSubmit,
     formState: { errors },
   } = useForm<EmpleadoFormData>({
@@ -85,7 +87,7 @@ export function InterfazRegistroEmpleado() {
       });
 
       if (!response.ok) throw new MyBError("Error al registrar el empleado");
-
+      reset();
       setNoice({
         type: "success",
         message: "Empleado registrado con éxito",
@@ -96,7 +98,7 @@ export function InterfazRegistroEmpleado() {
         setTimeout(() => {
           setNoice(null);
           resolve();
-          window.location.reload();
+          router.replace("/");
         }, 2000);
       });
     } catch (error) {

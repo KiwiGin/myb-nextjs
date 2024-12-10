@@ -5,7 +5,7 @@
 
 ## /registroProyecto
 
-- [ ] (A)(F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
+- [X] (A)(F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
 - [X] (A)(F) FIX: Al deseleccionar y volver a seleccionar un repuesto este se agrega 2 veces
 
 ## /proyectos
@@ -19,7 +19,7 @@
 
 ## /seguimientoTareas (Reparando)
 
-- [ ] (A)(F) Validar que los resultados del técnico estén dentro de los parámetros establecidos
+- [X] (A)(F) Validar que los resultados del técnico estén dentro de los parámetros establecidos
 
 ## /proyectos/proyectoId/ (Generando informe de ventas)
 
@@ -35,13 +35,21 @@
 - [ ] (F) (rol == jefe | supervisor) (etapa >= 5) Agregar el botón para generar el informe de control de calidad
 - [ ] (F) (rol == jefe) (etapa >= 8) Agregar el botón para generar el informe de ventas
 
+## /registroEmpleado
+
+- [X] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
+
+## /registroCliente
+
+- [ ] (F)(B) Uniformizar en la db para que siga la estructura de empleado
+
 ## /registroPrueba
 
 - [ ] (F)(B) Agregar descripción de prueba
 
 ## /registroEmpleado
 
-- [ ] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
+- [X] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
 
 ## /registroCliente
 
@@ -74,12 +82,13 @@
 
 ## /registroProyecto
 
-- [ ] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
+- [X] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
 - [X] (F) (Opcional) Mostrar nombre completo de Supervisor
-- [ ] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
+- [X] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
 
 ## /registroRepuesto y /registroEmpleado
 
+- [X] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
 - [X] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
 
 ## /proyeccionRepuestos

@@ -10,19 +10,33 @@ import { ResultadosModal } from "@/components/ResultadosModal";
 import { EspecificacionesList } from "@/components/EspecificacionesList";
 import { Counter } from "@/components/Counter";
 
-const especificacionSchema = z.object({
-  idParametro: z.number(),
-  resultado: z
-    .preprocess((value) => {
-      if (value === "") {
-        return undefined;
-      }
-      return Number(value);
-    }, z.union([z.number(), z.undefined()]))
-    .refine((value) => typeof value !== "undefined", {
-      message: "No se puede dejar un resultado vacío",
-    }),
-});
+const especificacionSchema = z
+  .object({
+    idParametro: z.number(),
+    resultado: z
+      .preprocess((value) => {
+        if (value === "") {
+          return undefined;
+        }
+        return Number(value);
+      }, z.union([z.number(), z.undefined()]))
+      .refine((value) => typeof value !== "undefined", {
+        message: "No se puede dejar un resultado vacío",
+      }),
+    valorMaximo: z.number(),
+    valorMinimo: z.number(),
+    nombre: z.string(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.resultado > val.valorMaximo || val.resultado < val.valorMinimo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El valor de un parametro no está dentro del rango",
+        path: ["root"],
+      });
+      return z.NEVER;
+    }
+  });
 
 const pruebaSchema = z.object({
   idTipoPrueba: z.number(),
@@ -38,6 +52,26 @@ const pruebaSchema = z.object({
       });
       return z.NEVER;
     }
+
+    const outOfRange = value.filter(
+      (especificacion) =>
+        especificacion.resultado > especificacion.valorMaximo ||
+        especificacion.resultado < especificacion.valorMinimo
+    );
+
+    if (outOfRange.length > 0) {
+      outOfRange.forEach((espc) => {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `El valor de ${espc.nombre} no está dentro del rango`,
+          path: ["root"],
+        });
+      });
+
+      return z.NEVER;
+    }
+
+    return z.NEVER;
   }),
 });
 
@@ -95,7 +129,10 @@ export function InterfazSeguimientoTareasReparacion({
           idTipoPrueba: prueba.idTipoPrueba,
           especificaciones: prueba.parametros.map((parametro) => ({
             idParametro: parametro.idParametro,
+            nombre: parametro.nombre,
             resultado: 0,
+            valorMaximo: parametro.valorMaximo,
+            valorMinimo: parametro.valorMinimo,
           })),
         }));
 
@@ -107,7 +144,7 @@ export function InterfazSeguimientoTareasReparacion({
     setNoice({ type: "loading", message: "Registrando resultados..." });
 
     try {
-      const res = await fetch("/api/proyecto/reparando", {
+      /* const res = await fetch("/api/proyecto/reparando", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -115,7 +152,7 @@ export function InterfazSeguimientoTareasReparacion({
         },
       });
 
-      await res.json();
+      await res.json(); */
 
       setNoice({
         type: "success",

@@ -64,13 +64,15 @@ export function Combobox<T>({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[200px] justify-between"
+          className="w-full justify-between"
         >
-          {value ? handleLabel() : `Seleccionar ${itemName}`}
+          <span className="w-10/12 whitespace-normal">
+            {value ? handleLabel() : `Seleccionar ${itemName}`}
+          </span>
           <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
+      <PopoverContent className="w-full">
         <Command className="sm:max-h-32 md:max-h-48 lg:max-h-64">
           <CommandInput placeholder={`Buscar ${itemName}...`} className="h-9" />
           <CommandList>

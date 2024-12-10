@@ -20,6 +20,7 @@ export function RepuestosStock({
   handleSelectRepuesto,
   handleUnselectRepuesto,
 }: RepuestosStockProps) {
+
   return (
     <Modal isOpen={open} onClose={() => setOpen(false)} className="">
       <div className="w-full flex items-center">
@@ -29,7 +30,7 @@ export function RepuestosStock({
       </div>
 
       <div
-        className="overflow-y-scroll flex-col items-center"
+        className="overflow-y-auto flex-col items-center"
         style={{ maxHeight: "80vh", maxWidth: "75vw" }}
       >
         <RepuestosList

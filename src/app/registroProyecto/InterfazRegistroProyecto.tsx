@@ -28,6 +28,7 @@ import { Noice } from "@/components/Noice";
 import { NoiceType } from "@/models/noice";
 import MyBError from "@/lib/mybError";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 const repuestoSchema = z
   .object({
@@ -114,48 +115,59 @@ const pruebaSchema = z.object({
   }),
 });
 
-const proyectoSchema = z.object({
-  titulo: z.string().min(1, { message: "Debe ingresar un título." }),
-  descripcion: z.string().min(1, { message: "Debe ingresar una descripción." }),
-  fechaInicio: z.date().refine(
-    (val) => val instanceof Date && !isNaN(val.getTime()), // Validación adicional si es necesario
-    {
-      message: "La fecha es inválida o no está en el formato esperado.",
-    }
-  ),
-  fechaFin: z.date().refine(
-    (val) => val instanceof Date && !isNaN(val.getTime()), // Validación adicional si es necesario
-    {
-      message: "La fecha es inválida o no está en el formato esperado.",
-    }
-  ),
-  idCliente: z.number({ message: "Debe seleccionar un cliente." }).min(1, {
-    message: "Debe seleccionar un cliente valido.",
-  }),
-  idSupervisor: z
-    .number({ message: "Debe seleccionar un supervisor." })
-    .min(1, {
-      message: "Debe seleccionar un supervisor valido.",
+const proyectoSchema = z
+  .object({
+    titulo: z.string().min(1, { message: "Debe ingresar un título." }),
+    descripcion: z
+      .string()
+      .min(1, { message: "Debe ingresar una descripción." }),
+    fechaInicio: z.date().refine(
+      (val) => val instanceof Date && !isNaN(val.getTime()), // Validación adicional si es necesario
+      {
+        message: "La fecha es inválida o no está en el formato esperado.",
+      }
+    ),
+    fechaFin: z.date().refine(
+      (val) => val instanceof Date && !isNaN(val.getTime()), // Validación adicional si es necesario
+      {
+        message: "La fecha es inválida o no está en el formato esperado.",
+      }
+    ),
+    idCliente: z.number({ message: "Debe seleccionar un cliente." }).min(1, {
+      message: "Debe seleccionar un cliente valido.",
     }),
-  idJefe: z.number({ message: "Debe seleccionar un jefe." }).min(1, {
-    message: "Debe seleccionar un jefe valido.",
-  }),
-  idEtapaActual: z.number({ message: "Debe seleccionar una etapa." }),
-  costoManoObra: z
-    .union([z.string(), z.number()])
-    .refine((val) => val !== "" && val !== undefined, {
-      message: "Debe ingresar un costo de mano de obra.",
-    }),
-  repuestos: z.array(repuestoSchema).optional(),
-  pruebas: z
-    .array(pruebaSchema)
-    .min(1, { message: "Debe seleccionar al menos una prueba." }),
-});
+    idSupervisor: z
+      .number({ message: "Debe seleccionar un supervisor." })
+      .min(1, {
+        message: "Debe seleccionar un supervisor valido.",
+      }),
+    idEtapaActual: z.number({ message: "Debe seleccionar una etapa." }),
+    costoManoObra: z
+      .union([z.string(), z.number()])
+      .refine((val) => val !== "" && val !== undefined, {
+        message: "Debe ingresar un costo de mano de obra.",
+      }),
+    repuestos: z.array(repuestoSchema).optional(),
+    pruebas: z
+      .array(pruebaSchema)
+      .min(1, { message: "Debe seleccionar al menos una prueba." }),
+  })
+  .superRefine((val, ctx) => {
+    if (val.fechaFin < val.fechaInicio) {
+      ctx.addIssue({
+        code: "custom",
+        message: "La fecha de fin debe ser mayor a la fecha de inicio.",
+        path: ["fechaFin"],
+      });
+
+      return z.NEVER;
+    }
+  });
 
 export type RegistroProyecto = z.infer<typeof proyectoSchema>;
 
 export function InterfazRegistroProyecto() {
-  const idJefeLogueado = 1;
+  const router = useRouter();
 
   const form = useForm<RegistroProyecto>({
     resolver: zodResolver(proyectoSchema),
@@ -166,7 +178,6 @@ export function InterfazRegistroProyecto() {
       fechaFin: new Date(),
       idCliente: -1,
       idSupervisor: -1,
-      idJefe: idJefeLogueado,
       idEtapaActual: 1,
       costoManoObra: 0,
       repuestos: [],
@@ -357,6 +368,10 @@ export function InterfazRegistroProyecto() {
     pruebaField.remove(index);
   };
 
+  useEffect(() => {
+    console.log(form.formState.errors);
+  }, [form.formState.errors]);
+
   const onSubmit = async (proy: RegistroProyecto) => {
     setNoice({
       type: "loading",
@@ -423,7 +438,7 @@ export function InterfazRegistroProyecto() {
         setTimeout(() => {
           setNoice(null);
           resolve();
-          window.location.reload();
+          router.replace("/");
         }, 2000);
       });
     } catch (error) {
@@ -481,27 +496,32 @@ export function InterfazRegistroProyecto() {
           </div>
 
           <div className="flex flex-row justify-between">
-            <div className="mb-4">
+            <div className="mb-4 w-1/2">
               <FormField
                 control={form.control}
                 name="fechaInicio"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="w-full">
                     <FormLabel htmlFor="fechaInicio">Fecha de Inicio</FormLabel>
                     <Input
                       type="date"
                       id="fechaInicio"
+                      min={new Date().toISOString().split("T")[0]}
                       value={
                         field.value instanceof Date
                           ? field.value.toISOString().split("T")[0]
                           : ""
                       }
                       onChange={(e) => {
-                        field.onChange(
-                          e.target.value ? new Date(e.target.value) : new Date()
-                        );
+                        const date = e.target.value
+                          ? new Date(e.target.value)
+                          : new Date();
+                        field.onChange(e.target.value ? date : new Date());
+                        if (form.watch("fechaFin") < date) {
+                          form.setValue("fechaFin", date);
+                        }
                       }}
-                      className="border rounded p-1 w-full"
+                      className="border rounded w-10/12"
                     />
                     <FormMessage />
                   </FormItem>
@@ -509,7 +529,7 @@ export function InterfazRegistroProyecto() {
               />
             </div>
 
-            <div className="mb-4">
+            <div className="mb-4 w-1/2">
               <FormField
                 control={form.control}
                 name="fechaFin"
@@ -519,6 +539,9 @@ export function InterfazRegistroProyecto() {
                     <Input
                       type="date"
                       id="fechaFin"
+                      min={
+                        form.watch("fechaInicio").toISOString().split("T")[0]
+                      }
                       value={
                         field.value instanceof Date
                           ? field.value.toISOString().split("T")[0]
@@ -529,7 +552,7 @@ export function InterfazRegistroProyecto() {
                           e.target.value ? new Date(e.target.value) : new Date()
                         );
                       }}
-                      className="border rounded p-1 w-full"
+                      className="border rounded w-10/12"
                     />
                     <FormMessage />
                   </FormItem>
@@ -546,20 +569,22 @@ export function InterfazRegistroProyecto() {
               render={({ field }) => (
                 <FormItem className="flex flex-col w-full">
                   <FormLabel htmlFor="idCliente">Cliente</FormLabel>
-                  <Combobox<Cliente>
-                    items={clientes}
-                    getValue={(r) => {
-                      if (r && typeof r !== "string" && "idCliente" in r) {
-                        return r.idCliente.toString();
-                      }
-                    }}
-                    getLabel={(r) => r.nombre}
-                    getRealValue={(r) => r}
-                    onSelection={(r) => {
-                      field.onChange(r.idCliente);
-                    }}
-                    itemName={"Cliente"}
-                  />
+                  <div className="px-2">
+                    <Combobox<Cliente>
+                      items={clientes}
+                      getValue={(r) => {
+                        if (r && typeof r !== "string" && "idCliente" in r) {
+                          return r.idCliente.toString();
+                        }
+                      }}
+                      getLabel={(r) => r.nombre}
+                      getRealValue={(r) => r}
+                      onSelection={(r) => {
+                        field.onChange(r.idCliente);
+                      }}
+                      itemName={"Cliente"}
+                    />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -572,20 +597,22 @@ export function InterfazRegistroProyecto() {
               render={({ field }) => (
                 <FormItem className="flex flex-col w-full">
                   <FormLabel htmlFor="idSupervisor">Supervisor</FormLabel>
-                  <Combobox<Empleado>
-                    items={supervisores}
-                    getValue={(r) => {
-                      if (r && typeof r !== "string" && "idEmpleado" in r) {
-                        return r.idEmpleado!.toString();
-                      }
-                    }}
-                    getLabel={(r) => r.nombre + " " + r.apellido}
-                    getRealValue={(r) => r}
-                    onSelection={(r) => {
-                      field.onChange(r.idEmpleado);
-                    }}
-                    itemName={"Supervisor"}
-                  />
+                  <div className="px-2">
+                    <Combobox<Empleado>
+                      items={supervisores}
+                      getValue={(r) => {
+                        if (r && typeof r !== "string" && "idEmpleado" in r) {
+                          return r.idEmpleado!.toString();
+                        }
+                      }}
+                      getLabel={(r) => r.nombre + " " + r.apellido}
+                      getRealValue={(r) => r}
+                      onSelection={(r) => {
+                        field.onChange(r.idEmpleado);
+                      }}
+                      itemName={"Supervisor"}
+                    />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
