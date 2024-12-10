@@ -66,3 +66,19 @@ export interface ProyectoSupervisor extends Pick<Proyecto, "idProyecto"> {
   pruebas: TipoPruebaEspecificacionResultado[];
   feedback?: FeedbackResultados;
 }
+
+export type HistorialProyecto = {
+  idProyecto: number;
+  etapasEmpleados: {
+    idEtapa: number;
+    nombreEtapa: string;
+    empleados: Empleado[];
+  }[];
+  etapasCambios: {
+    idEtapaCambio: number;
+    idEtapa: number;
+    nombreEtapa: string;
+    fechaInicio: string;
+    fechaFin: string | null;
+  }[];
+}

@@ -1,5 +1,5 @@
 import { pool } from '../clientConnection';
-import { Proyecto } from '@/models/proyecto';
+import { Proyecto, HistorialProyecto } from '@/models/proyecto';
 import { Repuesto } from '@/models/repuesto';
 import { Cliente } from '@/models/cliente';
 import { Empleado } from '@/models/empleado';
@@ -298,61 +298,31 @@ export async function obtenerEtapaPorId(idEtapa: number): Promise<string> {
 
 export async function obtenerProyectosPorJefe(idJefe: number): Promise<Proyecto[]> {
   try {
-    const res = await pool.query('SELECT * FROM paObtenerProyectoPorJefe($1)', [idJefe]);
+    const res = await pool.query('SELECT * FROM paxobtenerproyectoporjefe($1)', [idJefe]);
 
-    const proyectos = await Promise.all(res.rows.map(async (proyecto: {
-      id_proyecto: number,
-      titulo: string,
-      descripcion: string,
-      fecha_inicio: Date,
-      fecha_fin: Date,
-      id_cliente: number,
-      id_supervisor: number,
-      id_jefe: number,
-      id_etapa_actual: number,
-      ids_empleados_actuales: number[],
-      info_parametros: string
-    }) => {
-      // Obtener cliente, supervisor, jefe, empleados actuales y etapa actual
-      const [cliente, supervisor, jefe, empleadosActuales, etapaActual] = await Promise.all([
-        obtenerClientesPorIds([proyecto.id_cliente]),
-        obtenerEmpleadosPorIds([proyecto.id_supervisor]),
-        obtenerEmpleadosPorIds([proyecto.id_jefe]),
-        obtenerEmpleadosPorIds(proyecto.ids_empleados_actuales),
-        obtenerEtapaPorId(Number(proyecto.id_etapa_actual))
-      ]);
-
-      return {
-        idProyecto: proyecto.id_proyecto,
-        titulo: proyecto.titulo,
-        descripcion: proyecto.descripcion,
-        fechaInicio: proyecto.fecha_inicio,
-        fechaFin: proyecto.fecha_fin,
-
-        idCliente: proyecto.id_cliente,
-        idSupervisor: proyecto.id_supervisor,
-        idJefe: proyecto.id_jefe,
-        idEtapaActual: proyecto.id_etapa_actual,
-
-        cliente: cliente[0] as Cliente,
-        supervisor: supervisor[0] as Empleado,
-        jefe: jefe[0] as Empleado,
-        etapaActual: etapaActual,
-
-        idEmpleadosActuales: proyecto.ids_empleados_actuales,
-        empleadosActuales: empleadosActuales as Empleado[]
-      } as Proyecto;
-    }));
-
-    return proyectos;
-  }
-  catch (err) {
-    if (err instanceof Error) {
-      console.error('Error executing query', err.stack);
-    } else {
-      console.error('Error executing query', err);
+    if (!res || !res.rows || res.rows.length === 0) {
+        throw new Error(`No se encontró un proyecto con el ID: ${idJefe}`);
     }
-    throw err;
+
+    return res.rows[0].paxobtenerproyectoporjefe as Proyecto[];
+  } catch (error) {
+      console.error('Error al obtener el proyecto por ID:', error);
+      throw error;
+  }
+}
+
+export async function obtenerProyectosPorSupervisor(idSupervisor: number): Promise<Proyecto[]> {
+  try {
+    const res = await pool.query('SELECT * FROM paxobtenerproyectoporsupervisor($1)', [idSupervisor]);
+
+    if (!res || !res.rows || res.rows.length === 0) {
+        throw new Error(`No se encontró un proyecto con el ID: ${idSupervisor}`);
+    }
+
+    return res.rows[0].paxobtenerproyectoporsupervisor as Proyecto[];
+  } catch (error) {
+      console.error('Error al obtener el proyecto por ID:', error);
+      throw error;
   }
 }
 
@@ -466,5 +436,24 @@ export async function registrarFeedback(jsonData: {
           console.error('Error desconocido al registrar feedback:', err);
           throw new Error('Error desconocido al registrar feedback.');
       }
+  }
+}
+
+export async function obtenerHistorialProyecto(idProyecto: number): Promise<HistorialProyecto> {
+  try {
+    // Llama al procedimiento almacenado con el ID del proyecto
+    const res = await pool.query('SELECT paObtenerHistorialProyecto($1) AS historial', [idProyecto]);
+
+    // El resultado estará en la primera fila, en la columna "historial"
+    const historial: HistorialProyecto = res.rows[0].historial;
+
+    return historial;
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error('Error executing query', err.stack);
+    } else {
+      console.error('Error executing query', err);
+    }
+    throw err;
   }
 }

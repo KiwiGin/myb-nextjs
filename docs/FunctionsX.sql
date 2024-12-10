@@ -822,6 +822,19 @@ begin
 end;
 $$ language plpgsql;
 
+-- paxObtenerProyectoPorSupervisor : Obtiene los proyectos por supervisor
+create or replace function paxObtenerProyectoPorSupervisor(
+    id_supervisor_p int
+) returns json as
+$$
+declare
+begin
+    return (select json_agg(paobtenerproyectosporid(p.id_proyecto))
+            from proyecto p
+            where p.id_supervisor = id_supervisor_p);
+end;
+$$ language plpgsql;
+
 -- paxObtenerEtapaPorId : Obtiene la etapa por id
 create or replace function paxObtenerEtapaPorId(
     id_etapa_p int
@@ -1097,6 +1110,82 @@ begin
     return v_feedback_id;
 end;
 $$ language plpgsql;
+
+-- paObtenerHistorialProyecto: Obtiene el historial del proyecto
+create or replace function paObtenerHistorialProyecto(
+    p_id_proyecto integer
+) returns json
+as
+$$
+declare
+    v_etapas_empleados_json json;
+    v_etapas_cambios_json   json;
+    v_historial_json        json;
+begin
+    -- Obtener las etapas y empleados asignados
+    select json_agg(
+               json_build_object(
+                   'idEtapa', e.id_etapa,
+                   'nombreEtapa', e.nombre,
+                   'empleados', (
+                       select json_agg(
+                           json_build_object(
+                               'idEmpleado', em.id_empleado,
+                               'nombre', em.nombre,
+                               'apellido', em.apellido,
+                               'correo', em.correo,
+                               'telefono', em.telefono,
+                               'tipoDocumento', em.tipo_documento,
+                               'documentoIdentidad', em.documento_identidad,
+                               'rol', em.rol,
+                               'linkImg', em.link_img
+                           )
+                       )
+                       from proyecto_etapa_empleado pee
+                                join empleado em on pee.id_tecnico = em.id_empleado
+                       where pee.id_proyecto = p_id_proyecto
+                         and pee.id_etapa = e.id_etapa
+                   )
+               )
+           )
+    into v_etapas_empleados_json
+    from etapa e
+    where e.id_etapa in (
+        select distinct pee.id_etapa
+        from proyecto_etapa_empleado pee
+        where pee.id_proyecto = p_id_proyecto
+    );
+
+    -- Obtener los cambios en las etapas
+    select json_agg(
+               json_build_object(
+                   'idEtapaCambio', pec.id_proyecto_etapas_cambio,
+                   'idEtapa', pec.id_etapa,
+                   'nombreEtapa', e.nombre,
+                   'fechaInicio', pec.fecha_inicio,
+                   'fechaFin', pec.fecha_fin
+               )
+           )
+    into v_etapas_cambios_json
+    from proyecto_etapas_cambio pec
+             join etapa e on pec.id_etapa = e.id_etapa
+    where pec.id_proyecto = p_id_proyecto;
+
+    -- Construir el historial del proyecto
+    select json_build_object(
+               'idProyecto', p_id_proyecto,
+               'etapasEmpleados', v_etapas_empleados_json,
+               'etapasCambios', v_etapas_cambios_json
+           )
+    into v_historial_json;
+
+    return v_historial_json;
+end;
+$$ language plpgsql;
+
+comment on function paObtenerHistorialProyecto(integer) is 'Obtiene el historial del proyecto por ID, incluyendo asignaciones de empleados y cambios de etapas';
+
+
 
 -------------------- COMMENTS --------------------
 

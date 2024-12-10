@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { InterfazReparando } from "./InterfazReparando";
 import { InterfazPintadoYEmbalado } from "./InterfazPintadoYEmbalado";
+import { InterfazTerminado } from "./InterfazTerminado";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
@@ -99,6 +100,8 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
             />
           ) : proyecto.idEtapaActual == 8 ? (
             <InterfazGenerarVentas proyecto={proyecto} />
+          ) : proyecto.idEtapaActual == 9 ? (
+            <InterfazTerminado proyecto={proyecto} />
           ) : null
         ) : (
           empleadoRol === "supervisor" &&

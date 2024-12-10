@@ -6,12 +6,12 @@
 ## /registroProyecto
 
 - [ ] (A)(F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
-- [X] (F) FIX: Al deseleccionar y volver a seleccionar un repuesto este se agrega 2 veces
+- [X] (A)(F) FIX: Al deseleccionar y volver a seleccionar un repuesto este se agrega 2 veces
 
 ## /proyectos
 
-- [ ] (B) Fetchear los proyectos del jefe o del supervisor según el rol (agregar pa)
-	- [ ] (B) Optimizar el da para que use un solo pa (agregar pa)
+- [X] (B) Fetchear los proyectos del jefe o del supervisor según el rol (agregar pa)
+	- [X] (B) Optimizar el da para que use un solo pa (agregar pa)
 - [X] (F) En la proyecto Card para mostrar las imagenes de los empleados
 - [X] (F) En la proyecto Card para mostrar la etapa del proyecto
 - [X] (F) Uniformizar los proyecto Card
@@ -23,17 +23,21 @@
 
 ## /proyectos/proyectoId/ (Generando informe de ventas)
 
-- [ ] (F)(B) Fetchear y agregar la información de los cambios de etapa y los empleados que hubo en estas. (Agregar pa)
+- [X] (F)(B) Fetchear y agregar la información de los cambios de etapa y los empleados que hubo en estas. (Agregar pa)
 
 ## /proyectos/proyectoId/ (Terminado)
 
-- [ ] (F) Agregar el botón para generar el informe de control de calidad
-- [ ] (F) Agregar el botón para generar el informe de ventas
+- [X] (F) Agregar el botón para generar el informe de control de calidad
+- [X] (F) Agregar el botón para generar el informe de ventas
 
 ## /proyectos/proyectoId/ (Ver Detalles)
 
 - [ ] (F) (rol == jefe | supervisor) (etapa >= 5) Agregar el botón para generar el informe de control de calidad
 - [ ] (F) (rol == jefe) (etapa >= 8) Agregar el botón para generar el informe de ventas
+
+## /registroPrueba
+
+- [ ] (F)(B) Agregar descripción de prueba
 
 ## /registroEmpleado
 
@@ -41,11 +45,7 @@
 
 ## /registroCliente
 
-- [ ] (F)(B) Uniformizar en la db para que siga la estructura de empleado
-
-## /registroPrueba
-
-- [ ] (F)(B) Agregar descripción de prueba
+- [X] (F)(B) Uniformizar en la db para que siga la estructura de empleado
 
 ## /proyectos/proyectoId/ (AsignandoRepuestos)
 
@@ -76,12 +76,11 @@
 
 - [ ] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
 - [X] (F) (Opcional) Mostrar nombre completo de Supervisor
-- [ ] (A)(F) (Opcional) Ocultar scrollbar en selección de repuestos
 - [ ] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
 
 ## /registroRepuesto y /registroEmpleado
 
-- [ ] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
+- [X] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
 
 ## /proyeccionRepuestos
 

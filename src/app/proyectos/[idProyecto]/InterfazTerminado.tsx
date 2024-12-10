@@ -1,4 +1,5 @@
 import { GeneratePDF } from "@/components/GeneratePDF";
+import { InformeCC } from "@/components/InformeCC";
 import { InformeSection } from "@/components/InformeSection";
 import { InformeVentas } from "@/components/InformeVentas";
 import { Noice } from "@/components/Noice";
@@ -8,51 +9,9 @@ import { Proyecto, HistorialProyecto } from "@/models/proyecto";
 import { PDFViewer } from "@react-pdf/renderer";
 import { useEffect, useState } from "react";
 
-export function InterfazGenerarVentas({ proyecto }: { proyecto: Proyecto }) {
-  const [noice, setNoice] = useState<NoiceType | null>(null);
+export function InterfazTerminado({ proyecto }: { proyecto: Proyecto }) {
+  const [ noice, setNoice ] = useState<NoiceType | null>(null);
   const [ historial, setHistorial ] = useState<HistorialProyecto | null>(null);
-
-  const handleActualizarEtapa = async () => {
-    setNoice({
-      type: "loading",
-      message: "Cerrando Proyecto",
-      styleType: "modal",
-    });
-
-    try {
-      const response = await fetch(`/api/proyecto/etapa`, {
-        method: "PUT",
-        body: JSON.stringify({
-          idProyecto: proyecto.idProyecto,
-          idEtapa: 9,
-          fechaInicio: new Date(),
-        }),
-      });
-      if (!response.ok) throw new MyBError("Error al cambiar de etapa");
-
-      setNoice({
-        type: "success",
-        message: "Etapa actualizada exitosamente",
-        styleType: "modal",
-      });
-
-      await new Promise<void>((resolve) => {
-        setTimeout(() => {
-          setNoice(null);
-          resolve();
-          window.location.reload();
-        }, 2000);
-      });
-    } catch (error) {
-      if (error instanceof MyBError)
-        setNoice({ type: "error", message: error.message });
-      else
-        setNoice({
-          type: "error",
-          message: "Error al actualizar la etapa",
-        });
-    }
-  };
 
   useEffect(() => {
     const fetchProjectHistory = async () => {
@@ -80,12 +39,27 @@ export function InterfazGenerarVentas({ proyecto }: { proyecto: Proyecto }) {
   if (!historial) return null;
 
   return (
-    <div className="w-full flex flex-row justify-center">
+    <div className="w-full flex flex-col gap-2 content-center">
       {noice && <Noice noice={noice} />}
       <InformeSection
+        informeLabel="Informe de Control de Calidad"
+        actualizarEtapa={async () => {}}
+        canUpdateStage={false}
+      >
+        <>
+          <PDFViewer width="100%" height="100%" showToolbar>
+            <InformeCC proyecto={proyecto} />
+          </PDFViewer>
+          <GeneratePDF
+            Documento={() => <InformeCC proyecto={proyecto} />}
+            pdfName={`Informe de Control de Calidad - ${proyecto.titulo}.pdf`}
+          />
+        </>
+      </InformeSection>
+      <InformeSection
         informeLabel="Informe de Ventas"
-        actualizarEtapa={handleActualizarEtapa}
-        canUpdateStage={true}
+        actualizarEtapa={async () => {}}
+        canUpdateStage={false}
       >
         <>
           <PDFViewer width="100%" height="100%" showToolbar>

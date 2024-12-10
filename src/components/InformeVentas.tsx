@@ -1,5 +1,5 @@
 "use client";
-import { Proyecto } from "@/models/proyecto";
+import { Proyecto, HistorialProyecto } from "@/models/proyecto";
 import {
   Document,
   Page,
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   },
 });
 
-export const InformeVentas = ({ proyecto }: { proyecto: Proyecto }) => {
+export const InformeVentas = ({ proyecto, historial }: { proyecto: Proyecto, historial: HistorialProyecto }) => {
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -160,9 +160,51 @@ export const InformeVentas = ({ proyecto }: { proyecto: Proyecto }) => {
             )}
           </CardPDF>
 
-          <CardPDF title="Historial de Pruebas">
-            <ContentCC proyecto={proyecto} />
+          <CardPDF title="Historial del Proyecto">
+            {/* Etapas con empleados asignados */}
+            <CardPDF title="Etapas y Empleados">
+              {historial.etapasEmpleados && historial.etapasEmpleados.length > 0 ? (
+                historial.etapasEmpleados.map((etapa, index) => (
+                  <CardPDF key={etapa.idEtapa} title={`${index + 1}. ${etapa.nombreEtapa}`}>
+                    {etapa.empleados.length > 0 ? (
+                      etapa.empleados.map((empleado, empIndex) => (
+                        <Text key={empIndex} style={styles.text}>
+                          - {empleado.nombre} {empleado.apellido}
+                        </Text>
+                      ))
+                    ) : (
+                      <Text style={styles.text}>No hay empleados asignados</Text>
+                    )}
+                  </CardPDF>
+                ))
+              ) : (
+                <Text style={styles.text}>No hay etapas con empleados asignados</Text>
+              )}
+            </CardPDF>
+
+            {/* Cambios en las etapas */}
+            {historial.etapasCambios && historial.etapasCambios.length > 0 ? (
+              historial.etapasCambios.map((cambio, index) => (
+                <CardPDF key={cambio.idEtapaCambio} title={`${index + 1}. ${cambio.nombreEtapa}`}>
+                  <Text style={styles.text}>
+                    Fecha de inicio: {new Date(cambio.fechaInicio).toLocaleDateString("es-PE")}
+                  </Text>
+                  <Text style={styles.text}>
+                    Fecha de fin:{" "}
+                    {cambio.fechaFin
+                      ? new Date(cambio.fechaFin).toLocaleDateString("es-PE")
+                      : "En curso"}
+                  </Text>
+                </CardPDF>
+              ))
+            ) : (
+              <Text style={styles.text}>No hay cambios de etapas registrados</Text>
+            )}
           </CardPDF>
+
+          {/* <CardPDF title="Historial de Pruebas">
+            <ContentCC proyecto={proyecto} />
+          </CardPDF> */}
         </View>
       </Page>
     </Document>
