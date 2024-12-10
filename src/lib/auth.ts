@@ -2,12 +2,6 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import MyBError from "@/lib/mybError";
 
-import { EMPLEADOS } from "@/models/MOCKUPS";
-
-const getUserByCorreo = async (correo: string) => {
-  return EMPLEADOS.find((user) => user.correo === correo);
-};
-
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -23,24 +17,29 @@ export const authOptions: NextAuthOptions = {
           password: string;
         };
 
-        const user = await getUserByCorreo(correo);
+        try {
+          const response = await fetch(`${process.env.NEXTAUTH_URL}/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ correo, password }),
+          });
 
-        if (!user) {
-          throw new MyBError("user_not_found");
+          if (!response.ok) {
+            const errorResponse = await response.json();
+            throw new MyBError(errorResponse.message || "auth_error");
+          }
+
+          const { empleado } = await response.json();
+
+          return {
+            id: empleado.idEmpleado!,
+            correo: empleado.correo!,
+            created_at: new Date().toISOString(),
+            rol: empleado.rol! as "admin" | "jefe" | "supervisor" | "tecnico" | "logistica",
+          };
+        } catch (error) {
+          throw error;
         }
-
-        /* const matchPassword = await comparePass(password, user.password);
-
-        if (!matchPassword) {
-          throw new Error("Password does not match");
-        }
- */
-        return {
-          id: user.idEmpleado,
-          correo: user.correo,
-          created_at: new Date().toISOString(),
-          rol: user.rol as "admin" | "jefe" | "supervisor" | "tecnico",
-        };
       },
     }),
   ],
@@ -51,17 +50,17 @@ export const authOptions: NextAuthOptions = {
           id: number;
           correo: string;
           created_at: string | null;
-          rol: "admin" | "jefe" | "supervisor" | "tecnico";
+          rol: "admin" | "jefe" | "supervisor" | "tecnico" | "logistica";
         };
       }
-      return Promise.resolve(token); // JWT interface we declared in next-auth.d.ts
+      return token;
     },
     async session({ session, token }) {
       session.user = token.user;
-      return session; // Session interface we declared in next-auth.d.ts
+      return session;
     },
-    redirect({}) {
-      return "/"; // Redirect to home page
+    redirect() {
+      return "/";
     },
   },
   pages: {

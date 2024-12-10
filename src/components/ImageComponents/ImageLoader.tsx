@@ -82,12 +82,6 @@ export function ImageLoader({
             setBase64(reader.result);
             const img = new Image();
             img.src = reader.result;
-            // img.onload = () => {
-            //     setImageMetadata({
-            //         width: img.width,
-            //         height: img.height,
-            //     });
-            // };
           }
         };
       } catch (error) {
@@ -95,7 +89,6 @@ export function ImageLoader({
       }
     } else {
       setBase64(null);
-      // setImageMetadata(null);
     }
   }
 

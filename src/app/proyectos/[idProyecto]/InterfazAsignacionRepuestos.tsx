@@ -53,7 +53,7 @@ export function InterfazAsignacionRepuestos({
 
       if (!response.ok) throw new MyBError("Error al solicitar repuestos");
 
-      const data = await response.json();
+      await response.json();
 
       setNoice({
         type: "success",
@@ -92,7 +92,7 @@ export function InterfazAsignacionRepuestos({
 
       if (!response.ok) throw new MyBError("Error al asignar repuestos");
 
-      const data = await response.json();
+      await response.json();
 
       setNoice({
         type: "success",

@@ -30,23 +30,6 @@
 - [X] (F) Agregar el botón para generar el informe de control de calidad
 - [X] (F) Agregar el botón para generar el informe de ventas
 
-## /proyectos/proyectoId/ (Ver Detalles)
-
-- [ ] (F) (rol == jefe | supervisor) (etapa >= 5) Agregar el botón para generar el informe de control de calidad
-- [ ] (F) (rol == jefe) (etapa >= 8) Agregar el botón para generar el informe de ventas
-
-## /registroEmpleado
-
-- [X] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
-
-## /registroCliente
-
-- [ ] (F)(B) Uniformizar en la db para que siga la estructura de empleado
-
-## /registroPrueba
-
-- [ ] (F)(B) Agregar descripción de prueba
-
 ## /registroEmpleado
 
 - [X] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
@@ -74,7 +57,7 @@
 ## General
 
 - [ ] Agreglar el manejo de las fechas
-- [ ] Add sesion handlers in Interfaces
+- [X] Add sesion handlers in Interfaces
 
 ---
 
@@ -90,7 +73,3 @@
 
 - [X] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
 - [X] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
-
-## /proyeccionRepuestos
-
-- [ ] (F)(B) (Opcional) Mostrar 2 secciones: repuestos disponibles, repuestos requeridos (solo se puede pedir en esta última)

@@ -16,15 +16,17 @@ import { useRouter } from "next/navigation";
 import { InterfazReparando } from "./InterfazReparando";
 import { InterfazPintadoYEmbalado } from "./InterfazPintadoYEmbalado";
 import { InterfazTerminado } from "./InterfazTerminado";
+import { useSession } from "next-auth/react";
 
 export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
   const [proyecto, setProyecto] = useState<Proyecto>();
-  const [empleadoRol, setEmpleadoRol] = useState<"jefe" | "supervisor">("jefe");
   const router = useRouter();
   const [noice, setNoice] = useState<NoiceType | null>({
     type: "loading",
     message: "Cargando proyecto...",
   });
+
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     const fetchProyecto = async () => {
@@ -60,21 +62,12 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
 
   return (
     <div className="flex flex-col items-center pt-10 px-20 gap-3">
-      {/* Switch beetween Jefe y Supervisor */}
-      <Button
-        onClick={() =>
-          setEmpleadoRol(empleadoRol === "jefe" ? "supervisor" : "jefe")
-        }
-        className="fixed top-5 right-5 z-50 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg"
-      >
-        {empleadoRol === "jefe" ? "Jefe" : "Supervisor"}
-      </Button>
 
       {noice && <Noice noice={noice} />}
       <div className="w-full">
         <Button
           onClick={() => {
-            router.back();
+            router.push("/proyectos");
           }}
           variant={"outline"}
         >
@@ -85,7 +78,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
       <ProyectoHeader proyecto={proyecto} showSeeDetailsBtn={true} />
       <ProjectFlow etapa={Number(proyecto.idEtapaActual) - 1} />
       <div className="w-full">
-        {empleadoRol == "jefe" ? (
+        {session?.user.rol == "jefe" ? (
           proyecto.idEtapaActual == 1 ? (
             <InterfazAsignacionRepuestos proyecto={proyecto} />
           ) : proyecto.idEtapaActual == 2 ? (
@@ -104,7 +97,7 @@ export function InterfazFlujoProyecto({ idProyecto }: { idProyecto: string }) {
             <InterfazTerminado proyecto={proyecto} />
           ) : null
         ) : (
-          empleadoRol === "supervisor" &&
+          session?.user.rol === "supervisor" &&
           (proyecto.idEtapaActual == 4 ? (
             <InterfazVerificacionReparacion
               proyecto={proyecto}

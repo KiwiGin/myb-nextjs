@@ -18,8 +18,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const loginSchema = z.object({
-  correo: z.string().min(1, { message: "El correo es requerido" }),
-  password: z.string().min(1, { message: "La contraseña es requerida" }),
+  correo: z.string().email({ message: "Debe ser un correo válido" }).min(1, { message: "El correo es requerido" }),
+  password: z.string().min(8, { message: "La contraseña debe tener al menos 8 caracteres" }).min(1, { message: "La contraseña es requerida" }),
 });
 
 type LoginData = z.infer<typeof loginSchema>;
@@ -38,28 +38,26 @@ export default function Page() {
   const onSubmit = async (data: LoginData) => {
     try {
       const { correo, password } = data;
-      await signIn("credentials", {
+  
+      // Intentar iniciar sesión con credenciales
+      signIn("credentials", {
         correo,
         password,
         redirect: true,
       });
+
     } catch (error) {
       if (error instanceof MyBError) {
-        if (error.message === "user_not_found") {
-          form.setError("correo", {
-            message: "Correo o contraseña no encontrados",
-          });
-          return;
-        }
         setNoice({
           type: "error",
           message: error.message,
         });
-      } else
+      } else {
         setNoice({
           type: "error",
-          message: "Ocurrió un error inesperado",
+          message: "Ocurrió un error inesperado. Intenta de nuevo.",
         });
+      }
     }
   };
 

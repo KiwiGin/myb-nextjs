@@ -326,6 +326,21 @@ export async function obtenerProyectosPorSupervisor(idSupervisor: number): Promi
   }
 }
 
+export async function obtenerProyectoPorTecnico(idTecnico: number): Promise<Proyecto> {
+  try {
+    const res = await pool.query('SELECT * FROM paobtenerproyectoportecnico($1)', [idTecnico]);
+
+    if (!res || !res.rows || res.rows.length === 0) {
+        throw new Error(`No se encontró un asignado al tecnico: ${idTecnico}`);
+    }
+
+    return res.rows[0].paobtenerproyectoportecnico as Proyecto;
+  } catch (error) {
+      console.error('Error al obtener un proyecto por tecnico:', error);
+      throw error;
+  }
+}
+
 export async function obtenerProyectoPorId(idProyecto: number): Promise<Proyecto> {
   try {
       const res = await pool.query('SELECT * FROM paObtenerProyectosPorId($1)', [idProyecto]);

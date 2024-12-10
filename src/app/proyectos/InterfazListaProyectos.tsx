@@ -28,8 +28,8 @@ export function InterfazListaProyectos() {
         const response = await fetch(APIEndPoint);
         if (!response.ok) throw new Error("Error al cargar proyectos");
         const data: Proyecto[] = await response.json();
-        setProyectos(data);
-        setFilteredProyectos(data);
+        setProyectos(data ? data : []);
+        setFilteredProyectos(data ? data : []);
         setNoice(null);
       } catch {
         setNoice({ type: "error", message: "Error al cargar sus proyectos" });

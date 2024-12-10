@@ -110,6 +110,11 @@ export function InterfazRegistroEmpleado() {
     }
   };
 
+  const hashP = async () => {
+    const hashedPassword = await bcrypt.hash("123", 10);
+    console.log(hashedPassword);
+  }
+
   return (
     <div className="p-4 max-w-md mx-auto">
       {noice && <Noice noice={noice} />}
@@ -250,7 +255,11 @@ export function InterfazRegistroEmpleado() {
         <Button type="submit" className="w-full mt-4">
           Registrar Empleado
         </Button>
+
       </form>
+      <Button onClick={hashP} className="w-full mt-4">
+        Hash P
+      </Button>
     </div>
   );
 }

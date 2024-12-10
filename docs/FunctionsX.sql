@@ -1185,6 +1185,43 @@ $$ language plpgsql;
 
 comment on function paObtenerHistorialProyecto(integer) is 'Obtiene el historial del proyecto por ID, incluyendo asignaciones de empleados y cambios de etapas';
 
+-- paValidarCorreo: Obtiene la información del empleado por correo
+create or replace function paValidarCorreo(
+    p_correo varchar
+) returns json
+as
+$$
+declare
+    v_empleado json;
+begin
+    -- Intentar obtener el empleado con el correo proporcionado
+    select json_build_object(
+               'idEmpleado', e.id_empleado,
+               'password', e.password,
+               'nombre', e.nombre,
+               'apellido', e.apellido,
+               'correo', e.correo,
+               'telefono', e.telefono,
+               'direccion', e.direccion,
+               'tipoDocumento', e.tipo_documento,
+               'documentoIdentidad', e.documento_identidad,
+               'rol', e.rol,
+               'linkImg', e.link_img
+           )
+    into v_empleado
+    from empleado e
+    where e.correo = p_correo;
+
+    -- Si no se encuentra el empleado, retornar NULL
+    if v_empleado is null then
+        raise exception 'Usuario no encontrado';
+    end if;
+
+    return v_empleado;
+end;
+$$ language plpgsql;
+
+comment on function paValidarCorreo(varchar) is 'Obtiene la información del empleado por correo';
 
 
 -------------------- COMMENTS --------------------

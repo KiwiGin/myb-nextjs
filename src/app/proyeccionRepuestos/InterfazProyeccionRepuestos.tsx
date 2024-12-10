@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { Repuesto } from "@/models/repuesto";
 import { NoiceType } from "@/models/noice";
 import { Noice } from "@/components/Noice";
+import { useSession } from "next-auth/react";
 
 // Define la estructura de un repuesto usando Zod
 const repuestoSchema = z
@@ -55,13 +56,14 @@ export function InterfazProyeccionRepuestos() {
     name: "repuestos",
   });
 
-  const idJefe = 1;
+  const { data: session, status } = useSession();
 
   useEffect(() => {
     async function fetchRepuestos() {
+      if (status === "loading") return
       try {
         const response = await fetch(
-          `/api/repuesto/faltantes/por-jefe/${idJefe}`,
+          `/api/repuesto/faltantes/por-jefe/${session?.user?.id}`,
           {
             method: "GET",
           }
@@ -94,7 +96,7 @@ export function InterfazProyeccionRepuestos() {
       }
     }
     fetchRepuestos();
-  }, [form]);
+  }, [form, status]);
 
   const onSubmit = async (data: ProyeccionData) => {
     setNoice({

@@ -87,7 +87,7 @@ export async function actualizarStockRepuestos(repuestos: { idRepuesto: number, 
 //obtener respuestos requeridos
 export async function obtenerRepuestosRequeridos() {
   try {
-    const res = await pool.query('SELECT * FROM paObtenerRepuestosRequeridos()');
+    const res = await pool.query('SELECT * FROM paobtenerrepuestosrequeridos()');
     const repuestos: Repuesto[] = res.rows.map((repuesto: {
       id_repuesto: number,
       nombre: string,

@@ -144,7 +144,7 @@ export function InterfazSeguimientoTareasReparacion({
     setNoice({ type: "loading", message: "Registrando resultados..." });
 
     try {
-      /* const res = await fetch("/api/proyecto/reparando", {
+      const res = await fetch("/api/proyecto/reparando", {
         method: "POST",
         body: JSON.stringify(data),
         headers: {
@@ -152,7 +152,7 @@ export function InterfazSeguimientoTareasReparacion({
         },
       });
 
-      await res.json(); */
+      await res.json();
 
       setNoice({
         type: "success",
