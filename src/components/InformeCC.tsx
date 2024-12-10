@@ -10,46 +10,40 @@ const styles = StyleSheet.create({
     padding: 30,
   },
   section: {
-    marginBottom: 10,
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     textAlign: "center",
-    fontWeight: 700,
-    marginBottom: 16,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textTransform: "uppercase",
+  },
+  subtitle: {
+    fontSize: 16,
+    marginBottom: 10,
+    fontWeight: "bold",
   },
   text: {
-    fontSize: 14,
-    color: "#000",
-  },
-  base: {
-    marginBottom: 4,
-    padding: 2,
-    borderWidth: 2,
-    borderRadius: 4,
-    width: "100%",
-  },
-  rejected: {
-    borderColor: "red",
-    backgroundColor: "lightpink",
-  },
-  approved: {
-    borderColor: "green",
-    backgroundColor: "lightgreen",
-  },
-  default: {
-    borderColor: "black",
-  },
-  resultadoSupervisor: {
-    marginTop: 16,
-    paddingLeft: 16,
-    borderLeftWidth: 2,
-    borderLeftColor: "#d1d5db",
-    backgroundColor: "#f3f4f6",
-  },
-  baseText: {
     fontSize: 12,
-    color: "#000",
+    marginBottom: 8,
+    lineHeight: 1.5,
+  },
+  highlight: {
+    fontWeight: "bold",
+    fontSize: 12,
+  },
+  sectionContent: {
+    marginBottom: 16,
+    paddingLeft: 12,
+    borderLeft: "2px solid #d1d5db",
+  },
+  feedback: {
+    marginTop: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderRadius: 4,
+    backgroundColor: "#f9f9f9",
   },
 });
 
@@ -58,8 +52,9 @@ export const InformeCC = ({ proyecto }: { proyecto: Proyecto }) => {
     <Document>
       <Page size="A4" style={styles.page}>
         <Text style={styles.title}>
-          Informe de Control de Calidad para el Proyecto: {proyecto.titulo}
+          Informe de Control de Calidad
         </Text>
+        <Text style={styles.subtitle}>Proyecto: {proyecto.titulo}</Text>
         <ContentCC proyecto={proyecto} />
       </Page>
     </Document>
@@ -71,7 +66,6 @@ export const ContentCC = ({ proyecto }: { proyecto: Proyecto }) => {
     proyecto?.resultados || []
   );
 
-  // Filtrar resultados técnicos (no respuestas del supervisor)
   const resultadosFiltrados = resultadosAnteriores.filter(
     (resultado) =>
       !proyecto.feedbacks?.some(
@@ -81,12 +75,11 @@ export const ContentCC = ({ proyecto }: { proyecto: Proyecto }) => {
   );
 
   return (
-    <View style={{ flexDirection: "column", gap: 10 }}>
+    <View style={styles.section}>
       {resultadosFiltrados.length > 0 ? (
         resultadosFiltrados
           .toSorted((a, b) => b.idResultadoPrueba - a.idResultadoPrueba)
           .map((resultado, index) => {
-            // Verificar si este resultado técnico tiene feedback
             const feedbackRelacionado = proyecto.feedbacks?.find(
               (fb) =>
                 fb.idResultadoPruebaTecnico === resultado.idResultadoPrueba
@@ -97,7 +90,6 @@ export const ContentCC = ({ proyecto }: { proyecto: Proyecto }) => {
             const esAprobado =
               feedbackRelacionado && feedbackRelacionado.aprobado;
 
-            // Buscar resultado del supervisor relacionado
             const resultadoSupervisor = feedbackRelacionado
               ? resultadosAnteriores.find(
                   (res) =>
@@ -106,113 +98,78 @@ export const ContentCC = ({ proyecto }: { proyecto: Proyecto }) => {
                 )
               : null;
 
-            let containerStyle = styles.base; // Estilo base por defecto
-
-            if (esRechazado) {
-              containerStyle = { ...styles.base, ...styles.rejected };
-            } else if (esAprobado) {
-              containerStyle = { ...styles.base, ...styles.approved };
-            } else {
-              containerStyle = { ...styles.base, ...styles.default };
-            }
-
             return (
-              <View key={index} style={containerStyle} wrap={false}>
-                <Text style={styles.baseText}>
-                  Fecha: {new Date(resultado.fecha).toLocaleDateString()}
+              <View key={index} style={styles.sectionContent} wrap={false}>
+                <Text style={styles.text}>
+                  <Text style={styles.highlight}>Fecha:</Text> {new Date(resultado.fecha).toLocaleDateString()}
                 </Text>
-                <Text style={styles.baseText}>
-                  Empleado:{" "}
-                  {proyecto.empleadosActuales?.find(
+                <Text style={styles.text}>
+                  <Text style={styles.highlight}>Empleado:</Text> {proyecto.empleadosActuales?.find(
                     (e) => e.idEmpleado === resultado.idEmpleado
                   )?.nombre || "Desconocido"}
                 </Text>
+
                 {resultado.resultados.map((prueba, index) => (
-                  <View key={index} style={{ marginBottom: 8 }}>
-                    <Text style={styles.baseText}>
-                      Prueba:{" "}
-                      {
-                        proyecto.especificaciones?.filter(
-                          (e) => e.idTipoPrueba === prueba.idTipoPrueba
-                        )[0]?.nombre
-                      }
+                  <View key={index} style={{ marginBottom: 12 }}>
+                    <Text style={styles.text}>
+                      <Text style={styles.highlight}>Prueba:</Text> {proyecto.especificaciones?.find(
+                        (e) => e.idTipoPrueba === prueba.idTipoPrueba
+                      )?.nombre || "Desconocido"}
                     </Text>
                     <View style={{ marginLeft: 16 }}>
                       {prueba.resultadosParametros.map((parametro, index) => (
-                        <Text style={styles.baseText} key={index}>
-                          {parametro.nombre}: {parametro.resultado}{" "}
-                          {parametro.unidades} -{" "}
-                          {
-                            proyecto.especificaciones
-                              ?.filter(
-                                (e) => e.idTipoPrueba === prueba.idTipoPrueba
-                              )[0]
-                              ?.parametros.filter(
-                                (p) => p.idParametro === parametro.idParametro
-                              )[0]?.valorMinimo
-                          }{" "}
-                          -{" "}
-                          {
-                            proyecto.especificaciones
-                              ?.filter(
-                                (e) => e.idTipoPrueba === prueba.idTipoPrueba
-                              )[0]
-                              ?.parametros.filter(
-                                (p) => p.idParametro === parametro.idParametro
-                              )[0]?.valorMaximo
-                          }
+                        <Text style={styles.text} key={index}>
+                          <Text style={styles.highlight}>{parametro.nombre}:</Text> {parametro.resultado} {parametro.unidades} 
+                          (Min: {proyecto.especificaciones?.find(
+                            (e) => e.idTipoPrueba === prueba.idTipoPrueba
+                          )?.parametros.find(
+                            (p) => p.idParametro === parametro.idParametro
+                          )?.valorMinimo} - Max: {proyecto.especificaciones?.find(
+                            (e) => e.idTipoPrueba === prueba.idTipoPrueba
+                          )?.parametros.find(
+                            (p) => p.idParametro === parametro.idParametro
+                          )?.valorMaximo})
                         </Text>
                       ))}
                     </View>
                   </View>
                 ))}
 
-                {/* Comentario del feedback */}
                 {feedbackRelacionado && (
-                  <View style={{ marginTop: 16 }}>
-                    <Text style={styles.baseText}>
-                      Comentario: {feedbackRelacionado.comentario}
+                  <View style={styles.feedback}>
+                    <Text style={styles.text}>
+                      <Text style={styles.highlight}>Comentario:</Text> {feedbackRelacionado.comentario}
                     </Text>
-                    <Text style={styles.baseText}>
-                      Aprobado: {feedbackRelacionado.aprobado ? "Sí" : "No"}
+                    <Text style={styles.text}>
+                      <Text style={styles.highlight}>Aprobado:</Text> {feedbackRelacionado.aprobado ? "Sí" : "No"}
                     </Text>
                   </View>
                 )}
 
-                {/* Resultado del supervisor como respuesta */}
                 {resultadoSupervisor && (
-                  <View style={styles.resultadoSupervisor}>
-                    <Text style={styles.baseText}>
-                      <Text style={styles.baseText}>
-                        Respuesta del Supervisor:
-                      </Text>
+                  <View style={styles.feedback}>
+                    <Text style={styles.text}>
+                      <Text style={styles.highlight}>Respuesta del Supervisor:</Text>
                     </Text>
-                    <Text style={styles.baseText}>
-                      Fecha:{" "}
-                      {new Date(resultadoSupervisor.fecha).toLocaleDateString()}
+                    <Text style={styles.text}>
+                      <Text style={styles.highlight}>Fecha:</Text> {new Date(resultadoSupervisor.fecha).toLocaleDateString()}
                     </Text>
-                    <Text style={styles.baseText}>
-                      Empleado: {resultadoSupervisor.idEmpleado}
+                    <Text style={styles.text}>
+                      <Text style={styles.highlight}>Empleado:</Text> {resultadoSupervisor.idEmpleado}
                     </Text>
                     {resultadoSupervisor.resultados.map((prueba, index) => (
-                      <View key={index} style={{ marginBottom: 8 }}>
-                        <Text style={styles.baseText}>
-                          Prueba:{" "}
-                          {
-                            proyecto.especificaciones?.filter(
-                              (e) => e.idTipoPrueba === prueba.idTipoPrueba
-                            )[0]?.nombre
-                          }
+                      <View key={index} style={{ marginBottom: 12 }}>
+                        <Text style={styles.text}>
+                          <Text style={styles.highlight}>Prueba:</Text> {proyecto.especificaciones?.find(
+                            (e) => e.idTipoPrueba === prueba.idTipoPrueba
+                          )?.nombre || "Desconocido"}
                         </Text>
                         <View style={{ marginLeft: 16 }}>
-                          {prueba.resultadosParametros.map(
-                            (parametro, index) => (
-                              <Text style={styles.baseText} key={index}>
-                                {parametro.nombre}: {parametro.resultado}{" "}
-                                {parametro.unidades}
-                              </Text>
-                            )
-                          )}
+                          {prueba.resultadosParametros.map((parametro, index) => (
+                            <Text style={styles.text} key={index}>
+                              <Text style={styles.highlight}>{parametro.nombre}:</Text> {parametro.resultado} {parametro.unidades}
+                            </Text>
+                          ))}
                         </View>
                       </View>
                     ))}
@@ -222,7 +179,7 @@ export const ContentCC = ({ proyecto }: { proyecto: Proyecto }) => {
             );
           })
       ) : (
-        <Text>No hay resultados anteriores disponibles.</Text>
+        <Text style={styles.text}>No hay resultados anteriores disponibles.</Text>
       )}
     </View>
   );

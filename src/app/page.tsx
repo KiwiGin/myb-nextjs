@@ -5,14 +5,14 @@ import { Fragment, useEffect, useState } from "react";
 import { signOut } from "next-auth/react";
 import { NoiceType } from "@/models/noice";
 import { Noice } from "@/components/Noice";
-import { PictureCard } from "@/components/PictureCard";
 import { Button } from "@/components/ui/button";
 import { Logout } from "@/components/icons/Logout";
 import { authorizedRoutes } from "@/lib/auth";
+import { EmpleadoPictureCard } from "@/components/EmpleadoPictureCard";
+import { Empleado } from "@/models/empleado";
 
 export default function Home() {
   const { data: session } = useSession();
-  const [open, setOpen] = useState(false);
   const [noice, setNoice] = useState<NoiceType | null>({
     type: "loading",
     message: "Estamos configurando algunas cosas...",
@@ -60,36 +60,9 @@ export default function Home() {
           </div>
         )
       )}
-      <div className="absolute right-0 top-0 w-52 py-6 flex flex-row">
+      <div className="absolute right-0 top-0 w-52 py-6 flex flex-row items-center">
         <div className="relative px-10">
-          <Button
-            onClick={() => {
-              setOpen(!open);
-            }}
-            size="icon"
-            className="rounded-full bg-transparent"
-            data-dropdown-toggle="dropdown"
-          >
-            <PictureCard
-              imageSrc="https://avatar.iran.liara.run/username?username=Chupapi+300"
-              title={session?.user.correo}
-              name="Usuario"
-              className="w-16 h-16 hover:scale-110 transition duration-300 ease-in-out"
-            />
-          </Button>
-          <div
-            id="dropdown"
-            className={`${
-              !open && "hidden"
-            } absolute -left-12 z-10 text-base bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700`}
-          >
-            <div className="w-full flex flex-col py-4 px-6">
-              <h1 className="font-semibold">Correo</h1>
-              <p className="font-thin">{session?.user.correo}</p>
-              <h1 className="font-semibold mt-4">Rol</h1>
-              <p className="font-thin">{session?.user.rol}</p>
-            </div>
-          </div>
+          { session?.user && <EmpleadoPictureCard empleado={session?.user as Empleado} enableOnHoverInfo />}
         </div>
         <Button
           onClick={() => {

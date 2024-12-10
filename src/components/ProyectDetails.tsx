@@ -10,31 +10,27 @@ import { Button } from './ui/button';
 import { ResultadosModal } from './ResultadosModal';
 import { EmpleadoPictureCard } from './EmpleadoPictureCard';
 
-
 interface ProyectoDetalleProps {
   proyecto: Proyecto;
 }
 
-const ProyectoDetalle: React.FC<ProyectoDetalleProps> = ({ proyecto } : ProyectoDetalleProps) => {
-
+const ProyectoDetalle: React.FC<ProyectoDetalleProps> = ({ proyecto }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{proyecto.titulo}</CardTitle>
+    <Card className="bg-gray-50 shadow-lg rounded-lg">
+      <CardHeader className="border-b pb-4">
+        <CardTitle className="text-2xl font-bold text-gray-800">{proyecto.titulo}</CardTitle>
       </CardHeader>
-      <CardContent>
-        <CardDescription>
-          {proyecto.descripcion}
-          {/* <p>Fecha de Inicio: {proyecto.fechaInicio!.toLocaleDateString()}</p>
-          <p>Fecha de Fin: {proyecto.fechaFin!.toLocaleDateString()}</p> */}
-        </CardDescription>
-        <p>Costo Total: ${proyecto.costoTotal?.toFixed(2) || 'No calculado'}</p>
-        
+      <CardContent className="p-6 space-y-6">
+        <CardDescription className="text-gray-600">{proyecto.descripcion}</CardDescription>
+        <p className="text-lg font-semibold text-gray-700">
+          Costo Total: <span className="text-green-600">${proyecto.costoTotal?.toFixed(2) || 'No calculado'}</span>
+        </p>
+
         {/* Cliente */}
         {proyecto.cliente && <ClienteInfo cliente={proyecto.cliente} />}
-        
+
         {/* Empleados */}
         {proyecto.empleadosActuales && (
           <EmpleadosInfo empleados={proyecto.empleadosActuales} />
@@ -48,7 +44,10 @@ const ProyectoDetalle: React.FC<ProyectoDetalleProps> = ({ proyecto } : Proyecto
           <EspecificacionesInfo especificaciones={proyecto.especificaciones} />
         )}
 
-        <Button onClick={() => setDialogOpen(true)} className="mb-4">
+        <Button
+          onClick={() => setDialogOpen(true)}
+          className="w-full bg-black text-white hover:bg-gray-600 transition-colors duration-200"
+        >
           Ver Historial de Pruebas
         </Button>
 
@@ -66,9 +65,9 @@ interface ClienteInfoProps {
 
 const ClienteInfo: React.FC<ClienteInfoProps> = ({ cliente }) => {
   return (
-    <Card>
+    <Card className="bg-white shadow-md rounded-md p-4">
       <CardHeader>
-        <CardTitle>Cliente</CardTitle>
+        <CardTitle className="text-lg font-semibold text-gray-800">Cliente</CardTitle>
       </CardHeader>
       <CardContent>
         <p>Nombre: {cliente.nombre}</p>
@@ -87,25 +86,19 @@ interface EmpleadosInfoProps {
 
 const EmpleadosInfo: React.FC<EmpleadosInfoProps> = ({ empleados }) => {
   return (
-    <Card>
+    <Card className="bg-white shadow-md rounded-md p-4">
       <CardHeader>
-        <CardTitle>Empleados Actuales</CardTitle>
+        <CardTitle className="text-lg font-semibold text-gray-800">Empleados Actuales</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul>
+        <ul className="space-y-4">
           {empleados.map((empleado) => (
-            <li key={empleado.idEmpleado}>
-            <div className="flex rounded-md border shadow-sm justify-between items-center p-4 bg-white">
-              {/* Imagen */}
-              <EmpleadoPictureCard empleado={empleado} />
-              {/* Información del empleado */}
-              <div className="flex-1 flex flex-col pl-4">
-                <p className="text-lg font-medium leading-none text-gray-800">
-                  {`${empleado.nombre} ${empleado.apellido}`}
-                </p>
+            <li key={empleado.idEmpleado} className="flex items-center gap-4 bg-gray-100 p-4 rounded-lg shadow">
+              <EmpleadoPictureCard empleado={empleado} enableOnHoverInfo />
+              <div className="flex-1">
+                <p className="text-lg font-medium">{`${empleado.nombre} ${empleado.apellido}`}</p>
                 <p className="text-sm text-gray-600">{empleado.correo}</p>
               </div>
-            </div>
             </li>
           ))}
         </ul>
@@ -120,26 +113,26 @@ interface RepuestosInfoProps {
 
 const RepuestosInfo: React.FC<RepuestosInfoProps> = ({ repuestos }) => {
   return (
-    <Card>
+    <Card className="bg-white shadow-md rounded-md p-4">
       <CardHeader>
-        <CardTitle>Repuestos</CardTitle>
+        <CardTitle className="text-lg font-semibold text-gray-800">Repuestos</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul>
+        <ul className="space-y-4">
           {repuestos.map((repuesto) => (
-            <li key={repuesto.idRepuesto} className="flex items-center gap-4">
+            <li key={repuesto.idRepuesto} className="flex items-center gap-4 bg-gray-100 p-4 rounded-lg shadow">
               {repuesto.linkImg && (
                 <Image
                   src={repuesto.linkImg}
                   alt={`Imagen de ${repuesto.nombre}`}
                   width={50}
                   height={50}
-                  className="rounded"
+                  className="rounded-md"
                 />
               )}
               <div>
-                <p>Nombre: {repuesto.nombre}</p>
-                <p>Precio: ${repuesto.precio.toFixed(2)}</p>
+                <p className="font-semibold">{repuesto.nombre}</p>
+                <p className="text-gray-600">Precio: ${repuesto.precio.toFixed(2)}</p>
                 <p>{repuesto.descripcion}</p>
               </div>
             </li>
@@ -150,28 +143,29 @@ const RepuestosInfo: React.FC<RepuestosInfoProps> = ({ repuestos }) => {
   );
 };
 
-
 interface EspecificacionesInfoProps {
   especificaciones: EspecificacionPrueba[];
 }
 
 const EspecificacionesInfo: React.FC<EspecificacionesInfoProps> = ({ especificaciones }) => {
   return (
-    <Card>
+    <Card className="bg-white shadow-md rounded-md p-4">
       <CardHeader>
-        <CardTitle>Especificaciones de Pruebas</CardTitle>
+        <CardTitle className="text-lg font-semibold text-gray-800">Especificaciones de Pruebas</CardTitle>
       </CardHeader>
       <CardContent>
-        <ul>
+        <ul className="space-y-4">
           {especificaciones.map((especificacion) => (
-            <li key={especificacion.idTipoPrueba} className="mb-4">
-              <h3>{especificacion.nombre}</h3>
-              <ul>
+            <li key={especificacion.idTipoPrueba}>
+              <h3 className="font-semibold">{especificacion.nombre}</h3>
+              <ul className="mt-2 space-y-2">
                 {especificacion.parametros.map((parametro) => (
                   <li key={parametro.idParametro}>
-                    <p>Parámetro: {parametro.nombre}</p>
-                    <p>Unidad: {parametro.unidades}</p>
-                    <p>Rango: {parametro.valorMinimo} - {parametro.valorMaximo}</p>
+                    <p className="text-sm">Parámetro: {parametro.nombre}</p>
+                    <p className="text-sm">Unidad: {parametro.unidades}</p>
+                    <p className="text-sm">
+                      Rango: {parametro.valorMinimo} a {parametro.valorMaximo}
+                    </p>
                   </li>
                 ))}
               </ul>

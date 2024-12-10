@@ -5,6 +5,11 @@ export declare module "next-auth" {
       id: number;
       created_at: string | null;
       rol: "admin" | "jefe" | "supervisor" | "tecnico" | "logistica";
+      nombre: string;
+      apellido: string;
+      telefono: string;
+      direccion: string;
+      linkImg: string | null;
     };
   }
   interface User {
@@ -12,6 +17,11 @@ export declare module "next-auth" {
     id: number;
     created_at: string | null;
     rol: "admin" | "jefe" | "supervisor" | "tecnico" | "logistica";
+    nombre: string;
+    apellido: string;
+    telefono: string;
+    direccion: string;
+    linkImg: string | null;
   }
 }
 
@@ -22,6 +32,11 @@ export declare module "next-auth/jwt" {
       id: number;
       created_at: string | null;
       rol: "admin" | "jefe" | "supervisor" | "tecnico" | "logistica";
+      nombre: string;
+      apellido: string;
+      telefono: string;
+      direccion: string;
+      linkImg: string | null;
     };
   }
 }

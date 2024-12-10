@@ -17,31 +17,27 @@ export function EmpleadosList<T extends EmpleadoForm>({
   error,
 }: EmpleadoListProps<EmpleadoForm>) {
   return (
-    <div className={`mx-3 ${className}`} style={{ height: "40h" }}>
+    <div className={`mx-3 ${className} grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4`}>
       {empleados.length === 0 ? (
-        <p className="w-full text-center">{messageNothingAdded}</p>
+        <p className="w-full text-center text-gray-500">{messageNothingAdded}</p>
       ) : (
         empleados.map((empleado, index) => (
-          <div key={empleado.idEmpleado} className="pt-4 w-full">
-            <div className="flex rounded-md border shadow-sm justify-between items-center p-4 bg-white">
-              {/* Imagen */}
-              <EmpleadoPictureCard empleado={empleado} />
-              {/* Información del empleado */}
-              <div className="flex-1 flex flex-col pl-4">
-                <p className="text-lg font-medium leading-none text-gray-800">
-                  {`${empleado.nombre} ${empleado.apellido}`}
-                </p>
-                <p className="text-sm text-gray-600">{empleado.correo}</p>
-              </div>
-              {/* Selector opcional */}
-              {selector && (
-                <div className="ml-auto">
-                  {selector(index, empleado as T)}
-                </div>
-              )}
+          <div key={empleado.idEmpleado} className="p-4 rounded-md border shadow-sm bg-white flex flex-col space-y-2">
+            {/* Imagen */}
+            <EmpleadoPictureCard empleado={empleado} />
+            {/* Información del empleado */}
+            <div className="flex-1 flex flex-col items-start">
+              <p className="text-lg font-medium text-gray-800">{`${empleado.nombre} ${empleado.apellido}`}</p>
+              <p className="text-sm text-gray-600">{empleado.correo}</p>
             </div>
+            {/* Selector opcional */}
+            {selector && (
+              <div className="mt-auto">
+                {selector(index, empleado as T)}
+              </div>
+            )}
             {/* Mensaje de error */}
-            {error && error(index)}
+            {error && <div className="mt-2 text-red-500 text-sm">{error(index)}</div>}
           </div>
         ))
       )}

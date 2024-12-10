@@ -31,11 +31,18 @@ export const authOptions: NextAuthOptions = {
 
           const { empleado } = await response.json();
 
+          console.log("empleado", empleado);
+
           return {
             id: empleado.idEmpleado!,
             correo: empleado.correo!,
             created_at: new Date().toISOString(),
             rol: empleado.rol! as "admin" | "jefe" | "supervisor" | "tecnico" | "logistica",
+            nombre: empleado.nombre!,
+            apellido: empleado.apellido!,
+            telefono: empleado.telefono!,
+            direccion: empleado.direccion!,
+            linkImg: empleado.linkImg!,
           };
         } catch (error) {
           throw error;
@@ -51,6 +58,11 @@ export const authOptions: NextAuthOptions = {
           correo: string;
           created_at: string | null;
           rol: "admin" | "jefe" | "supervisor" | "tecnico" | "logistica";
+          nombre: string;
+          apellido: string;
+          telefono: string;
+          direccion: string;
+          linkImg: string | null;
         };
       }
       return token;

@@ -36,7 +36,7 @@ export function ProyectoHeader({
       {/* Empleados actuales */}
       <div className="flex gap-2 flex-wrap md:flex-nowrap h-auto md:h-20">
         {proyecto.empleadosActuales?.map((empleado) => (
-          <EmpleadoPictureCard key={empleado.idEmpleado} empleado={empleado} />
+          <EmpleadoPictureCard key={empleado.idEmpleado} empleado={empleado} enableOnHoverInfo />
         ))}
       </div>
     </div>

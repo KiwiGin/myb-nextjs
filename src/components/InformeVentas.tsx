@@ -7,230 +7,307 @@ import {
   Text,
   StyleSheet,
   Image,
-  ViewProps,
 } from "@react-pdf/renderer";
-import { ContentCC } from "@/components/InformeCC";
 
 const styles = StyleSheet.create({
   page: {
-    flexDirection: "column",
+    padding: 40,
     backgroundColor: "#ffffff",
-    padding: 30,
   },
-  section: {
-    padding: 15,
-    margin: 2,
-    borderRadius: 10, // Bordes redondeados
-    borderWidth: 1,
-    borderColor: "#c0c0c0", // Borde gris claro
+  header: {
+    textAlign: "center",
+    marginBottom: 20,
   },
   title: {
-    fontSize: 24,
-    textAlign: "center",
-    fontWeight: 700,
-    marginBottom: 16,
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 4,
+  },
+  subtitle: {
+    fontSize: 14,
+    fontWeight: "light",
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 10,
+    borderBottom: 1,
+    paddingBottom: 5,
   },
   text: {
-    fontSize: 14,
-    color: "#000",
+    fontSize: 12,
+    marginBottom: 4,
+  },
+  tableContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+    breakAfter: "always", // Esto asegura que la tabla comience en una nueva página
+  },
+  table: {
+    display: "flex",
+    width: "100%",
+    borderCollapse: "collapse",
+    marginTop: 10,
+    marginBottom: 20, // Espaciado inferior
+  },
+  tableHeader: {
+    flexDirection: "row",
+    backgroundColor: "#f0f0f0", // Fondo claro para destacar encabezado
+    borderBottom: "2px solid #000",
+  },
+  tableRow: {
+    flexDirection: "row",
+    breakInside: "avoid", // Evita cortes de fila entre páginas
+  },
+  tableCell: {
+    flex: 1,
+    padding: 8,
+    border: "1px solid #000",
+    fontSize: 12,
+    textAlign: "center", // Centrado para claridad
+  },
+  tableHeaderCell: {
+    flex: 1,
+    padding: 8,
+    border: "1px solid #000",
+    fontSize: 12,
+    fontWeight: "bold", // Estilo destacado
+    textAlign: "center",
+  },
+  employeeDetails: {
+    marginBottom: 10,
+    padding: 10,
+    border: "1px solid #ddd",
+    borderRadius: 5,
+    backgroundColor: "#f9f9f9",
+  },
+  image: {
+    width: 100,
+    height: 100,
+    marginBottom: 10,
   },
 });
 
-export const InformeVentas = ({ proyecto, historial }: { proyecto: Proyecto, historial: HistorialProyecto }) => {
+export const InformeVentas = ({
+  proyecto,
+  historial,
+}: {
+  proyecto: Proyecto;
+  historial: HistorialProyecto;
+}) => {
+  console.log(historial);
   return (
     <Document>
       <Page size="A4" style={styles.page}>
-        <View>
-          <Text style={styles.title}>
-            Informe de Ventas para el proyecto: {proyecto.titulo}
+        {/* Encabezado del informe */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Informe del Proyecto</Text>
+          <Text style={styles.subtitle}>
+            {proyecto.titulo.toUpperCase()}
           </Text>
-          <CardPDF title="Datos del proyecto">
-            <Text style={styles.text}>Titulo: {proyecto.titulo}</Text>
+        </View>
 
-            <Text style={styles.text}>Descripción: {proyecto.descripcion}</Text>
+        {/* Sección de información general */}
+        <View>
+          <Text style={styles.sectionTitle}>Información General</Text>
+          <Text style={styles.text}>Título: {proyecto.titulo}</Text>
+          <Text style={styles.text}>Descripción: {proyecto.descripcion}</Text>
+          <Text style={styles.text}>
+            Fecha de inicio:{" "}
+            {proyecto.fechaInicio?.toLocaleDateString("es-PE")}
+          </Text>
+          <Text style={styles.text}>
+            Fecha de fin:{" "}
+            {proyecto.fechaFin
+              ? proyecto.fechaFin.toLocaleDateString("es-PE")
+              : "No especificada"}
+          </Text>
+        </View>
 
+        {/* Jefe del proyecto */}
+        <View>
+          <Text style={styles.sectionTitle}>Jefe del Proyecto</Text>
+          <View style={styles.employeeDetails}>
+            <Text style={styles.text}>Nombre: {proyecto.jefe?.nombre} {proyecto.jefe?.apellido}</Text>
+            <Text style={styles.text}>Correo: {proyecto.jefe?.correo}</Text>
+            <Text style={styles.text}>Teléfono: {proyecto.jefe?.telefono}</Text>
             <Text style={styles.text}>
-              Fecha de inicio:{" "}
-              {proyecto.fechaInicio?.toLocaleDateString("es-PE", {
-                timeZone: "America/Lima",
-              })}
+              Dirección: {proyecto.jefe?.direccion}
             </Text>
+          </View>
+        </View>
 
+        {/* Supervisor */}
+        <View>
+          <Text style={styles.sectionTitle}>Supervisor del Proyecto</Text>
+          <View style={styles.employeeDetails}>
             <Text style={styles.text}>
-              Fecha de fin:{" "}
-              {proyecto.fechaFin?.toLocaleDateString("es-PE", {
-                timeZone: "America/Lima",
-              })}
-            </Text>
-
-            <Text style={styles.text}>
-              Jefe a cargo: {proyecto.jefe?.nombre} {proyecto.jefe?.apellido}
-            </Text>
-
-            <Text style={styles.text}>
-              Supervisor a cargo: {proyecto.supervisor?.nombre}{" "}
+              Nombre: {proyecto.supervisor?.nombre}{" "}
               {proyecto.supervisor?.apellido}
             </Text>
-          </CardPDF>
-
-          <CardPDF title="Costos">
+            <Text style={styles.text}>Correo: {proyecto.supervisor?.correo}</Text>
             <Text style={styles.text}>
-              Costo de Repuestos: S/. {proyecto.costoRepuestos}
+              Teléfono: {proyecto.supervisor?.telefono}
             </Text>
             <Text style={styles.text}>
-              Costo total: S/. {proyecto.costoTotal}
+              Dirección: {proyecto.supervisor?.direccion}
             </Text>
+          </View>
+        </View>
+
+        {/* Sección de costos */}
+        <View>
+          <Text style={styles.sectionTitle}>Costos</Text>
+          <Text style={styles.text}>
+            Costo de mano de obra: S/. {proyecto.costoManoObra ?? "0.00"}
+          </Text>
+          <Text style={styles.text}>
+            Costo de repuestos: S/. {proyecto.costoRepuestos ?? "0.00"}
+          </Text>
+          <Text style={styles.text}>
+            Costo total: S/. {proyecto.costoTotal ?? "0.00"}
+          </Text>
+        </View>
+
+        {/* Sección de cliente */}
+        <View>
+          <Text style={styles.sectionTitle}>Cliente</Text>
+          <Text style={styles.text}>Nombre: {proyecto.cliente?.nombre}</Text>
+          <Text style={styles.text}>RUC: {proyecto.cliente?.ruc}</Text>
+          <Text style={styles.text}>
+            Teléfono: {proyecto.cliente?.telefono}
+          </Text>
+          <Text style={styles.text}>Correo: {proyecto.cliente?.correo}</Text>
+          <Text style={styles.text}>
+            Dirección: {proyecto.cliente?.direccion}
+          </Text>
+        </View>
+
+        {/* Sección de repuestos */}
+        <View>
+          <Text style={styles.sectionTitle}>Repuestos</Text>
+          {proyecto.repuestos && proyecto.repuestos.length > 0 ? (
+            proyecto.repuestos.map((repuesto, index) => (
+              <View key={index}>
+                <Text style={styles.text}>
+                  {index + 1}. {repuesto.nombre}
+                </Text>
+                {repuesto.linkImg && (
+                  <Image
+                    src={repuesto.linkImg}
+                    style={styles.image}
+                  />
+                )}
+                <Text style={styles.text}>
+                  Precio: S/. {repuesto.precio}
+                </Text>
+                <Text style={styles.text}>
+                  Cantidad: {repuesto.cantidad}
+                </Text>
+                <Text style={styles.text}>
+                  Descripción: {repuesto.descripcion}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text style={styles.text}>No se han asignado repuestos.</Text>
+          )}
+        </View>
+
+        {/* Sección de especificaciones de pruebas */}
+        <View>
+          <Text style={styles.sectionTitle}>Especificaciones de Pruebas</Text>
+          {proyecto.especificaciones && proyecto.especificaciones.length > 0 ? (
+            proyecto.especificaciones.map((especificacion, index) => (
+              <View key={index}>
+                <Text style={styles.text}>
+                  {index + 1}. {especificacion.nombre}
+                </Text>
+                {especificacion.parametros.map((parametro) => (
+                  <Text key={parametro.idParametro} style={styles.text}>
+                    - {parametro.nombre} ({parametro.unidades}):{" "}
+                    {parametro.valorMinimo} a {parametro.valorMaximo}
+                  </Text>
+                ))}
+              </View>
+            ))
+          ) : (
             <Text style={styles.text}>
-              Costo de mano de obra: S/. {proyecto.costoManoObra}
+              No se han registrado especificaciones de pruebas.
             </Text>
-          </CardPDF>
+          )}
+        </View>
 
-          <CardPDF title="Cliente">
-            <Text style={styles.text}>Nombre: {proyecto.cliente?.nombre}</Text>
-            <Text style={styles.text}>DNI: {proyecto.cliente?.ruc}</Text>
-            <Text style={styles.text}>
-              Teléfono: {proyecto.cliente?.telefono}
-            </Text>
-            <Text style={styles.text}>Correo: {proyecto.cliente?.correo}</Text>
-            <Text style={styles.text}>
-              Dirección: {proyecto.cliente?.direccion}
-            </Text>
-          </CardPDF>
-
-          <CardPDF title="Repuestos">
-            {proyecto.repuestos ? (
-              proyecto.repuestos.map((repuesto, index) => (
-                <CardPDF
-                  key={index}
-                  title={`${index + 1}. ${repuesto.nombre}`}
-                  wrap={false}
-                >
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    {repuesto.linkImg && (
-                      // eslint-disable-next-line jsx-a11y/alt-text
-                      <Image
-                        src={repuesto.linkImg}
-                        style={{ width: 100, height: 100 }}
-                      />
-                    )}
-
-                    <View style={{ flex: 1 }}>
+        {/* Sección de historial del proyecto */}
+        <View>
+          <Text style={styles.sectionTitle}>Historial del Proyecto</Text>
+          {/* Etapas y empleados */}
+          <View>
+            <Text style={styles.subtitle}>Etapas y Empleados:</Text>
+            {historial.etapasEmpleados.length > 0 ? (
+              historial.etapasEmpleados.map((etapa, index) => (
+                <View key={index}>
+                  <Text style={styles.text}>
+                    {index + 1}. {etapa.nombreEtapa}
+                  </Text>
+                  {etapa.empleados.map((empleado, empIndex) => (
+                    <View key={empIndex} style={styles.employeeDetails}>
                       <Text style={styles.text}>
-                        Precio: S/. {repuesto.precio}
+                        Nombre: {empleado.nombre} {empleado.apellido}
                       </Text>
-                      <Text style={styles.text}>
-                        Cantidad: {repuesto.cantidad}
-                      </Text>
-                      <Text style={styles.text}>
-                        Descripción: {repuesto.descripcion}
-                      </Text>
-                    </View>
-                  </View>
-                </CardPDF>
-              ))
-            ) : (
-              <Text style={styles.text}>No se han asignado repuestos</Text>
-            )}
-          </CardPDF>
-
-          <CardPDF title="Especificaciones de Pruebas">
-            {proyecto.especificaciones ? (
-              proyecto.especificaciones.map((especificacion, index) => (
-                <CardPDF
-                  key={index}
-                  title={`${index + 1}. ${especificacion.nombre}`}
-                >
-                  {especificacion.parametros.map((parametro) => (
-                    <View key={parametro.idParametro}>
-                      <Text style={styles.text}>
-                        Parámetro: {parametro.nombre}
-                      </Text>
-                      <Text style={styles.text}>
-                        Unidad: {parametro.unidades}
-                      </Text>
-                      <Text style={styles.text}>
-                        Rango: {parametro.valorMinimo} - {parametro.valorMaximo}
-                      </Text>
+                      <Text style={styles.text}>Correo: {empleado.correo}</Text>
+                      <Text style={styles.text}>Teléfono: {empleado.telefono}</Text>
+                      <Text style={styles.text}>Rol: {empleado.rol}</Text>
                     </View>
                   ))}
-                </CardPDF>
+                </View>
               ))
             ) : (
-              <Text style={styles.text}>No se han asignado pruebas</Text>
+              <Text style={styles.text}>
+                No hay empleados asignados a etapas.
+              </Text>
             )}
-          </CardPDF>
+          </View>
 
-          <CardPDF title="Historial del Proyecto">
-            {/* Etapas con empleados asignados */}
-            <CardPDF title="Etapas y Empleados">
-              {historial.etapasEmpleados && historial.etapasEmpleados.length > 0 ? (
-                historial.etapasEmpleados.map((etapa, index) => (
-                  <CardPDF key={etapa.idEtapa} title={`${index + 1}. ${etapa.nombreEtapa}`}>
-                    {etapa.empleados.length > 0 ? (
-                      etapa.empleados.map((empleado, empIndex) => (
-                        <Text key={empIndex} style={styles.text}>
-                          - {empleado.nombre} {empleado.apellido}
-                        </Text>
-                      ))
-                    ) : (
-                      <Text style={styles.text}>No hay empleados asignados</Text>
-                    )}
-                  </CardPDF>
-                ))
-              ) : (
-                <Text style={styles.text}>No hay etapas con empleados asignados</Text>
-              )}
-            </CardPDF>
-
-            {/* Cambios en las etapas */}
+          {/* Cambios de etapas */}
+          <View>
+            <Text style={styles.subtitle}>Cambios de Etapas</Text>
             {historial.etapasCambios && historial.etapasCambios.length > 0 ? (
-              historial.etapasCambios.map((cambio, index) => (
-                <CardPDF key={cambio.idEtapaCambio} title={`${index + 1}. ${cambio.nombreEtapa}`}>
-                  <Text style={styles.text}>
-                    Fecha de inicio: {new Date(cambio.fechaInicio).toLocaleDateString("es-PE")}
-                  </Text>
-                  <Text style={styles.text}>
-                    Fecha de fin:{" "}
-                    {cambio.fechaFin
-                      ? new Date(cambio.fechaFin).toLocaleDateString("es-PE")
-                      : "En curso"}
-                  </Text>
-                </CardPDF>
-              ))
+              <View style={styles.tableContainer}>
+                <View style={styles.table}>
+                  {/* Encabezado */}
+                  <View style={styles.tableHeader}>
+                    <Text style={styles.tableHeaderCell}>#</Text>
+                    <Text style={styles.tableHeaderCell}>Etapa</Text>
+                    <Text style={styles.tableHeaderCell}>Inicio</Text>
+                    <Text style={styles.tableHeaderCell}>Fin</Text>
+                  </View>
+                  {/* Filas */}
+                  {historial.etapasCambios
+                    .filter((cambio) => cambio.fechaFin)
+                    .map((cambio, index) => (
+                      <View key={cambio.idEtapaCambio} style={styles.tableRow}>
+                        <Text style={styles.tableCell}>{index + 1}</Text>
+                        <Text style={styles.tableCell}>{cambio.nombreEtapa}</Text>
+                        <Text style={styles.tableCell}>
+                          {new Date(cambio.fechaInicio).toLocaleDateString("es-PE")}
+                        </Text>
+                        <Text style={styles.tableCell}>
+                          {new Date(cambio.fechaFin!).toLocaleDateString("es-PE")}
+                        </Text>
+                      </View>
+                    ))}
+                </View>
+              </View>
             ) : (
-              <Text style={styles.text}>No hay cambios de etapas registrados</Text>
+              <Text style={styles.text}>
+                No se registraron cambios en las etapas.
+              </Text>
             )}
-          </CardPDF>
-
-          {/* <CardPDF title="Historial de Pruebas">
-            <ContentCC proyecto={proyecto} />
-          </CardPDF> */}
+          </View>
         </View>
       </Page>
     </Document>
-  );
-};
-
-const cardStyles = StyleSheet.create({
-  title: {
-    fontSize: 18,
-    fontWeight: 700,
-    marginBottom: 16,
-  },
-});
-
-const CardPDF = ({
-  title,
-  children,
-  ...props
-}: {
-  title: string;
-  children: React.ReactNode;
-} & ViewProps) => {
-  return (
-    <View style={styles.section} {...props}>
-      <Text style={cardStyles.title}>{title}</Text>
-      <View>{children}</View>
-    </View>
   );
 };
