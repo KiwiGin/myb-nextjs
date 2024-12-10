@@ -96,7 +96,7 @@ export function InterfazProyeccionRepuestos() {
       }
     }
     fetchRepuestos();
-  }, [form, status]);
+  }, [form, status, session]);
 
   const onSubmit = async (data: ProyeccionData) => {
     setNoice({

@@ -5,6 +5,8 @@ import { TipoPrueba } from '@/models/tipoprueba';
 import { Parametro } from '@/models/parametro';
 import { NextRequest, NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
     const repuestos = await obtenerPruebaConParametros();
     return NextResponse.json(repuestos);

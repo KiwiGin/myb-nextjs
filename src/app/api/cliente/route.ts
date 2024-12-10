@@ -3,6 +3,8 @@ import { insertarCliente, obtenerClientes } from '@/backend/dataBaseUtils/client
 import { NextRequest, NextResponse } from 'next/server';
 import { Cliente } from '@/models/cliente';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(): Promise<NextResponse<Cliente[]>> {
     const clientes: Cliente[] = await obtenerClientes();
     return NextResponse.json(clientes);

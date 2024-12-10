@@ -2,6 +2,8 @@ import { obtenerHistorialProyecto } from '@/backend/dataBaseUtils/proyectoDA';
 import { NextRequest, NextResponse } from 'next/server';
 import { HistorialProyecto } from '@/models/proyecto';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest, { params }: { params: { projectId: string } }) {
   const { projectId } = params;
 

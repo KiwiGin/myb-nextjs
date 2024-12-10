@@ -9,6 +9,8 @@ import {
   uploadImage,
 } from "@/backend/firebaseUtils/firebaseStorage";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(): Promise<NextResponse<Empleado[]>> {
   const empleados: Empleado[] = await paObtenerEmpleados();
   return NextResponse.json(empleados);

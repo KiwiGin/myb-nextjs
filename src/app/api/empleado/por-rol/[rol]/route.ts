@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { paObtenerEmpleadosPorRol } from '@/backend/dataBaseUtils/empleadoDA';
 import { Empleado } from '@/models/empleado';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest, { params }: { params: { rol: string } }) {
   const { rol } = params;
 

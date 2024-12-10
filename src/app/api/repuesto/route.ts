@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Repuesto } from '@/models/repuesto';
 import { base64ToBlob, uploadImage } from '@/backend/firebaseUtils/firebaseStorage';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     const repuesto: Repuesto = await req.json();
     // recibe el repuesto con la imagen como un base64

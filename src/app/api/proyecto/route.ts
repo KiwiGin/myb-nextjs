@@ -3,6 +3,8 @@ import { insertarProyecto, obtenerProyectos } from '@/backend/dataBaseUtils/proy
 import { NextRequest, NextResponse } from 'next/server';
 import { Proyecto } from '@/models/proyecto';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
     const proyecto: Proyecto = await req.json();
     await insertarProyecto(proyecto);
