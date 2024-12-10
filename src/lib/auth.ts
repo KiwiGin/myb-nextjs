@@ -2,10 +2,10 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import MyBError from "@/lib/mybError";
 
-import { EMPLEADOS } from "@/models/MOCKUPS";
+import { USUARIOS } from "@/models/MOCKUPS";
 
 const getUserByCorreo = async (correo: string) => {
-  return EMPLEADOS.find((user) => user.correo === correo);
+  return USUARIOS.find((user) => user.correo === correo);
 };
 
 export const authOptions: NextAuthOptions = {
