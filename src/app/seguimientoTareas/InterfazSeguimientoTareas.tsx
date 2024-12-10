@@ -121,7 +121,7 @@ const proyectoSchema = z.object({
 
 export function InterfazSeguimientoTareas() {
   const [idEmpleadoMock] = useState<string>("5");
-  const [idProyectoMock, setIdProyectoMock] = useState<string>("3");
+  const [idProyectoMock, setIdProyectoMock] = useState<string>("14");
   const [proyecto, setProyecto] = useState<Proyecto | null>(null);
   const [noice, setNoice] = useState<NoiceType | null>({
     type: "loading",
@@ -134,12 +134,13 @@ export function InterfazSeguimientoTareas() {
     try {
       const res = await fetch(`/api/proyecto/por-id/${idProyectoMock}`);
       let data = await res.json();
-
+      console.log(data);
       data = {
         ...data,
         fechaInicio: new Date(`${data.fechaInicio}T00:00:00`),
         fechaFin: new Date(`${data.fechaFin}T00:00:00`),
       }
+      console.log(data);
 
       const parsedData = proyectoSchema.safeParse(data);
 

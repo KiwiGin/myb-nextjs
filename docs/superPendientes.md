@@ -5,7 +5,7 @@
 
 ## /registroProyecto
 
-- [ ] (A)(F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
+- [X] (A)(F) Validar que no se pueda ingresar una fecha de inicio posterior a la fecha de fin
 - [X] (F) FIX: Al deseleccionar y volver a seleccionar un repuesto este se agrega 2 veces
 
 ## /proyectos
@@ -37,7 +37,7 @@
 
 ## /registroEmpleado
 
-- [ ] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
+- [X] (A)(F)(B) Agregar subida de imagen del empleados. Guiarse de registro repuesto
 
 ## /registroCliente
 
@@ -74,14 +74,14 @@
 
 ## /registroProyecto
 
-- [ ] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
+- [X] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
 - [X] (F) (Opcional) Mostrar nombre completo de Supervisor
 - [ ] (A)(F) (Opcional) Ocultar scrollbar en selección de repuestos
 - [ ] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
 
 ## /registroRepuesto y /registroEmpleado
 
-- [ ] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
+- [X] (A)(F) (Opcional) Mejorar la apariencia del botón para subir la imagen del repuesto
 
 ## /proyeccionRepuestos
 

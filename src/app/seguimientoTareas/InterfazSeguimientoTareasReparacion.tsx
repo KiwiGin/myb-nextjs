@@ -10,19 +10,32 @@ import { ResultadosModal } from "@/components/ResultadosModal";
 import { EspecificacionesList } from "@/components/EspecificacionesList";
 import { Counter } from "@/components/Counter";
 
-const especificacionSchema = z.object({
-  idParametro: z.number(),
-  resultado: z
-    .preprocess((value) => {
-      if (value === "") {
-        return undefined;
-      }
-      return Number(value);
-    }, z.union([z.number(), z.undefined()]))
-    .refine((value) => typeof value !== "undefined", {
-      message: "No se puede dejar un resultado vacío",
-    }),
-});
+const especificacionSchema = z
+  .object({
+    idParametro: z.number(),
+    resultado: z
+      .preprocess((value) => {
+        if (value === "") {
+          return undefined;
+        }
+        return Number(value);
+      }, z.union([z.number(), z.undefined()]))
+      .refine((value) => typeof value !== "undefined", {
+        message: "No se puede dejar un resultado vacío",
+      }),
+    valorMaximo: z.number(),
+    valorMinimo: z.number(),
+  })
+  .superRefine((val, ctx) => {
+    if (val.resultado > val.valorMaximo || val.resultado < val.valorMinimo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El valor de un parametro no está dentro del rango",
+        path: ["root"],
+      });
+      return z.NEVER;
+    }
+  });
 
 const pruebaSchema = z.object({
   idTipoPrueba: z.number(),
@@ -35,6 +48,20 @@ const pruebaSchema = z.object({
         code: z.ZodIssueCode.custom,
         message: "No se puede dejar un resultado vacío",
         path: ["root"],
+      });
+      return z.NEVER;
+    }
+
+    const outOfRange = value.some(
+      (especificacion) =>
+        especificacion.resultado > especificacion.valorMaximo ||
+        especificacion.resultado < especificacion.valorMinimo
+    );
+
+    if (outOfRange) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El valor de un parametro no está dentro del rango",
       });
       return z.NEVER;
     }
