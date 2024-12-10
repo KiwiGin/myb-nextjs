@@ -6,8 +6,6 @@ export const CLIENTES = [
     direccion: "Av. Principal 123, Lima",
     telefono: "987654321",
     correo: "juan.perez@example.com",
-    documentoDeIdentidad: "45678901",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 2,
@@ -16,8 +14,6 @@ export const CLIENTES = [
     direccion: "Calle Los Olivos 456, Cusco",
     telefono: "912345678",
     correo: "maria.gomez@example.com",
-    documentoDeIdentidad: "78901234",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 3,
@@ -26,8 +22,6 @@ export const CLIENTES = [
     direccion: "Av. San Martín 789, Arequipa",
     telefono: "963258741",
     correo: "carlos.martinez@example.com",
-    documentoDeIdentidad: "12345678",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 4,
@@ -36,8 +30,6 @@ export const CLIENTES = [
     direccion: "Calle de la Cultura 123, Trujillo",
     telefono: "987654321",
     correo: "ana.rodriguez@example.com",
-    documentoDeIdentidad: "23456789",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 5,
@@ -46,8 +38,6 @@ export const CLIENTES = [
     direccion: "Av. Puno 200, Piura",
     telefono: "987654321",
     correo: "luis.fernandez@example.com",
-    documentoDeIdentidad: "34567890",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 6,
@@ -56,8 +46,6 @@ export const CLIENTES = [
     direccion: "Calle Los Andes 456, Ica",
     telefono: "916732540",
     correo: "elena.rodriguez@example.com",
-    documentoDeIdentidad: "98765432",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 7,
@@ -66,8 +54,6 @@ export const CLIENTES = [
     direccion: "Calle Libertad 789, Chiclayo",
     telefono: "936485761",
     correo: "pedro.sanchez@example.com",
-    documentoDeIdentidad: "56473829",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 8,
@@ -76,8 +62,6 @@ export const CLIENTES = [
     direccion: "Av. Las Flores 321, Puno",
     telefono: "930284756",
     correo: "lucia.torres@example.com",
-    documentoDeIdentidad: "87654321",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 9,
@@ -86,8 +70,6 @@ export const CLIENTES = [
     direccion: "Calle Los Jazmines 654, Cajamarca",
     telefono: "987654321",
     correo: "jose.lopez@example.com",
-    documentoDeIdentidad: "11223344",
-    tipoDeDocumento: "DNI",
   },
   {
     idCliente: 10,
@@ -96,8 +78,6 @@ export const CLIENTES = [
     direccion: "Av. Miraflores 123, Lima",
     telefono: "945872630",
     correo: "patricia.diaz@example.com",
-    documentoDeIdentidad: "44332211",
-    tipoDeDocumento: "DNI",
   },
 ];
 

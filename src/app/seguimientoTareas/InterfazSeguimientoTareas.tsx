@@ -32,8 +32,6 @@ const proyectoSchema = z.object({
     direccion: z.string(),
     telefono: z.string(),
     correo: z.string(),
-    documentoIdentidad: z.string(),
-    tipoDocumento: z.string(),
   }),
 
   supervisor: z.object({

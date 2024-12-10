@@ -426,8 +426,6 @@ export function InterfazRegistroProyecto() {
         throw new Error("Error al registrar el proyecto");
       }
 
-      const data = await res.json();
-
       form.reset();
 
       setNoice({
