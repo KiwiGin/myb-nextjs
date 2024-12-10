@@ -10,6 +10,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { NoiceType } from "@/models/noice";
 import { Noice } from "@/components/Noice";
 import MyBError from "@/lib/mybError";
+import { useRouter } from "next/navigation";
 
 // Definir el esquema de validación con zod
 const clienteSchema = z.object({
@@ -27,11 +28,13 @@ type ClienteFormData = z.infer<typeof clienteSchema>;
 
 export function InterfazRegistroCliente() {
   const [noice, setNoice] = useState<NoiceType | null>(null);
+  const router = useRouter();
 
   // Configuración de react-hook-form con zod
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<ClienteFormData>({
     resolver: zodResolver(clienteSchema),
@@ -55,6 +58,7 @@ export function InterfazRegistroCliente() {
       });
 
       if (!response.ok) throw new MyBError("Error al registrar el cliente");
+      reset();
 
       setNoice({
         type: "success",
@@ -66,7 +70,7 @@ export function InterfazRegistroCliente() {
         setTimeout(() => {
           setNoice(null);
           resolve();
-          window.location.reload();
+          router.replace("/");
         }, 2000);
       });
     } catch (error) {

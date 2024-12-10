@@ -10,6 +10,7 @@ import { NoiceType } from "@/models/noice";
 import { useState } from "react";
 import { Noice } from "@/components/Noice";
 import MyBError from "@/lib/mybError";
+import { useRouter } from "next/navigation";
 
 // Definir el esquema de validación con zod
 const tipoPruebaSchema = z.object({
@@ -38,13 +39,14 @@ export function InterfazRegistroPrueba() {
   const {
     register,
     handleSubmit,
+    reset,
     control,
     formState: { errors },
   } = useForm<TipoPruebaForm>({
     resolver: zodResolver(tipoPruebaSchema),
     defaultValues: { nombre: "", parametros: [] },
   });
-
+  const router = useRouter();
   const [noice, setNoice] = useState<NoiceType | null>(null);
 
   // useFieldArray para manejar dinámicamente los parámetros
@@ -79,7 +81,7 @@ export function InterfazRegistroPrueba() {
 
       if (!response.ok)
         throw new MyBError("Error al registrar el tipo de prueba y parámetros");
-
+      reset();
       setNoice({
         type: "success",
         message: "Tipo de prueba registrado con éxito",
@@ -90,7 +92,7 @@ export function InterfazRegistroPrueba() {
         setTimeout(() => {
           setNoice(null);
           resolve();
-          window.location.reload();
+          router.replace("/");
         }, 2000);
       });
     } catch (error) {

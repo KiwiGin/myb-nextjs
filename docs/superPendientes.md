@@ -19,7 +19,7 @@
 
 ## /seguimientoTareas (Reparando)
 
-- [ ] (A)(F) Validar que los resultados del técnico estén dentro de los parámetros establecidos
+- [X] (A)(F) Validar que los resultados del técnico estén dentro de los parámetros establecidos
 
 ## /proyectos/proyectoId/ (Generando informe de ventas)
 
@@ -77,7 +77,7 @@
 - [X] (A)(F) (Opcional) Auto ajustar width de selectores (Cliente)
 - [X] (F) (Opcional) Mostrar nombre completo de Supervisor
 - [ ] (A)(F) (Opcional) Ocultar scrollbar en selección de repuestos
-- [ ] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
+- [X] (A)(F) (Opcional) Redirigir a home después de registrar el proyecto
 
 ## /registroRepuesto y /registroEmpleado
 
